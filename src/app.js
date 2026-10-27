@@ -89,6 +89,7 @@ export class App {
     this.look = new LookController(this.engine.camera);
     this.input.onPointer((p, kind) => {
       if (kind === 'move' && p.down) this.look.drag(p.dx, p.dy);
+      if (kind === 'move' && !p.down) this._hover(p.x, p.y);
       if (kind === 'up' && Math.abs(p.dx) + Math.abs(p.dy) < 4) this._click(p.x, p.y);
     });
     this.input.onKey((code, e) => {
@@ -112,6 +113,20 @@ export class App {
       lookPad.appendChild(b);
     }
     this.shell.overlays.appendChild(lookPad);
+    // Visible way back from 3D to the text page (H-6), plus a one-line look tip.
+    const back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'back-to-list';
+    back.textContent = 'Back to the list';
+    back.addEventListener('click', () => {
+      document.getElementById('app').style.visibility = 'hidden';
+      document.getElementById('textmode').hidden = false;
+      this.warehouse.highlight(null);
+    });
+    this.shell.overlays.appendChild(back);
+    this.shell.overlays.appendChild(Object.assign(document.createElement('p'), {
+      className: 'look-tip', textContent: 'Drag, use the arrow keys or the look buttons to look around. Click an object to judge it.',
+    }));
     this.engine.onUpdate(() => {});
     this.engine.start();
   }
@@ -140,38 +155,53 @@ export class App {
     return [];
   }
 
-  _click(x, y) {
-    if (!this.engine) return;
+  /** Pick the inspectable under a screen point (hit proxies; clear floor is low priority). */
+  _pickAt(x, y) {
+    if (!this.engine || document.getElementById('app').style.visibility === 'hidden') return { id: null, active: new Set() };
     const active = new Set(this._activeZones().flatMap((z) => z.inspectables.map((i) => i.id)));
-    if (!active.size) return;
-    const nx = (x / window.innerWidth) * 2 - 1;
-    const ny = -(y / window.innerHeight) * 2 + 1;
+    const rect = this.engine.canvas.getBoundingClientRect();
+    const nx = ((x - rect.left) / rect.width) * 2 - 1;
+    const ny = -((y - rect.top) / rect.height) * 2 + 1;
     const ray = new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2(nx, ny), this.engine.camera);
-    const meshes = [...this.warehouse.inspectables.values()].map((v) => v.mesh);
-    const hits = ray.intersectObjects(meshes, true);
-    if (!hits.length) return;
-    let obj = hits[0].object;
-    let id = null;
-    for (const [iid, v] of this.warehouse.inspectables) {
-      if (v.mesh === obj || (obj.parent && v.mesh === obj.parent)) { id = iid; break; }
-    }
-    if (id && active.has(id)) this._flag(id);
+    return { id: this.warehouse.pick(ray), active };
+  }
+
+  _hover(x, y) {
+    const { id, active } = this._pickAt(x, y);
+    const ok = id && active.has(id);
+    this.warehouse.highlight(ok ? id : null);
+    this.engine.canvas.style.cursor = ok ? 'pointer' : '';
+  }
+
+  _click(x, y) {
+    const { id, active } = this._pickAt(x, y);
+    if (!id) return;
+    if (active.has(id)) { this._flag(id); return; }
+    if (active.size) announce('That object belongs to a different zone. It is not part of this hunt.');
   }
 
   _flag(id) {
     const found = this.hunt.byId(id);
     if (!found) return;
-    if (this.hunt.flags.has(id)) { announce('Already rated'); }
+    if (this.hunt.flags.has(id)) { announce('Already rated. Submitting again replaces your earlier answer.'); }
+    this.warehouse?.highlight(id);
     const dlg = document.getElementById('task-dialog');
     this.hunt.renderRatingDialog(found.def, found.zone, dlg, (result) => {
       closeDialog(dlg);
+      // Feedback stays until the learner closes it (no timers; agent review A4).
+      this.shell.overlays.querySelector('.hunt-feedback')?.remove();
       const fb = document.createElement('div');
       fb.className = 'feedback hunt-feedback';
-      fb.innerHTML = `<p>${result.feedback.replace(/\*\*/g, '')}</p><p>Band legend: Low (●), Medium (▲), High (▲▲). ${BAND_RULE}</p>`;
-      this.shell.overlays.querySelector('.hunt-feedback')?.remove();
+      fb.setAttribute('role', 'status');
+      fb.innerHTML = `<p>${result.feedback.replace(/\*\*/g, '')}</p><p>${this._progressLine(found.zone)}</p>`;
+      const close = document.createElement('button');
+      close.type = 'button';
+      close.textContent = 'Close feedback';
+      close.addEventListener('click', () => { fb.remove(); this.warehouse?.highlight(null); });
+      fb.appendChild(close);
       this.shell.overlays.appendChild(fb);
-      setTimeout(() => fb.remove(), 14000);
+      close.focus();
       this._refreshPoi();
       const next = { practice: 'Practice zone complete. Continue with Part B, the assessed zone.', assessed: 'Assessed zone complete. Continue to Module 3, the incident replay.', transfer: 'Transfer zone complete.' };
       if (this._zoneComplete(found.zone.id)) {
@@ -196,21 +226,49 @@ export class App {
         const rated = this.hunt.flags.has(item.id);
         this.poi.set(item.id, {
           label: `${rated ? '✓ ' : ''}${item.area}`,
-          onSelect: () => { this._gotoView(zone.views[0]); this._flag(item.id); },
+          onSelect: () => { this._aimAtItem(item.id, zone); this._flag(item.id); },
         });
       }
     }
+    // The POI panel and look pad only appear when a hunt is active (A10/V12).
+    const show = this._activeZones().length > 0;
+    this.shell.overlays.classList.toggle('hunt-inactive', !show);
   }
 
-  _gotoView(viewId) {
+  /** "N of M rated" line for a zone (heuristics H1). */
+  _progressLine(zone) {
+    const n = zone.inspectables.filter((i) => this.hunt.flags.has(i.id)).length;
+    return `${zone.name.split(':')[0]}: ${n} of ${zone.inspectables.length} areas judged.`;
+  }
+
+  /** Move to the zone view that frames the item best, then turn the camera onto it. */
+  _aimAtItem(id, zone) {
+    if (!this.engine) return;
+    const viewId = this.warehouse.bestView(id, zone.views, this.engine.camera.aspect);
+    this._gotoView(viewId, { quiet: true });
+    const aim = this.warehouse.aimAt(id, this.engine.camera.position);
+    if (aim) {
+      this.look.yaw = aim.yaw;
+      this.look.pitch = Math.max(this.look.minPitch, Math.min(this.look.maxPitch, aim.pitch));
+      this.look.apply();
+    }
+    this._show3D();
+  }
+
+  _show3D() {
+    document.getElementById('app').style.visibility = 'visible';
+    document.getElementById('textmode').hidden = true;
+  }
+
+  _gotoView(viewId, { quiet = false } = {}) {
     if (!this.engine) return;
     const v = Warehouse.VIEWS[viewId];
     if (!v) return;
     this.engine.camera.position.set(...v.pos);
     this.look.yaw = v.yaw;
-    this.look.pitch = 0;
+    this.look.pitch = v.pitch || 0;
     this.look.apply();
-    announce(`View: ${v.label}`);
+    if (!quiet) announce(`View: ${v.label}. Drag, or use the arrow keys or the look buttons, to look around.`);
   }
 
   _initDialogs() {
@@ -226,6 +284,9 @@ export class App {
   }
 
   gotoModule(i) {
+    this._exitReplay(); // clears the replay overlay and actors on any module change (A7)
+    this.shell.overlays.querySelector('.hunt-feedback')?.remove();
+    this.warehouse?.highlight(null);
     this.moduleIndex = i;
     this.shell.setModule(i);
     document.getElementById('textmode').hidden = false;
@@ -397,16 +458,41 @@ export class App {
     body.appendChild(causeLevels);
   }
 
+  /** Replay-only actors are shown only while the replay is open (R3/R4). */
+  _setReplayActors(on) {
+    if (!this.warehouse) return;
+    this.warehouse._truck.visible = on;
+    this.warehouse.replayPedestrian.visible = on;
+  }
+
+  /** Leave the 3D replay: stop it, hide its overlay and actors, back to the storyboard (A7). */
+  _exitReplay() {
+    if (!this._replay) return;
+    this._replay.playing = false;
+    this._replay.pausedAtPoint = null;
+    this._replayUi.hidden = true;
+    this._setReplayActors(false);
+    const dlg = document.getElementById('task-dialog');
+    if (dlg.open) closeDialog(dlg);
+    if (this.moduleIndex === 2) {
+      document.getElementById('app').style.visibility = 'hidden';
+      document.getElementById('textmode').hidden = false;
+    }
+  }
+
   _startReplay3D() {
-    if (this._replay) { this._replay.loadSegment(0); return; }
+    this._setReplayActors(true);
+    if (this._replay) { this._replayUi.hidden = false; this._replay.loadSegment(0); this._replay.play(); return; }
     const ui = document.createElement('div');
     ui.className = 'replay-ui';
+    this._replayUi = ui;
     this.shell.overlays.appendChild(ui);
-    const pedestrian = this.warehouse._workers[1];
+    const pedestrian = this.warehouse.replayPedestrian;
     this._replay = new ReplayPlayer({
       data: this.replayData,
       truck: this.warehouse._truck,
       pedestrian,
+      onExit: () => this._exitReplay(),
       camera: this.engine.camera,
       ui,
       motion: this.motion,

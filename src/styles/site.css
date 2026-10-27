@@ -79,7 +79,17 @@ dialog menu { display: flex; gap: 0.5rem; justify-content: flex-end; padding: 0;
 .poi-list { list-style: none; margin: 0.3rem 0 0; padding: 0.3rem; display: flex; flex-wrap: wrap; gap: 0.35rem; max-height: 28vh; overflow-y: auto; }
 .poi-list button { font-size: 0.85rem; }
 #overlays > h3 { position: absolute; top: 8rem; right: 1rem; z-index: 6; background: color-mix(in srgb, var(--surface) 90%, transparent); padding: 0.3rem 0.6rem; border-radius: 6px; margin: 0; font-size: 0.9rem; }
-#overlays > .poi-list { position: absolute; top: 10rem; right: 1rem; width: min(22rem, 60vw); z-index: 6; background: color-mix(in srgb, var(--surface) 90%, transparent); border-radius: 6px; }
+#overlays > .poi-list { position: absolute; top: 10rem; right: 1rem; width: min(22rem, 60vw); z-index: 6; background: color-mix(in srgb, var(--surface) 90%, transparent); border-radius: 6px; max-height: 50vh; }
+/* Hunt-only overlays: hidden on modules without a hunt and while the text page is shown (A10/V12). */
+#overlays.hunt-inactive > h3, #overlays.hunt-inactive > .poi-list, #overlays.hunt-inactive > .look-pad, #overlays.hunt-inactive > .back-to-list,
+body:has(#textmode:not([hidden])) #overlays > h3, body:has(#textmode:not([hidden])) #overlays > .poi-list,
+body:has(#textmode:not([hidden])) #overlays > .look-pad, body:has(#textmode:not([hidden])) #overlays > .back-to-list { display: none; }
+.back-to-list { position: absolute; bottom: 1rem; left: 1rem; z-index: 6; }
+.look-tip { position: absolute; bottom: 4rem; left: 1rem; z-index: 6; margin: 0; font-size: 0.85rem; background: color-mix(in srgb, var(--surface) 90%, transparent); padding: 0.3rem 0.6rem; border-radius: 6px; }
+body:has(#textmode:not([hidden])) #overlays > .look-tip, #overlays.hunt-inactive > .look-tip { display: none; }
+.rating-step { border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); padding: 0.5rem; border-radius: 6px; }
+.summary-table td, .summary-table th { padding: 0.2rem 0.5rem; }
+textarea { font: inherit; width: 100%; max-width: 40rem; }
 
 .replay-ui { position: absolute; bottom: 0; left: 0; right: 0; background: color-mix(in srgb, var(--surface) 92%, transparent); border-top: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); padding: 0.6rem 1rem; z-index: 8; max-height: 45vh; overflow-y: auto; }
 .replay-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }

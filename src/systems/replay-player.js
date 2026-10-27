@@ -18,7 +18,8 @@ export class ReplayPlayer {
    * @param {Function} opts.onPausePoint (pausePoint, segment) — render decision UI
    * @param {Function} opts.onSegmentEnd (segment)
    */
-  constructor({ data, truck, pedestrian, camera, ui, motion, onPausePoint, onSegmentEnd }) {
+  constructor({ data, truck, pedestrian, camera, ui, motion, onPausePoint, onSegmentEnd, onExit }) {
+    this.onExit = onExit;
     this.motion = motion;
     this.data = data;
     this.truck = truck;
@@ -45,6 +46,9 @@ export class ReplayPlayer {
         </label>
         <span class="replay-time" aria-live="off">0.0 s</span>
         <button type="button" data-replay="orbit">Inspect this moment (orbit)</button>
+        <button type="button" data-replay="skip">Skip to next segment</button>
+        <button type="button" data-replay="exit">Exit replay</button>
+        <span class="replay-seg" aria-live="polite"></span>
       </div>
       <p class="replay-story" tabindex="0"></p>
       <div class="replay-decision"></div>
@@ -69,6 +73,13 @@ export class ReplayPlayer {
     if (a === 'play') this.play();
     if (a === 'pause') { this.playing = false; }
     if (a === 'orbit') this.frozenOrbit();
+    if (a === 'exit') { this.playing = false; this.onExit?.(); }
+    if (a === 'skip' && this.current && !this.pausedAtPoint) {
+      this.playing = false;
+      this.t = this.current.duration;
+      this._apply();
+      this.onSegmentEnd?.(this.current);
+    }
   }
 
   loadSegment(i) {
@@ -77,6 +88,8 @@ export class ReplayPlayer {
     this.t = 0;
     this._firedPauses.clear();
     this.storyEl.textContent = this.current.story;
+    const segEl = this.ui.querySelector('.replay-seg');
+    if (segEl) segEl.textContent = `Segment ${i + 1} of ${this.data.segments.length}`;
     this.causesEl.innerHTML = '';
     this.playing = false;
     this._orbiting = false;

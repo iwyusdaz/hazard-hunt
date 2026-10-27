@@ -23,20 +23,151 @@ const MAT = {
   doorGrey: new THREE.MeshStandardMaterial({ color: 0x6f7780, roughness: 0.5, metalness: 0.5 }),
   exitGreen: new THREE.MeshStandardMaterial({ color: 0x1e8a4c, roughness: 0.6, emissive: 0x0d3a20 }),
   shrinkWrap: new THREE.MeshStandardMaterial({ color: 0xcfd8e0, roughness: 0.35, metalness: 0.05, transparent: true, opacity: 0.55 }),
-  spill: new THREE.MeshStandardMaterial({ color: 0x4a4038, roughness: 0.08, metalness: 0.1 }),
+  // Dark albedo + moderate roughness so the spill reads as a dark glossy patch rather
+  // than a white specular highlight (visual review V5); IBL is damped on this material.
+  spill: new THREE.MeshStandardMaterial({ color: 0x15120f, roughness: 0.26, metalness: 0.0, envMapIntensity: 0.35 }),
+  innerSheath: new THREE.MeshStandardMaterial({ color: 0xd8d2c4, roughness: 0.8 }),
+  copper: new THREE.MeshStandardMaterial({ color: 0xc8743a, roughness: 0.35, metalness: 0.9 }),
+  rampYellow: new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.75 }),
+  blade: new THREE.MeshStandardMaterial({ color: 0xc9ced3, roughness: 0.25, metalness: 0.95 }),
+  scuff: new THREE.MeshStandardMaterial({ color: 0xc9772e, roughness: 0.5, metalness: 0.6 }),
+  mirror: new THREE.MeshStandardMaterial({ color: 0xb8c6d0, roughness: 0.06, metalness: 1.0 }),
+  hit: new THREE.MeshBasicMaterial({ visible: false }),
   wall: new THREE.MeshStandardMaterial({ color: 0xb9bcc0, roughness: 0.95 }),
   roof: new THREE.MeshStandardMaterial({ color: 0x565b61, roughness: 0.9 }),
 };
 
+/** Camera field of view used by the app (app.js sets the same value). */
+export const VIEW_FOV = 65;
+
 export class Warehouse {
-  constructor(scene) {
+  /**
+   * @param {THREE.Scene} scene
+   * @param {object} [opts]
+   * @param {boolean} [opts.headless] skip texture loading and canvas textures (unit tests in Node)
+   */
+  constructor(scene, { headless = false } = {}) {
     this.scene = scene;
-    this.inspectables = new Map(); // id -> { mesh, label }
+    this.headless = headless;
+    this.inspectables = new Map(); // id -> { mesh, label, focus: Vector3, box: Box3, proxy }
     this._workers = [];
     this._truck = null;
     this._build();
-    this._applyTextures();
+    if (!headless) this._applyTextures();
     this._mergeStatic();
+    this._buildHitProxies();
+  }
+
+  /**
+   * One invisible box per inspectable (its bounds plus a 0.25 m margin, at least
+   * 0.6 m on each side) so thin or small items are easy to pick, and so the pick
+   * resolves to one id. The clear-aisle floor is low priority: any other item hit
+   * by the same ray wins (visual review V9).
+   */
+  _buildHitProxies() {
+    this.scene.updateMatrixWorld(true);
+    this.proxies = [];
+    for (const [id, entry] of this.inspectables) {
+      const box = entry.boxOverride ? entry.boxOverride.clone() : new THREE.Box3().setFromObject(entry.mesh);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      box.expandByScalar(0.25);
+      for (const axis of ['x', 'y', 'z']) {
+        if (size[axis] + 0.5 < 0.6) { box.min[axis] = center[axis] - 0.3; box.max[axis] = center[axis] + 0.3; }
+      }
+      const s = box.getSize(new THREE.Vector3());
+      const proxy = new THREE.Mesh(new THREE.BoxGeometry(s.x, s.y, s.z), MAT.hit);
+      proxy.position.copy(box.getCenter(new THREE.Vector3()));
+      proxy.userData.inspectable = id;
+      proxy.userData.lowPriority = !!entry.lowPriority;
+      proxy.castShadow = proxy.receiveShadow = false;
+      this.scene.add(proxy);
+      proxy.updateMatrixWorld(true);
+      entry.box = box;
+      entry.proxy = proxy;
+      if (!entry.focus) entry.focus = center;
+      this.proxies.push(proxy);
+    }
+    // Hover / focus outline: a yellow box drawn on top of the scene.
+    this.outline = new THREE.Box3Helper(new THREE.Box3(), 0xffd400);
+    this.outline.material.depthTest = false;
+    this.outline.material.transparent = true;
+    this.outline.renderOrder = 999;
+    this.outline.visible = false;
+    this.scene.add(this.outline);
+  }
+
+  /**
+   * Resolve a ray to an inspectable id. Low-priority items (the clear floor) only
+   * win when nothing else is on the ray.
+   * @param {THREE.Raycaster} ray
+   * @param {Set<string>} [active] only these ids can be picked
+   */
+  pick(ray, active) {
+    const hits = ray.intersectObjects(this.proxies, false)
+      .filter((h) => !active || active.has(h.object.userData.inspectable));
+    const strong = hits.find((h) => !h.object.userData.lowPriority);
+    return (strong || hits[0])?.object.userData.inspectable ?? null;
+  }
+
+  /** Show the outline around one inspectable (or hide it with null). */
+  highlight(id) {
+    const entry = id ? this.inspectables.get(id) : null;
+    if (!entry?.box) { this.outline.visible = false; return; }
+    this.outline.box.copy(entry.box);
+    this.outline.visible = true;
+  }
+
+  /**
+   * Where a world point lands from a viewpoint: NDC coordinates, distance, and
+   * whether it is inside the frame (with a 10% margin so it is not cut at the edge).
+   */
+  static project(view, point, aspect = 16 / 10, fov = VIEW_FOV) {
+    const cam = new THREE.PerspectiveCamera(fov, aspect, 0.1, 200);
+    cam.position.set(...view.pos);
+    cam.rotation.set(view.pitch || 0, view.yaw, 0, 'YXZ');
+    cam.updateMatrixWorld(true);
+    const p = new THREE.Vector3().copy(point).project(cam);
+    const dist = cam.position.distanceTo(point);
+    const inside = Math.abs(p.x) <= 0.9 && Math.abs(p.y) <= 0.9 && p.z > -1 && p.z < 1;
+    return { inside, ndc: p, dist };
+  }
+
+  /** The best of a zone's views for an inspectable: in frame and nearest. */
+  bestView(id, viewIds, aspect) {
+    const focus = this.inspectables.get(id)?.focus;
+    if (!focus) return viewIds[0];
+    let best = null;
+    for (const v of viewIds) {
+      const r = Warehouse.project(Warehouse.VIEWS[v], focus, aspect);
+      if (r.inside && (!best || r.dist < best.dist)) best = { v, dist: r.dist };
+    }
+    return best?.v ?? viewIds[0];
+  }
+
+  /** Yaw and pitch (LookController convention) that aim from `pos` at an inspectable. */
+  aimAt(id, pos) {
+    const f = this.inspectables.get(id)?.focus;
+    if (!f) return null;
+    const dx = f.x - pos.x, dy = f.y - pos.y, dz = f.z - pos.z;
+    return { yaw: Math.atan2(-dx, -dz), pitch: Math.atan2(dy, Math.hypot(dx, dz)) };
+  }
+
+  /** Yellow ramped cable cover: a wedge profile extruded across the cable. */
+  _ramp(x, z) {
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.28, 0); shape.lineTo(-0.1, 0.07); shape.lineTo(0.1, 0.07); shape.lineTo(0.28, 0); shape.closePath();
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: 1.0, bevelEnabled: false });
+    geo.translate(0, 0, -0.5);
+    const ramp = new THREE.Mesh(geo, MAT.rampYellow);
+    ramp.rotation.y = Math.PI / 2; // profile across the cable, length along it
+    ramp.position.set(x, 0, z);
+    ramp.castShadow = ramp.receiveShadow = true;
+    // Black end stripes so it reads as a standard yellow/black cable protector.
+    const g = new THREE.Group();
+    g.add(ramp);
+    for (const sx of [-0.45, 0.45]) g.add(this._box(0.08, 0.072, 0.4, MAT.rubber, x + sx, 0.036, z));
+    return g;
   }
 
   /**
@@ -183,41 +314,71 @@ export class Warehouse {
     for (let bay = 0; bay < 3; bay++) this._rack(16 + bay * 6, -8);
     for (let bay = 0; bay < 3; bay++) this._rack(16 + bay * 6, 8);
 
-    // Charging area (west): charger + cable + ramp
-    const charger = this._box(1.6, 1.4, 0.5, MAT.darkPlastic, -28, 0.7, 10);
-    this._add(charger, { inspectable: 'hazard-frayed-cable', label: 'Battery charger and cable (charging area)' });
-    const cable = this._box(6.4, 0.06, 0.12, MAT.rubber, -24.6, 0.04, 10.9);
-    cable.rotation.y = 0.06;
-    this._add(cable);
-    // Frayed section: three short angled strands near the plug end
-    for (let i = 0; i < 3; i++) {
-      const strand = this._box(0.5, 0.02, 0.02, MAT.rubber, -22.2 + i * 0.16, 0.05 + i * 0.03, 10.8 + i * 0.1);
-      strand.rotation.z = 0.5;
-      this._add(strand);
+    // Charging area (west): charger + frayed supply cable (hazard), and a second cable
+    // run under a yellow ramped cable cover (distractor), clear of the frayed plug end.
+    const frayed = new THREE.Group();
+    frayed.add(this._box(1.6, 1.4, 0.5, MAT.darkPlastic, -28, 0.7, 10));
+    const cable = this._box(6.0, 0.06, 0.12, MAT.rubber, -24.8, 0.04, 10.9);
+    frayed.add(cable);
+    // Split insulation near the plug end: a pale inner-sheath section with copper
+    // strands splayed out (about 5 cm thick bundle so it reads at 4–6 m).
+    frayed.add(this._box(0.34, 0.08, 0.14, MAT.innerSheath, -21.65, 0.05, 10.9));
+    for (let i = 0; i < 5; i++) {
+      const strand = this._box(0.32, 0.025, 0.025, MAT.copper, -21.6 + i * 0.03, 0.09 + (i % 2) * 0.03, 10.84 + i * 0.035);
+      strand.rotation.set(0, (i - 2) * 0.45, 0.35 + i * 0.12);
+      strand.castShadow = false;
+      frayed.add(strand);
     }
-    const ramp = this._box(1.2, 0.06, 0.5, MAT.rubber, -21.4, 0.03, 10.9);
-    this._add(ramp, { inspectable: 'distractor-ramped-cable', label: 'Ramped charging cable (charging area)' });
+    frayed.add(this._box(0.22, 0.12, 0.16, MAT.darkPlastic, -21.25, 0.07, 10.9)); // plug
+    this.scene.add(frayed);
+    this._add(frayed, { inspectable: 'hazard-frayed-cable', label: 'Battery charger and cable (charging area)' });
 
-    // Packing station (east)
+    const ramped = new THREE.Group();
+    ramped.add(this._box(11.5, 0.05, 0.1, MAT.rubber, -26.2, 0.03, 13)); // second cable run
+    ramped.add(this._ramp(-24.5, 13));
+    this.scene.add(ramped);
+    this._add(ramped, { inspectable: 'distractor-ramped-cable', label: 'Ramped charging cable (charging area)' });
+
+    // Packing station (east): one cutting machine on the bench. The WEST end has its
+    // orange guard fitted (distractor); the EAST end shows empty guard brackets and an
+    // exposed blade (hazard). Same machine, only the guard differs.
     const bench = this._box(6, 0.9, 1.2, MAT.palletWood, 26, 0.45, 14);
-    this._add(bench, { inspectable: 'hazard-missing-guard', label: 'Packing bench with cutting machine' });
-    // Guard frame IN PLACE on the far side (distractor: looks risky, is controlled)
-    const guard = this._box(0.06, 0.5, 1.2, MAT.steelOrange, 23.6, 1.2, 14);
-    this._add(guard, { inspectable: 'distractor-guarded-machine', label: 'Guarded machine (packing station)' });
-    // The cutting machine with a MISSING guard on the near side (hazard)
+    this.scene.add(bench);
     const machine = this._box(1.8, 0.8, 1.0, MAT.darkPlastic, 25.6, 1.3, 14);
-    this._add(machine);
+    this.scene.add(machine);
+    const guarded = new THREE.Group();
+    guarded.add(this._box(0.3, 0.12, 0.12, MAT.steelOrange, 24.6, 1.6, 13.6)); // bracket
+    guarded.add(this._box(0.06, 0.55, 1.1, MAT.steelOrange, 24.55, 1.25, 14)); // guard panel
+    guarded.add(this._box(0.3, 0.12, 0.12, MAT.steelOrange, 24.6, 1.6, 14.4)); // bracket
+    this.scene.add(guarded);
+    this._add(guarded, { inspectable: 'distractor-guarded-machine', label: 'Guarded machine (packing station)' });
+    const unguarded = new THREE.Group();
+    unguarded.add(this._box(0.3, 0.12, 0.12, MAT.steelOrange, 26.6, 1.6, 13.6)); // empty bracket
+    unguarded.add(this._box(0.3, 0.12, 0.12, MAT.steelOrange, 26.6, 1.6, 14.4)); // empty bracket
+    const blade = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.02, 32), MAT.blade);
+    blade.rotation.z = Math.PI / 2;
+    blade.position.set(26.62, 1.3, 14);
+    unguarded.add(blade);
+    this.scene.add(unguarded);
+    this._add(unguarded, { inspectable: 'hazard-missing-guard', label: 'Packing bench with cutting machine' });
 
     // Receiving dock props
-    this._palletStack(-8, -18, 2, true); // wrapped/strapped tall stack — distractor
+    this._palletStack(-8, -18, 3, true); // wrapped tall stack (about 3 m) — distractor
     this._add(this.scene.children[this.scene.children.length - 1], { inspectable: 'distractor-secured-stack', label: 'Wrapped tall pallet stack (receiving)' });
     this._palletStack(2, -18, 1, false);
 
-    // Spill sheen (glossy dark patch) near the dock
-    const spill = new THREE.Mesh(new THREE.CircleGeometry(0.9, 24), MAT.spill);
+    // Spill: dark, glossy, irregular outline (not a circle) about 2 m across.
+    const spillShape = new THREE.Shape();
+    const lobes = [1.0, 0.82, 1.12, 0.7, 0.95, 1.18, 0.78, 1.05, 0.88, 1.1, 0.74, 0.96];
+    const pts = lobes.map((r, i) => {
+      const a = (i / lobes.length) * Math.PI * 2;
+      return new THREE.Vector2(Math.cos(a) * r * 1.15, Math.sin(a) * r * 0.75);
+    });
+    spillShape.moveTo(pts[0].x, pts[0].y);
+    spillShape.splineThru([...pts.slice(1), pts[0]]); // smooth, irregular puddle edge
+    const spill = new THREE.Mesh(new THREE.ShapeGeometry(spillShape, 6), MAT.spill);
     spill.rotation.x = -Math.PI / 2;
     spill.position.set(-4, 0.012, -10);
-    spill.scale.set(1.4, 1, 0.8);
     this._add(spill, { inspectable: 'hazard-spill', label: 'Dark glossy patch on the floor (receiving)' });
 
     // Trip hazard: hose stretched across the walkway
@@ -232,56 +393,103 @@ export class Warehouse {
     const exitSignE = this._box(1.4, 0.4, 0.08, MAT.exitGreen, 31.7, 3.4, -2);
     this._add(exitSignE);
 
-    // Damaged upright in the aisle (assessed zone)
+    // Damaged upright (assessed zone): stays blue like every other upright; it reads by
+    // SHAPE — a kink at mid-height bulging into the aisle — with a small bare-metal
+    // scuff at the impact point (visual review V8).
     const rackGroup = this.scene.getObjectByName(`rack-${16}-8`);
-    if (rackGroup) {
-      const upright = rackGroup.children.find((c) => c.name === 'upright-0');
-      if (upright) {
-        upright.rotation.z = 0.12;
-        upright.position.y = 3.4;
-        upright.material = MAT.steelOrange;
-        upright.name = 'damaged-upright';
-        this._add(upright, { inspectable: 'hazard-damaged-upright', label: 'Bent rack upright (aisle)' });
-      }
-    }
+    rackGroup?.children.find((c) => c.name === 'upright-0')?.removeFromParent();
+    const bent = new THREE.Group();
+    bent.add(this._box(0.12, 2.4, 0.12, MAT.steelBlue, 16, 1.2, 8));
+    const k1 = this._box(0.12, 0.62, 0.12, MAT.steelBlue, 16, 2.68, 7.86);
+    k1.rotation.x = -0.5;
+    const k2 = this._box(0.12, 0.62, 0.12, MAT.steelBlue, 16, 3.22, 7.86);
+    k2.rotation.x = 0.5;
+    bent.add(k1, k2, this._box(0.12, 2.5, 0.12, MAT.steelBlue, 16, 4.75, 8));
+    bent.add(this._box(0.135, 0.16, 0.02, MAT.scuff, 16, 2.95, 7.71));
+    this.scene.add(bent);
+    this._add(bent, { inspectable: 'hazard-damaged-upright', label: 'Bent rack upright (aisle)' });
 
-    // Pallet overhang (assessed zone): a pallet protruding past the beam at x=22, z=8
-    const overhang = this._pallet(22.6, 2.05, 8);
-    overhang.position.x = 23.4; // pushed past the beam edge
-    overhang.rotation.y = 0.35;
+    // Pallet overhang (assessed zone): a loaded pallet on the second beam level of the
+    // x=22 bay, rotated and pushed about 0.5 m past the rack front into the aisle.
+    const overhang = new THREE.Group();
+    overhang.add(this._pallet(0, 0, 0), this._box(1.5, 0.8, 1.1, MAT.cardboard, 0, 0.5, 0));
+    overhang.position.set(23.4, 2.2, 7.4);
+    overhang.rotation.y = 0.3;
+    this.scene.add(overhang);
     this._add(overhang, { inspectable: 'hazard-overhang', label: 'Pallet overhanging the rack beam (aisle)' });
 
-    // Unsecured stacked boxes (assessed zone, leaning tower)
-    const leaning = this._box(0.9, 0.9, 0.9, MAT.cardboard, 18.5, 2.6, 8.9);
-    leaning.rotation.z = 0.22;
+    // Unwrapped carton stack leaning about 12° on the second beam level (x=16 bay).
+    const leaning = new THREE.Group();
+    for (let i = 0; i < 3; i++) leaning.add(this._box(0.55, 0.5, 0.55, MAT.cardboard, (i % 2) * 0.04, 0.25 + i * 0.5, 0));
+    leaning.position.set(18.4, 2.12, 7.75);
+    leaning.rotation.z = 0.21;
+    this.scene.add(leaning);
     this._add(leaning, { inspectable: 'hazard-leaning-stack', label: 'Leaning stack of boxes (aisle)' });
 
     // Workers: low-detail hi-vis silhouettes (documented deviation: MakeHuman not used)
     this._worker(-14, -6, 0.9);
-    this._worker(20, 0, -2.4, true); // pedestrian outside the marked lane (replay context)
+    // Replay-only pedestrian: hidden during the hunt (realism review R3).
+    this.replayPedestrian = this._worker(20, 0, -2.4, true);
+    this.replayPedestrian.visible = false;
     this._worker(-8, 15, 2.2);
 
     // Reach truck (medium detail, primitives)
     this._truck = this._buildTruck();
-    this._truck.position.set(24, 0, 2);
+    // Parked truck (practice-zone neutral item) now stands in the charging area, where
+    // its zone is; the replay uses its own truck, hidden during the hunt (R4).
+    const parked = this._buildTruck();
+    parked.position.set(-25, 0, 6);
+    parked.rotation.y = 0.3;
+    // Lockout card on the cab (cue: keys removed, card shows lockout).
+    const card = this._box(0.22, 0.3, 0.02, new THREE.MeshStandardMaterial({ color: 0xe23b2b, roughness: 0.7 }), 0, 1.7, 0.72);
+    card.castShadow = false;
+    parked.add(card);
+    this.scene.add(parked);
+    this._add(parked, { inspectable: 'neutral-parked-truck', label: 'Parked reach truck (charging area)' });
+    this._truck.position.set(10, 0, 2);
     this._truck.rotation.y = Math.PI / 2;
+    this._truck.visible = false;
+    this._truck.userData.dynamic = true;
     this.scene.add(this._truck);
-    this._add(this._truck, { inspectable: 'neutral-parked-truck', label: 'Parked reach truck (aisle)' });
 
-    // Clear aisle floor between the rack rows (assessed zone, neutral item)
-    const aisleFloor = new THREE.Mesh(new THREE.PlaneGeometry(14, 3), new THREE.MeshStandardMaterial({ color: 0x000000, transparent: true, opacity: 0, depthWrite: false }));
-    aisleFloor.rotation.x = -Math.PI / 2;
-    aisleFloor.position.set(23, 0.02, 0);
+    // Clear aisle floor between the rack rows (assessed zone, neutral item). No visible
+    // mesh: a hit proxy marks the floor area, at LOW pick priority so it never steals
+    // clicks from the exit, overhang or truck behind or above it.
+    const aisleFloor = new THREE.Object3D();
+    aisleFloor.position.set(23, 0, 0);
+    this.scene.add(aisleFloor);
     this._add(aisleFloor, { inspectable: 'neutral-empty-aisle-end', label: 'Aisle floor between the rack rows' });
+    Object.assign(this.inspectables.get('neutral-empty-aisle-end'), {
+      lowPriority: true,
+      focus: new THREE.Vector3(23, 0, 0),
+      boxOverride: new THREE.Box3(new THREE.Vector3(17, -0.05, -1.4), new THREE.Vector3(29, 0.08, 1.4)),
+    });
 
     this._buildDockExtras();
     this._buildTransferZone();
 
-    // Convex mirror at the aisle end (replay context: misaligned)
-    const mirror = new THREE.Mesh(new THREE.CircleGeometry(0.45, 24), new THREE.MeshStandardMaterial({ color: 0x8fa8b8, roughness: 0.1, metalness: 0.9 }));
-    mirror.position.set(14.6, 3.6, 0);
-    mirror.rotation.y = Math.PI / 2;
+    // Pole-mounted convex mirror at the blind corner (north aisle end). It is tilted
+    // about 40° upward so it shows the roof structure, not the cross-aisle (V7).
+    const mirror = new THREE.Group();
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.4, 10), MAT.darkPlastic);
+    pole.position.set(14.8, 1.7, -1.6);
+    const head = new THREE.Group();
+    head.position.set(14.8, 3.55, -1.6);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.75, 28, 12, 0, Math.PI * 2, 0, 0.62), MAT.mirror);
+    dome.rotation.x = Math.PI / 2; // dome faces +z before tilting
+    dome.position.z = -0.6;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.44, 0.04, 8, 28), new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.6 }));
+    rim.position.z = -0.03;
+    const back = new THREE.Mesh(new THREE.CircleGeometry(0.46, 28), MAT.darkPlastic);
+    back.rotation.y = Math.PI;
+    back.position.z = -0.04;
+    head.add(dome, rim, back);
+    // Faces the aisle-north viewpoint but is pitched ~40° up, so it shows the roof.
+    head.rotation.set(-0.7, 2.07, 0, 'YXZ');
+    mirror.add(pole, head);
+    this.scene.add(mirror);
     this._add(mirror, { inspectable: 'hazard-misaligned-mirror', label: 'Convex mirror at the aisle end (misaligned)' });
+    this.inspectables.get('hazard-misaligned-mirror').focus = new THREE.Vector3(14.8, 3.4, -1.6);
 
     // Lighting: dim ambient + 4 high-bay area lights (emissive discs) + one shadow-casting key light
     this.scene.add(new THREE.AmbientLight(0xcfd4da, 0.55));
@@ -313,13 +521,18 @@ export class Warehouse {
     this.scene.add(trailerInterior);
     const trailerFloor = this._box(4.2, 0.12, 1.2, MAT.palletWood, -7, 1.22, -21.2);
     this.scene.add(trailerFloor);
-    const lightBox = this._box(0.35, 0.8, 0.12, MAT.darkPlastic, -4.2, 2.2, -21.6);
-    const red = new THREE.Mesh(new THREE.CircleGeometry(0.11, 16), new THREE.MeshStandardMaterial({ color: 0xff3b2f, emissive: 0xff2a1a, emissiveIntensity: 2.2 }));
-    red.position.set(-4.2, 2.42, -21.53);
-    const green = new THREE.Mesh(new THREE.CircleGeometry(0.11, 16), new THREE.MeshStandardMaterial({ color: 0x1d4d2a, roughness: 0.6 }));
-    green.position.set(-4.2, 1.98, -21.53);
-    this.scene.add(lightBox, red, green);
-    this._add(red, { inspectable: 'hazard-unchocked-trailer', label: 'Open dock door with a trailer and a red dock signal' });
+    // Dock signal housing: a wall-mounted box (0.6 × 1.2 m) with hoods over a lit red
+    // lamp and an unlit green lamp, sized to read from the dock viewpoint (V6).
+    const signal = new THREE.Group();
+    signal.add(this._box(0.6, 1.2, 0.18, MAT.darkPlastic, -4.2, 2.2, -21.55));
+    const red = new THREE.Mesh(new THREE.CircleGeometry(0.19, 20), new THREE.MeshStandardMaterial({ color: 0xff3b2f, emissive: 0xff2a1a, emissiveIntensity: 2.4 }));
+    red.position.set(-4.2, 2.48, -21.45);
+    const green = new THREE.Mesh(new THREE.CircleGeometry(0.19, 20), new THREE.MeshStandardMaterial({ color: 0x1d4d2a, roughness: 0.6 }));
+    green.position.set(-4.2, 1.92, -21.45);
+    for (const y of [2.7, 2.14]) signal.add(this._box(0.46, 0.04, 0.16, MAT.darkPlastic, -4.2, y, -21.38));
+    signal.add(red, green);
+    this.scene.add(signal);
+    this._add(signal, { inspectable: 'hazard-unchocked-trailer', label: 'Open dock door with a trailer and a red dock signal' });
   }
 
   /** Transfer zone: outbound staging lane on the south side (no hints). */
@@ -352,26 +565,36 @@ export class Warehouse {
     }
     cage.position.set(-3, 0, 20.9);
     this.scene.add(cage);
-    const eyewash = this._box(0.5, 0.7, 0.25, MAT.exitGreen, -0.6, 1.4, 21.7);
-    this.scene.add(eyewash);
-    const bottle = this._box(0.12, 0.28, 0.12, MAT.shrinkWrap, -0.6, 1.9, 21.6);
-    this.scene.add(bottle);
+    // Eyewash station: white wall cabinet with a green sign panel above and an empty,
+    // tipped-over wash bottle on top (V14).
+    const station = new THREE.Group();
+    station.add(this._box(0.55, 0.7, 0.22, new THREE.MeshStandardMaterial({ color: 0xeef0f0, roughness: 0.6 }), -0.6, 1.35, 21.75));
+    station.add(this._box(0.5, 0.3, 0.03, MAT.exitGreen, -0.6, 2.05, 21.84));
+    const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.3, 12), new THREE.MeshStandardMaterial({ color: 0xdfe8ee, roughness: 0.3, transparent: true, opacity: 0.45 }));
+    bottle.rotation.z = Math.PI / 2;
+    bottle.position.set(-0.6, 1.78, 21.72);
+    station.add(bottle);
+    cage.add(station);
+    station.position.set(3, 0, -20.9); // cage-local offset back to world placement
     this._add(cage, { inspectable: 't-hazard-charging-block', label: 'Battery bay door and eyewash station' });
 
     // Black-and-yellow striped self-closing gate at the lane entrance (controlled condition).
-    const c = document.createElement('canvas');
-    c.width = 128; c.height = 32;
-    const g = c.getContext('2d');
-    for (let i = -2; i < 10; i++) {
-      g.fillStyle = i % 2 ? '#111111' : '#f2c500';
-      g.beginPath();
-      g.moveTo(i * 16, 32); g.lineTo(i * 16 + 16, 32); g.lineTo(i * 16 + 32, 0); g.lineTo(i * 16 + 16, 0);
-      g.fill();
+    let stripes = null;
+    if (!this.headless) {
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 32;
+      const g = c.getContext('2d');
+      for (let i = -2; i < 10; i++) {
+        g.fillStyle = i % 2 ? '#111111' : '#f2c500';
+        g.beginPath();
+        g.moveTo(i * 16, 32); g.lineTo(i * 16 + 16, 32); g.lineTo(i * 16 + 32, 0); g.lineTo(i * 16 + 16, 0);
+        g.fill();
+      }
+      stripes = new THREE.CanvasTexture(c);
+      stripes.colorSpace = THREE.SRGBColorSpace;
     }
-    const stripes = new THREE.CanvasTexture(c);
-    stripes.colorSpace = THREE.SRGBColorSpace;
     const gate = new THREE.Group();
-    const bar = this._box(2.4, 0.18, 0.08, new THREE.MeshStandardMaterial({ map: stripes, roughness: 0.6 }), 1.2, 1.0, 0);
+    const bar = this._box(2.4, 0.18, 0.08, new THREE.MeshStandardMaterial(stripes ? { map: stripes, roughness: 0.6 } : { color: 0xf2c500, roughness: 0.6 }), 1.2, 1.0, 0);
     const post = this._box(0.12, 1.2, 0.12, MAT.darkPlastic, 0, 0.6, 0);
     gate.add(bar, post);
     gate.position.set(2.6, 0, 11.6);
@@ -472,16 +695,20 @@ export class Warehouse {
     return g;
   }
 
-  /** Camera viewpoints per zone. */
+  /**
+   * Camera viewpoints per zone (yaw 0 looks north, -z; yaw π/2 looks west, -x).
+   * Re-aimed so every inspectable of a zone is in frame from at least one of that
+   * zone's views (visual review V1/V2; asserted in tests/unit/views.test.js).
+   */
   static get VIEWS() {
     return {
-      dock: { pos: [-6, 1.7, 2], yaw: Math.PI, label: 'Receiving dock' },
-      main: { pos: [-12, 1.7, 8], yaw: Math.PI * 1.15, label: 'Main floor' },
-      charging: { pos: [-24, 1.7, 14], yaw: -Math.PI * 0.8, label: 'Charging area' },
-      packing: { pos: [22, 1.7, 18], yaw: -Math.PI * 0.25, label: 'Packing station' },
-      aisleNorth: { pos: [17, 1.7, 0], yaw: -Math.PI / 2, label: 'Aisle, north end' },
-      aisleSouth: { pos: [17, 1.7, 16], yaw: Math.PI / 2, label: 'Aisle, south end' },
-      transfer: { pos: [4, 1.7, -16], yaw: 0, label: 'Transfer zone (staging lane)' },
+      dock: { pos: [-3, 1.7, -6], yaw: 0.15, pitch: -0.12, label: 'Receiving dock' },
+      main: { pos: [-6, 1.7, 8], yaw: 0.82, pitch: -0.12, label: 'Main floor' },
+      charging: { pos: [-20, 1.7, 15], yaw: 0.8, pitch: -0.3, label: 'Charging area' },
+      packing: { pos: [22, 1.7, 18], yaw: -Math.PI * 0.25, pitch: -0.1, label: 'Packing station' },
+      aisleNorth: { pos: [21, 1.7, -5], yaw: 2.72, pitch: 0.08, label: 'Aisle, north end' },
+      aisleSouth: { pos: [17, 1.7, 1], yaw: -Math.PI / 2, pitch: -0.1, label: 'Aisle, west entrance looking east' },
+      transfer: { pos: [2, 1.7, 7], yaw: Math.PI, pitch: -0.12, label: 'Transfer zone (staging lane)' },
     };
   }
 }

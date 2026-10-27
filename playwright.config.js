@@ -2,6 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: '.',
+  testMatch: 'tests/**/*.spec.js', // unit tests (*.test.js) belong to Vitest
   timeout: 60_000,
   retries: 0,
   workers: 1,
