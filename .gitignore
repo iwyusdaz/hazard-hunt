@@ -5,6 +5,15 @@ node_modules/
 dist/
 tmp/
 
+# Generated at build time from content/ (scripts/sync-content.mjs)
+public/content/
+
+# Decoders are copied from the pinned three package by vite-plugin-decoders.js
+public/decoders/
+
+# Security-hook state (local only)
+.mimosa/
+
 # Raw source data (never committed; scripts download it)
 data/raw/
 

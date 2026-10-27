@@ -1,0 +1,84 @@
+{
+  "title": "Near-miss replay: aisle 3, Tuesday, 14:07",
+  "contentNote": "This is a fictional incident constructed for teaching. Nobody is hurt. A content note is shown before the replay.",
+  "segments": [
+    {
+      "id": "seg1",
+      "name": "1. Twenty minutes earlier",
+      "duration": 18,
+      "story": "A pallet is put away badly in aisle 3: the driver is behind schedule and the wrap station is busy, so the pallet goes up leaning and overhanging. The convex mirror at the aisle end was knocked days earlier and now aims at the roof. Nothing happens yet. The causes are already in place.",
+      "camera": { "from": [26, 2.6, 6], "to": [20, 2.2, 4], "target": [22, 2, 8] },
+      "keyframes": {
+        "truck": { "from": [10, 0, 2], "to": [10, 0, 2] },
+        "pedestrian": { "from": [21, 0, 0.5], "to": [21, 0, 0.5] }
+      },
+      "causesVisible": ["condition-overhang", "condition-mirror"]
+    },
+    {
+      "id": "seg2",
+      "name": "2. The moments before",
+      "duration": 16,
+      "story": "A reach truck approaches aisle 3 with a full load. The driver slows at the blind corner and glances at the mirror — which shows the roof, not the aisle. Reassured, the driver enters. At the same time, a picker on foot steps out of the aisle outside the marked lane, trolley first.",
+      "camera": { "from": [8, 1.8, 8], "to": [16, 1.9, 4], "target": [20, 1.5, 1] },
+      "keyframes": {
+        "truck": { "from": [8, 0, 2], "to": [17.5, 0, 2] },
+        "pedestrian": { "from": [23, 0, 2.5], "to": [19.5, 0, 1.2] }
+      },
+      "pausePoints": [
+        {
+          "at": 0.55,
+          "question": "You are the driver, one second into the aisle. What do you notice?",
+          "options": [
+            { "id": "a", "text": "The mirror showed the roof, not the aisle — so the glance gave no information. Stop and reverse.", "correct": true, "why": "Yes. The mirror is the only eye at this blind corner; if it lies, the glance is theater. Stopping restores the decision." },
+            { "id": "b", "text": "Nothing — the aisle was checked in the mirror and looks clear.", "correct": false, "why": "The mirror is misaligned; it shows roof steel. 'I checked' only counts when the check could actually see." },
+            { "id": "c", "text": "The overhanging pallet — swerve around it quickly.", "correct": false, "why": "Swerving at speed toward a pedestrian's side of the aisle increases the harm if contact happens. Slow, stop, and let the pedestrian clear first." }
+          ]
+        }
+      ],
+      "causesVisible": ["behavior-lane", "condition-mirror"]
+    },
+    {
+      "id": "seg3",
+      "name": "3. The near-miss",
+      "duration": 14,
+      "story": "The truck stops with its load about a meter from the overhanging pallet; the pedestrian's trolley clips the pallet's corner. The overhanging cartons slide and fall into the empty aisle — no one is hurt. Two people stand still for a moment, then look at each other.",
+      "camera": { "from": [22, 2.4, 12], "to": [20, 2.0, 10], "target": [20.5, 1.5, 4] },
+      "keyframes": {
+        "truck": { "from": [17.5, 0, 2], "to": [19.6, 0, 2] },
+        "pedestrian": { "from": [19.5, 0, 1.2], "to": [18.2, 0, 0.6] }
+      },
+      "pausePoints": [
+        {
+          "at": 0.7,
+          "question": "Freeze this moment. What should happen next, in order?",
+          "options": [
+            { "id": "a", "text": "Check people are unhurt, make the area safe, then report the near-miss and the overhanging pallet.", "correct": true, "why": "People first, area second, report third. Reporting the near-miss — not just the pallet — is what lets the causes be fixed." },
+            { "id": "b", "text": "Blame the pedestrian for walking outside the lane.", "correct": false, "why": "Person-focused blame stops information flowing. The lane breach is one cause among several, and reporting culture survives on fairness." },
+            { "id": "c", "text": "Carry on — nothing was damaged.", "correct": false, "why": "A near-miss is a free lesson about a hole in the system. Skipping the report keeps the holes." }
+          ]
+        }
+      ],
+      "causesVisible": ["condition-overhang", "behavior-lane", "condition-mirror"]
+    },
+    {
+      "id": "seg4",
+      "name": "4. Aftermath and report",
+      "duration": 15,
+      "story": "The team leader cordons the aisle. The report names three causes: a put-away step that allows overhang when the wrap station is busy (system), a mirror nobody owns checking (system), and a picker cutting the corner outside the lane (behavior). The fix list puts engineering and system fixes first — the hierarchy of controls in action.",
+      "camera": { "from": [16, 2.2, 14], "to": [14, 2.6, 10], "target": [19, 1.2, 5] },
+      "keyframes": {
+        "truck": { "from": [19.6, 0, 2], "to": [19.6, 0, 2] },
+        "pedestrian": { "from": [18.2, 0, 0.6], "to": [16, 0, 4] }
+      },
+      "pausePoints": [],
+      "causesVisible": ["condition-overhang", "behavior-lane", "condition-mirror", "system-wrap", "system-mirror-check"]
+    }
+  ],
+  "causes": [
+    { "id": "condition-overhang", "level": "condition", "label": "Pallet overhanging the beam", "why": "The state of the workplace: put away badly, visible to anyone who looks up." },
+    { "id": "condition-mirror", "level": "condition", "label": "Misaligned convex mirror", "why": "A control that silently stopped working; nobody had a check that would notice." },
+    { "id": "behavior-lane", "level": "behavior", "label": "Walking outside the marked lane", "why": "A person's choice in the moment — shaped by shortcuts, layout, and example." },
+    { "id": "system-wrap", "level": "system", "label": "Put-away allowed with overhang when busy", "why": "The process made the unsafe state the easy state. Fix the system, not just the symptom." },
+    { "id": "system-mirror-check", "level": "system", "label": "No owner or schedule for mirror checks", "why": "Controls decay without a named owner. 'Whose job was the mirror?' has no answer here." }
+  ]
+}

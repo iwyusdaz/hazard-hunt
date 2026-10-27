@@ -1,0 +1,61 @@
+{
+  "note": "Fictional branching scenario, constructed for teaching. The structured report model: Situation, Hazard, Impact, Ask (SHIA).",
+  "start": "start",
+  "nodes": {
+    "start": {
+      "speaker": "Scene",
+      "line": "End of shift. Grace, the team lead, is at her desk with two radios going and a truck waiting at the dock. You saw the blocked fire exit in the east staging area twenty minutes ago and it is still blocked.",
+      "options": [
+        { "id": "1", "text": "Wait — she is busy. Someone else will spot it; the fire marshal walks the floor on Thursdays anyway.", "to": "avoid", "quality": "poor" },
+        { "id": "2", "text": "Walk up, wait for her to finish a call, then report: situation, hazard, impact, and a clear ask.", "to": "good-report", "quality": "strong" },
+        { "id": "3", "text": "Call out over the noise from the doorway: 'Grace! Fire exit's blocked! Fix it!'", "to": "blunt", "quality": "mixed" }
+      ]
+    },
+    "good-report": {
+      "speaker": "You",
+      "line": "\"Grace — got a minute for a safety report? Situation: the east staging fire exit has two pallets in front of it, there since about 15:40. Hazard: blocked exit route. Impact: if we need that door during tonight's dock work, two pallets of cartons are in the way. Ask: can we move them now and I'll log it?\"",
+      "options": [
+        { "id": "1", "text": "She says: 'Good report. Take the pallet jack — I'll log it. Which exit exactly?' You answer precisely, and the exit is clear in five minutes.", "to": "outcome-strong", "quality": "strong" }
+      ]
+    },
+    "blunt": {
+      "speaker": "You",
+      "line": "\"Grace! Fire exit's blocked! Fix it!\"",
+      "options": [
+        { "id": "1", "text": "She looks up: 'Which exit? How long? Blocked by what?' She has to stop everything to dig for the basics — the report took longer than it needed, and the tone puts her on the back foot.", "to": "blunt-followup", "quality": "mixed" }
+      ]
+    },
+    "blunt-followup": {
+      "speaker": "Grace",
+      "line": "\"Okay — east staging, two pallets, there since when? ... Fine. Next time: one minute, the facts, and what you need from me. Now let's move them.\"",
+      "options": [
+        { "id": "1", "text": "The exit gets cleared, but the report was slower and harder for both of you than it needed to be.", "to": "outcome-mixed", "quality": "mixed" }
+      ]
+    },
+    "avoid": {
+      "speaker": "Scene",
+      "line": "The shift ends. The pallets are still there. Nothing happens tonight — and the near-miss log for this month will show nothing, because nobody reported it.",
+      "options": [
+        { "id": "1", "text": "The hazard stays. The silence also teaches everyone that reporting is optional.", "to": "outcome-poor", "quality": "poor" }
+      ]
+    },
+    "outcome-strong": {
+      "outcome": "strong",
+      "speaker": "Debrief",
+      "line": "Strong report. You led with the situation, named the hazard and the impact, and made one specific ask. Busy people can act on that in seconds — and the written log now has a timestamp, a location, and an owner.",
+      "options": []
+    },
+    "outcome-mixed": {
+      "outcome": "mixed",
+      "speaker": "Debrief",
+      "line": "The hazard got reported — that matters. But the structure was missing: she had to ask for every fact. Under time pressure, structure is what keeps reports fast and complete.",
+      "options": []
+    },
+    "outcome-poor": {
+      "outcome": "poor",
+      "speaker": "Debrief",
+      "line": "Not reporting is a decision too — it just never looks like one. The exit stayed blocked, the log stays empty, and the pattern that blocks exits continues.",
+      "options": []
+    }
+  }
+}

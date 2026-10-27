@@ -1,0 +1,17 @@
+{
+  "id": "hh-intro",
+  "title": "Shift start",
+  "shots": [
+    {
+      "id": "S1",
+      "purpose": "orient",
+      "duration": 14,
+      "easing": "easeInOut",
+      "path": [[-24, 2.2, 6], [-14, 1.9, 4], [-4, 1.8, 2]],
+      "target": [4, 1.2, -6],
+      "captions": ["Shift start at Northwind Logistics (fictional). The floor looks routine.", "You walk this route every day. That is exactly why the next 45 minutes matter."],
+      "description": "The camera moves at head height from the charging area along the main walkway toward the receiving dock. High-bay lights, racking on both sides, a parked truck at the aisle end. Caption 1: Shift start at Northwind Logistics (fictional). The floor looks routine. Caption 2: You walk this route every day. That is exactly why the next 45 minutes matter.",
+      "reducedMotion": "Single still frame of the dock with both captions."
+    }
+  ]
+}
