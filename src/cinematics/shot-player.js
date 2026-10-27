@@ -62,7 +62,7 @@ export class ShotPlayer {
     this.index++;
     if (this.index >= this.shots.length) return this._finish();
     const shot = this.shots[this.index];
-    this.progress.textContent = `Shot ${this.index + 1} of ${this.shots.length} — purpose: ${shot.purpose}`;
+    this.progress.textContent = `Shot ${this.index + 1} of ${this.shots.length}`;
     this.caption.textContent = shot.captions?.join(' ') || '';
     this.desc.textContent = shot.description || '';
     this._t = 0;

@@ -7,17 +7,20 @@
 import { announce } from '../a11y/announcer.js';
 
 export function scoreRanking(task, order) {
-  // Kendall tau-lite: count adjacent-inversions vs the correct order.
-  const correct = task.correctOrder;
-  const pos = Object.fromEntries(correct.map((id, i) => [id, i]));
+  // Scored by hierarchy tier (expert review S3): only pairs from DIFFERENT tiers that
+  // are out of hierarchy order count; any order within one tier is accepted.
+  const HIER = ['elimination', 'substitution', 'engineering', 'administrative', 'ppe'];
+  const rank = (id) => HIER.indexOf(task.controls.find((c) => c.id === id).kind);
   let inversions = 0;
+  let maxInv = 0;
   for (let i = 0; i < order.length; i++) {
     for (let j = i + 1; j < order.length; j++) {
-      if (pos[order[i]] > pos[order[j]]) inversions++;
+      if (rank(order[i]) === rank(order[j])) continue;
+      maxInv++;
+      if (rank(order[i]) > rank(order[j])) inversions++;
     }
   }
-  const maxInv = (order.length * (order.length - 1)) / 2;
-  const accuracy = 1 - inversions / maxInv;
+  const accuracy = maxInv ? 1 - inversions / maxInv : 1;
   const tiers = order.map((id) => task.controls.find((c) => c.id === id).kind);
   return { inversions, accuracy, tiers, perfect: inversions === 0 };
 }
@@ -89,8 +92,14 @@ export class ControlsActivity {
       const fb = document.createElement('div');
       fb.className = 'feedback';
       const tiers = result.tiers.map((t) => this.data.hierarchyLabels[t].split('—')[0].trim()).join(' → ');
-      fb.innerHTML = `<p><strong>${result.perfect ? 'Exactly the hierarchy order.' : 'Close — compare your order with the hierarchy.'}</strong></p>
-        <p>Your tiers, most → least effective: ${tiers}.</p><p>${task.why}</p>`;
+      const verdict = result.perfect ? 'Your order follows the hierarchy.'
+        : `${result.accuracy >= 0.75 ? 'Close' : 'Not yet'}: ${result.inversions} pair(s) out of hierarchy order.`;
+      const ref = task.correctOrder.map((id) => {
+        const ctrl = task.controls.find((x) => x.id === id);
+        return `<li>${ctrl.text} <em>(${this.data.hierarchyLabels[ctrl.kind].split('—')[0].trim()})</em></li>`;
+      }).join('');
+      fb.innerHTML = `<p><strong>${verdict}</strong></p>
+        <p>Your tiers, most → least effective: ${tiers}.</p><p>A reference order (any order within one tier is also correct):</p><ol>${ref}</ol><p>${task.why}</p>`;
       c.appendChild(fb);
       submit.disabled = true;
       announce(result.perfect ? 'Perfect ranking' : 'Ranking submitted, feedback shown');

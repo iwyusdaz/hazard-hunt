@@ -3,44 +3,221 @@
     {
       "id": "practice",
       "name": "Practice zone: receiving, main floor and charging area",
-      "views": ["dock", "main", "charging"],
+      "views": [
+        "dock",
+        "main",
+        "charging"
+      ],
       "hints": true,
       "inspectables": [
-        { "id": "hazard-spill", "area": "Receiving floor, between dock doors and the racks", "kind": "hazard", "cue": "A dark, glossy patch about two meters across on the concrete; the surrounding floor is matte. The sheen catches the high-bay lights.", "label": "Oil or fluid spill", "likelihood": 3, "severity": 4, "why": "A spill on a walking route is a classic slip hazard: moderate likelihood (traffic is high) and high severity (head and back injuries are common in same-level falls). Immediate control: cordon and clean; higher-level control: fix the leaking truck or container that caused it.", "hintWarm": "Look down where people walk, not at the racks." },
-        { "id": "hazard-unchocked-trailer", "area": "Receiving dock, trailer at the open door", "kind": "hazard", "cue": "A trailer is backed up to an open dock door. The dock signal beside the door shows red, meaning the trailer is not secured to the dock.", "label": "Unchocked trailer at the dock", "likelihood": 2, "severity": 5, "why": "A trailer that creeps away from the dock while a truck drives in can drop the truck to the ground: rare, but potentially fatal. Before anyone drives onto it, the trailer should be secured to the dock and the signal should show green. Better control: a vehicle restraint interlocked with the dock door (engineering), so the door can't open until the trailer is held.", "hintWarm": "Look at the wheels of the trailer at the open door." },
-        { "id": "hazard-trip-hose", "area": "Main floor walkway, near the yellow lines", "kind": "hazard", "cue": "A dark hose is stretched diagonally across the marked pedestrian walkway, low to the ground.", "label": "Hose across the walkway", "likelihood": 4, "severity": 3, "why": "Anything across a marked walkway trips people whose eyes are up (listening for trucks). High likelihood, medium severity. Control: route hoses overhead or through ramps (engineering), not 'watch your step' signs.", "hintWarm": "Follow the yellow line from the dock. Is it clear the whole way?" },
-        { "id": "hazard-frayed-cable", "area": "Charging area, charger on the west wall", "kind": "hazard", "cue": "Where the charging cable meets the plug, the insulation is split and three strands poke out at an angle.", "label": "Frayed charging cable", "likelihood": 2, "severity": 5, "why": "Damaged insulation on a forklift-charging circuit risks electric shock and arc flash, and charging areas are occupied during shift changes. Lower likelihood, very high severity. Control: take the charger out of service and replace the cable; interim: lockout and a tag.", "hintWarm": "Look closely at the ends of the charging cable, where it bends." },
-        { "id": "distractor-ramped-cable", "area": "Charging area, floor next to the charger", "kind": "distractor", "cue": "A cable lies on the floor, but it passes through a yellow rubber cable ramp that covers it.", "label": "Ramped charging cable", "why": "Looks like a trip risk, but the cable is protected by a proper cable ramp and sits outside the marked walkway. Controlled condition — no action needed beyond keeping the ramp seated." },
-        { "id": "distractor-secured-stack", "area": "Receiving dock, tall pallet stack", "kind": "distractor", "cue": "A pallet stack about three meters tall of cartons, fully wrapped in clear shrink wrap and squared on the pallet.", "label": "Wrapped tall pallet stack", "why": "Height looks alarming, but the load is shrink-wrapped to the pallet and squared, so cartons cannot slide. Controlled condition — this is how tall stacks are supposed to look." },
-        { "id": "neutral-parked-truck", "area": "Charging area, parked reach truck", "kind": "neutral", "cue": "A reach truck is parked beside the charging area, mast lowered, keys removed (a red card on the cab shows lockout).", "label": "Parked reach truck", "why": "A parked truck with the mast down and keys controlled is not itself a hazard to flag during a walk-through; its movement patterns matter in the incident replay instead." }
+        {
+          "id": "hazard-spill",
+          "area": "Receiving floor, between dock doors and the racks",
+          "kind": "hazard",
+          "cue": "A dark, glossy patch about two meters across on the concrete; the surrounding floor is matte. The sheen catches the high-bay lights.",
+          "label": "Oil or fluid spill",
+          "likelihood": 3,
+          "severity": 4,
+          "why": "A spill on a walking route is a classic slip hazard: moderate likelihood (traffic is high) and high severity (head and back injuries are common in same-level falls). Immediate control: cordon and clean; higher-level control: fix the leaking truck or container that caused it.",
+          "hintWarm": "Look down where people walk, not at the racks."
+        },
+        {
+          "id": "hazard-unchocked-trailer",
+          "area": "Receiving dock, trailer at the open door",
+          "kind": "hazard",
+          "cue": "A trailer is backed up to an open dock door. The dock signal beside the door shows red, meaning the trailer is not secured to the dock.",
+          "label": "Trailer not secured at the dock",
+          "likelihood": 2,
+          "severity": 5,
+          "why": "A trailer that creeps away from the dock while a truck drives in can drop the truck to the ground: rare, but potentially fatal. Before anyone drives onto it, the trailer should be secured to the dock and the signal should show green. Better control: a vehicle restraint interlocked with the dock door (engineering), so the door can't open until the trailer is held.",
+          "hintWarm": "Look at the signal light beside the open dock door."
+        },
+        {
+          "id": "hazard-trip-hose",
+          "area": "Main floor walkway, near the yellow lines",
+          "kind": "hazard",
+          "cue": "A dark hose is stretched diagonally across the marked pedestrian walkway, low to the ground.",
+          "label": "Hose across the walkway",
+          "likelihood": 4,
+          "severity": 3,
+          "why": "Anything across a marked walkway trips people whose eyes are up (listening for trucks). High likelihood, medium severity. Control: route hoses overhead or through ramps (engineering), not 'watch your step' signs.",
+          "hintWarm": "Follow the yellow line from the dock. Is it clear the whole way?"
+        },
+        {
+          "id": "hazard-frayed-cable",
+          "area": "Charging area, charger on the west wall",
+          "kind": "hazard",
+          "cue": "Where the charging cable meets the plug, the insulation is split and three strands poke out at an angle.",
+          "label": "Frayed charger supply cable",
+          "likelihood": 2,
+          "severity": 5,
+          "why": "Damaged insulation on the charger's mains supply cable risks electric shock, and charging areas are occupied during shift changes. Lower likelihood, very high severity. Control: take the charger out of service and replace the cable; interim: lockout and a tag.",
+          "hintWarm": "Look closely at the ends of the charging cable, where it bends."
+        },
+        {
+          "id": "distractor-ramped-cable",
+          "area": "Charging area, floor next to the charger",
+          "kind": "distractor",
+          "cue": "A cable lies on the floor, but it passes through a yellow rubber cable ramp that covers it.",
+          "label": "Ramped charging cable",
+          "why": "Looks like a trip risk, but the cable is protected by a proper cable ramp and sits outside the marked walkway. Controlled condition — no action needed beyond keeping the ramp seated."
+        },
+        {
+          "id": "distractor-secured-stack",
+          "area": "Receiving dock, tall pallet stack",
+          "kind": "distractor",
+          "cue": "A pallet stack about three meters tall of cartons, fully wrapped in clear shrink wrap and squared on the pallet.",
+          "label": "Wrapped tall pallet stack",
+          "why": "Height looks alarming, but the load is shrink-wrapped to the pallet and squared, so cartons cannot slide. Controlled condition — this is how tall stacks are supposed to look."
+        },
+        {
+          "id": "neutral-parked-truck",
+          "area": "Charging area, parked reach truck",
+          "kind": "neutral",
+          "cue": "A reach truck is parked beside the charging area, mast lowered, keys removed (a red card on the cab shows lockout).",
+          "label": "Parked reach truck",
+          "why": "A parked truck with the mast down and keys controlled is not itself a hazard to flag during a walk-through; its movement patterns matter in the incident replay instead."
+        }
       ]
     },
     {
       "id": "assessed",
       "name": "Assessed zone: racking aisle and packing station",
-      "views": ["aisleNorth", "aisleSouth", "packing"],
+      "views": [
+        "aisleNorth",
+        "aisleSouth",
+        "packing"
+      ],
       "hints": false,
       "inspectables": [
-        { "id": "hazard-overhang", "area": "Aisle, east rack row, second beam level", "kind": "hazard", "cue": "One pallet juts past the front edge of the beam, rotated slightly, overhanging the aisle by roughly half a meter.", "label": "Pallet overhanging the beam", "likelihood": 3, "severity": 4, "why": "An overhanging pallet sits at head height for a driver and can be struck or dropped by the next truck through the aisle. The incident replay starts exactly here. Control: restack now, and retrain the put-away step plus a rack-inspection routine.", "hintCold": "Compare each pallet's front edge with its beam." },
-        { "id": "hazard-damaged-upright", "area": "Aisle, south rack row, first upright", "kind": "hazard", "cue": "One blue rack upright is bent inward at mid-height and the paint has scuffed to bare orange metal at the impact point.", "label": "Bent rack upright", "likelihood": 2, "severity": 5, "why": "A damaged upright can collapse under load with no warning; racking failures are catastrophic. It must be offloaded and repaired by a qualified person. Control: engineer it — column guards and barrier railing at aisle ends reduce recurrence.", "hintCold": "Stand back and sight along each upright: straight lines hide dents less well." },
-        { "id": "hazard-blocked-exit", "area": "East wall fire exit", "kind": "hazard", "cue": "Two pallets of cartons are staged directly in front of a green exit sign and door.", "label": "Blocked fire exit", "likelihood": 3, "severity": 5, "why": "OSHA's powered-industrial-truck standard (1910.178) requires fire aisles and access to fire equipment to be kept clear; a blocked exit is low-frequency but fatal when needed. Control: marked staging areas (engineering the layout) plus a housekeeping standard.", "hintCold": "Check every green sign. Can a person reach each one without climbing?" },
-        { "id": "hazard-misaligned-mirror", "area": "Aisle, north end, pole-mounted convex mirror", "kind": "hazard", "cue": "The convex mirror at the blind corner is aimed at the ceiling structure, not the cross-aisle it should reflect.", "label": "Misaligned convex mirror", "likelihood": 3, "severity": 3, "why": "A mirror aimed at nothing gives false confidence at a blind corner — drivers believe they have checked when they have not. This is a maintenance-system issue as much as a training one; see the 'Is it training?' page.", "hintCold": "What should each mirror show, and what does it actually show?" },
-        { "id": "hazard-missing-guard", "area": "Packing bench, cutting machine, near side", "kind": "hazard", "cue": "The cutting machine's orange guard rail is missing on the operator side; the far side still has its guard.", "label": "Missing machine guard", "likelihood": 3, "severity": 4, "why": "An unguarded cutting edge at a busy bench risks lacerations and amputations. Interim control: tag out. Better: interlocked guard (engineering) so the machine cannot run unprotected.", "hintCold": "Compare the two sides of the machine." },
-        { "id": "hazard-leaning-stack", "area": "Aisle, south rack row, top level", "kind": "hazard", "cue": "A carton stack on the top beam leans about 12 degrees off vertical, unwrapped.", "label": "Leaning unwrapped stack", "likelihood": 3, "severity": 3, "why": "Unwrapped cartons leaning on a high beam fall into the aisle or onto a truck. Control: restack and re-band; the deeper fix is the put-away quality check that let it leave the wrap station.", "hintCold": "Look at verticals: pallet edges, uprights, box corners." },
-        { "id": "distractor-guarded-machine", "area": "Packing bench, cutting machine, far side", "kind": "distractor", "cue": "The far side of the same machine has its orange guard rail fitted and closed.", "label": "Guarded side of the machine", "why": "The exposed-looking blade area on this side is behind a fixed guard. A machine that looks dangerous but is guarded is a controlled condition — the inspection question is whether every side is guarded." },
-        { "id": "neutral-empty-aisle-end", "area": "Aisle, floor between the rack rows", "kind": "neutral", "cue": "The aisle floor between the rack rows is clear: nothing stored or spilled on it.", "label": "Clear aisle floor", "why": "Not everything in a busy warehouse is wrong. Knowing what is acceptable keeps reporting credible." }
+        {
+          "id": "hazard-overhang",
+          "area": "Aisle, east rack row, second beam level",
+          "kind": "hazard",
+          "cue": "One pallet juts past the front edge of the beam, rotated slightly, overhanging the aisle by roughly half a meter.",
+          "label": "Pallet overhanging the beam",
+          "likelihood": 3,
+          "severity": 4,
+          "why": "An overhanging pallet sits at head height for a driver and can be struck or dropped by the next truck through the aisle. The incident replay starts exactly here. Control: restack now, and retrain the put-away step plus a rack-inspection routine.",
+          "hintCold": "Compare each pallet's front edge with its beam."
+        },
+        {
+          "id": "hazard-damaged-upright",
+          "area": "Aisle, south rack row, first upright",
+          "kind": "hazard",
+          "cue": "One blue rack upright is bent inward at mid-height and the paint has scuffed to bare orange metal at the impact point.",
+          "label": "Bent rack upright",
+          "likelihood": 2,
+          "severity": 5,
+          "why": "A damaged upright can collapse under load with no warning; racking failures are catastrophic. It must be offloaded and repaired by a qualified person. Control: engineer it — column guards and barrier railing at aisle ends reduce recurrence.",
+          "hintCold": "Stand back and sight along each upright: straight lines hide dents less well."
+        },
+        {
+          "id": "hazard-blocked-exit",
+          "area": "East wall fire exit",
+          "kind": "hazard",
+          "cue": "Two pallets of cartons are staged directly in front of a green exit sign and door.",
+          "label": "Blocked fire exit",
+          "likelihood": 3,
+          "severity": 5,
+          "why": "Exit routes must be kept free and unobstructed; US OSHA's exit-route rule (29 CFR 1910.37(a)(3)) says no materials or equipment may be placed in them, even temporarily. A blocked exit is low-frequency but fatal when it is needed. Control: marked staging areas (engineering the layout) plus a housekeeping standard.",
+          "hintCold": "Check every green sign. Can a person reach each one without climbing?"
+        },
+        {
+          "id": "hazard-misaligned-mirror",
+          "area": "Aisle, north end, pole-mounted convex mirror",
+          "kind": "hazard",
+          "cue": "The convex mirror at the blind corner is aimed at the ceiling structure, not the cross-aisle it should reflect.",
+          "label": "Misaligned convex mirror",
+          "likelihood": 3,
+          "severity": 3,
+          "why": "A mirror aimed at nothing gives false confidence at a blind corner — drivers believe they have checked when they have not. This is a maintenance-system issue as much as a training one; see the 'Is it training?' page.",
+          "hintCold": "What should each mirror show, and what does it actually show?"
+        },
+        {
+          "id": "hazard-missing-guard",
+          "area": "Packing bench, cutting machine, near side",
+          "kind": "hazard",
+          "cue": "The cutting machine's orange guard rail is missing on the operator side; the far side still has its guard.",
+          "label": "Missing machine guard",
+          "likelihood": 3,
+          "severity": 5,
+          "why": "An unguarded cutting edge at a busy bench risks lacerations and amputations. Interim control: tag out. Better: interlocked guard (engineering) so the machine cannot run unprotected.",
+          "hintCold": "Compare the two sides of the machine."
+        },
+        {
+          "id": "hazard-leaning-stack",
+          "area": "Aisle, south rack row, top level",
+          "kind": "hazard",
+          "cue": "A carton stack on the top beam leans about 12 degrees off vertical, unwrapped.",
+          "label": "Leaning unwrapped stack",
+          "likelihood": 3,
+          "severity": 3,
+          "why": "Unwrapped cartons leaning on a high beam fall into the aisle or onto a truck. Control: restack and re-band; the deeper fix is the put-away quality check that let it leave the wrap station.",
+          "hintCold": "Look at verticals: pallet edges, uprights, box corners."
+        },
+        {
+          "id": "distractor-guarded-machine",
+          "area": "Packing bench, cutting machine, far side",
+          "kind": "distractor",
+          "cue": "The far side of the same machine has its orange guard rail fitted and closed.",
+          "label": "Guarded side of the machine",
+          "why": "The exposed-looking blade area on this side is behind a fixed guard. A machine that looks dangerous but is guarded is a controlled condition — the inspection question is whether every side is guarded."
+        },
+        {
+          "id": "neutral-empty-aisle-end",
+          "area": "Aisle, floor between the rack rows",
+          "kind": "neutral",
+          "cue": "The aisle floor between the rack rows is clear: nothing stored or spilled on it.",
+          "label": "Clear aisle floor",
+          "why": "Not everything in a busy warehouse is wrong. Knowing what is acceptable keeps reporting credible."
+        }
       ]
     },
     {
       "id": "transfer",
       "name": "Transfer zone: outbound staging lane (no hints)",
-      "views": ["transfer"],
+      "views": [
+        "transfer"
+      ],
       "hints": false,
       "inspectables": [
-        { "id": "t-hazard-straddle-load", "area": "Staging lane, over the walkway", "kind": "hazard", "cue": "A pallet in the staging lane is stacked so high the driver cannot see over it, and it is parked straddling the yellow walkway line.", "label": "Loaded truck straddling the walkway", "likelihood": 4, "severity": 4, "why": "Both an obstructed-view vehicle and a blocked walkway: pedestrians must pass around a machine they cannot see the operator of. Control: keep the staging lane clear of the walkway (layout) and require high-load travel in reverse where vision is blocked." },
-        { "id": "t-hazard-charging-block", "area": "Staging lane, battery bay door", "kind": "hazard", "cue": "The battery-change bay door is blocked by a wheeled cage, and the eyewash station beside it has an empty wash bottle on top.", "label": "Blocked battery bay and neglected eyewash", "likelihood": 2, "severity": 5, "why": "Emergency equipment that is unreachable or unmaintained fails exactly when needed; 1910.178(g) expects charging areas to be equipped and kept serviceable. Control: weekly emergency-equipment check owned by a named role." },
-        { "id": "t-distractor-striped-gate", "area": "Staging lane entrance", "kind": "distractor", "cue": "A black-and-yellow striped swing gate partially closes the lane entrance.", "label": "Striped swing gate at the lane entrance", "why": "Stripes read as 'danger', but a self-closing gate at a vehicle route is a control, not a hazard — it separates pedestrians from trucks." },
-        { "id": "t-neutral-clear-line", "area": "Staging lane, walkway", "kind": "neutral", "cue": "The yellow walkway through the staging lane is clear and unbroken except at the gate.", "label": "Clear walkway", "why": "A correct condition: no action needed." }
+        {
+          "id": "t-hazard-straddle-load",
+          "area": "Staging lane, over the walkway",
+          "kind": "hazard",
+          "cue": "A pallet in the staging lane is stacked so high the driver cannot see over it, and it is parked straddling the yellow walkway line.",
+          "label": "Loaded truck straddling the walkway",
+          "likelihood": 4,
+          "severity": 4,
+          "why": "Both an obstructed-view vehicle and a blocked walkway: pedestrians must pass around a machine they cannot see the operator of. Control: keep the staging lane clear of the walkway (layout) and require high-load travel in reverse where vision is blocked."
+        },
+        {
+          "id": "t-hazard-charging-block",
+          "area": "Staging lane, battery bay door",
+          "kind": "hazard",
+          "cue": "The battery-change bay door is blocked by a wheeled cage, and the eyewash station beside it has an empty wash bottle on top.",
+          "label": "Blocked battery bay and neglected eyewash",
+          "likelihood": 2,
+          "severity": 5,
+          "why": "Emergency equipment that is unreachable or unmaintained fails exactly when it is needed. Where people can be splashed by corrosive battery electrolyte, US OSHA (29 CFR 1910.151(c)) expects quick-drenching or eye-flushing facilities in the work area. Control: a weekly emergency-equipment check owned by a named role."
+        },
+        {
+          "id": "t-distractor-striped-gate",
+          "area": "Staging lane entrance",
+          "kind": "distractor",
+          "cue": "A black-and-yellow striped swing gate partially closes the lane entrance.",
+          "label": "Striped swing gate at the lane entrance",
+          "why": "Stripes read as 'danger', but a self-closing gate at a vehicle route is a control, not a hazard — it separates pedestrians from trucks."
+        },
+        {
+          "id": "t-neutral-clear-line",
+          "area": "Staging lane, walkway",
+          "kind": "neutral",
+          "cue": "The yellow walkway through the staging lane is clear and unbroken except at the gate.",
+          "label": "Clear walkway",
+          "why": "A correct condition: no action needed."
+        }
       ]
     }
   ]

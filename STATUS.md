@@ -7,7 +7,7 @@ Last updated: 2026-10-27
 | Item | Status |
 |---|---|
 | Hazard catalog complete with cues, ratings and sources | done — `content/zones.json` (12 hazards, 4 distractors, 3 neutral; unit-tested counts); sources in `research/sources.md` |
-| All hunt hazards and distractors work on every preset and in text mode | partly — text mode: done (functional tests). 3D: every item exists as a selectable object (unit test); per-preset legibility check pending the agent visual review |
+| All hunt hazards and distractors work on every preset and in text mode | done (agent review) for framing and picking — every item is in frame from one of its zone's views and pickable (`tests/unit/views.test.js`); cue models revised (DECISIONS R4). Per-preset legibility re-check after the revisions: Medium only (`evaluation/results/revisions/`); Low/High/Ultra not re-shot |
 | Replay pauses, scrubber and causes builder work by keyboard | done — buttons and a range input; decisions tested in the text flow |
 | Disclaimer present; no compliance claims | done — README, Module 1, showcase.json summary, manager guide |
 | Every speak-up branch reachable | done — unit test (graph) + browser test (all three outcomes) |
@@ -18,7 +18,8 @@ Last updated: 2026-10-27
 ## Other required work
 | Item | Status |
 |---|---|
-| Agent reviews (heuristics, walkthrough, multimedia, realism/cinematics, accessibility, expert-style, visual) + ≥ 5 revisions | pending |
+| Agent reviews (heuristics, walkthrough, multimedia, realism/cinematics, accessibility, expert-style, visual) + ≥ 5 revisions | done (agent review) — 7 reports in `evaluation/reviews/`; 17 revisions logged in `DECISIONS.md` (R1–R17) |
+| Review findings still open | V10/V11 High/Ultra presets still differ from Medium only in shadow-map size (AO/SMAA/texture size not wired; time box). R6/V15 replay cameras not re-framed on their causes; R8 S1 captions not timed; A6 reduced-motion S1 still auto-advances; A8 pre-check `radiogroup` of buttons; A11 POI list not grouped by zone; H-7/L7 causes chart and "Is it training?" are read-only tables; H-9 re-rating overwrites; H-10 hints static; L6 45-minute duration still an estimate; S7 SHIA model not sourced; Mayer: no worked rating example, modal dialog covers the object, 15 forms on one text page. All were lower priority than the critical/major items fixed within the ~50-minute revision time box |
 | Captioned trailer ≤ 60 s | pending |
 | Guidepup VoiceOver logs | not possible in this run (macOS permission dialogs); ariaSnapshot fallback used. See `../SYSTEM-CHANGES.md` |
 | Learner and real-device testing | not possible (no learners, no physical phones) — templates in `evaluation/human-protocol/` |

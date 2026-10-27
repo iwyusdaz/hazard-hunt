@@ -1,6 +1,6 @@
 /**
  * Settings dialog (shared template): quality preset, text size, contrast, captions,
- * reduced motion, FOV comfort, separate volume controls + mute. Slug-prefixed persistence.
+ * reduced motion and FOV comfort. The course has no audio, so there are no volume controls. Slug-prefixed persistence.
  * @module ui/settings
  */
 import { openDialog, closeDialog } from '../a11y/focus.js';
@@ -17,7 +17,7 @@ export class Settings {
   }
 
   _load() {
-    const d = { textSize: 'normal', contrast: 'normal', captions: true, volumeMaster: 0.8, volumeVoice: 1.0, volumeAmbient: 0.6, muted: false, fov: 60 };
+    const d = { textSize: 'normal', contrast: 'normal', captions: true, volumeMaster: 0.8, volumeVoice: 1.0, volumeAmbient: 0.6, muted: false, fov: 65 };
     try { Object.assign(d, JSON.parse(localStorage.getItem(`${this.slug}:settings`) || '{}')); } catch { /* ignore */ }
     return d;
   }
@@ -61,11 +61,7 @@ export class Settings {
         </fieldset>
         <fieldset>
           <legend>Audio and captions</legend>
-          <label><input type="checkbox" id="set-captions" ${this.state.captions ? 'checked' : ''}> Captions on</label>
-          <label><input type="checkbox" id="set-muted" ${this.state.muted ? 'checked' : ''}> Mute all audio</label>
-          <label>Master volume <input type="range" id="set-vol-master" min="0" max="1" step="0.05" value="${this.state.volumeMaster}"></label>
-          <label>Voice volume <input type="range" id="set-vol-voice" min="0" max="1" step="0.05" value="${this.state.volumeVoice}"></label>
-          <label>Ambient volume <input type="range" id="set-vol-ambient" min="0" max="1" step="0.05" value="${this.state.volumeAmbient}"></label>
+          <p>This course has no audio. All speech and story text is on screen, and captions are always shown.</p>
         </fieldset>
         <fieldset>
           <legend>Motion</legend>
@@ -87,11 +83,6 @@ export class Settings {
       if (this.quality) { const v = $('select#set-quality').value; if (v !== this.quality.name) this.quality.set(v); }
       this.state.textSize = $('select#set-textsize').value;
       this.state.contrast = $('select#set-contrast').value;
-      this.state.captions = $('input#set-captions').checked;
-      this.state.muted = $('input#set-muted').checked;
-      this.state.volumeMaster = parseFloat($('input#set-vol-master').value);
-      this.state.volumeVoice = parseFloat($('input#set-vol-voice').value);
-      this.state.volumeAmbient = parseFloat($('input#set-vol-ambient').value);
       this.state.fov = parseFloat($('input#set-fov').value);
       if (this.motion) this.motion.setToggle($('input#set-motion').checked);
       this.save();

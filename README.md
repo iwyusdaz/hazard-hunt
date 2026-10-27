@@ -1,4 +1,4 @@
-> **Evaluation status:** Automated functional, accessibility and performance testing is complete. Agent-based design reviews are in progress (see `STATUS.md`). No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
+> **Evaluation status:** Automated functional, accessibility and performance testing plus agent-based design reviews are complete. No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
 
 # Hazard Hunt + Incident Replay
 
@@ -38,7 +38,7 @@ Analysis → design → build → evaluate.
 | 2. Practice hunt | Find and rate hazards in the receiving, main floor and charging areas, with hints. Some items only *look* risky. | Formative: likelihood × severity rating per item, with "why" feedback |
 | 3. Incident replay | A learner-paced near-miss in four segments, with pause-and-decide points and a contributing-causes chart (condition / behavior / system) | Decision items at each pause |
 | 4. Fix it | Rank candidate controls for three hazards using the hierarchy of controls, then an "Is it training?" reflection | Ranking scored against the hierarchy |
-| 5. Speak up + transfer | Report a blocked fire exit to a busy supervisor (branching scenario), then a new zone with no hints | Branch outcome, transfer hunt, reflection |
+| 5. Speak up + transfer | Report a blocked fire exit to a busy supervisor (branching scenario), then a new zone with no hints | Branch outcome, transfer hunt, written reflection (not graded), post-check and a summary with pre/post scores |
 
 The 3D hunt spans 12 hazards and 4 "safe but looks risky" distractors across a practice zone, an assessed zone (aisle and packing station) and a transfer zone.
 
@@ -77,11 +77,11 @@ Cinematic budget: one 14-second intro (S1) plus four replay segments of 14–18 
 
 ## Play it your way
 
-- **Text mode:** every module, rating, decision and ranking is available as structured text with data tables. In the assessed zone the list covers *every* inspectable area (hazards, distractors and neutral items), so the list itself doesn't give answers away.
+- **Text mode:** every module, rating, decision and ranking is available as structured text with data tables. In the assessed zone the list covers *every* inspectable area (hazards, distractors and neutral items), so the list itself doesn't give answers away. Rating forms are headed by the area name only; the hazard's name appears only in the feedback.
 - **Keyboard:** Tab through everything; arrow keys or the on-screen look buttons turn the camera; the points-of-interest list jumps to any inspectable area.
 - **Reduced motion:** follows your system setting, with an in-app toggle. Cinematics become still frames with the same captions.
 - **Quality presets:** Low, Medium, High and Ultra, picked automatically from a short warm-up and overridable in Settings.
-- Also in Settings: text size, high contrast, field of view, captions and separate volume controls.
+- Also in Settings: text size, high contrast and field of view. The course has no audio, so there are no volume controls; all text is on screen.
 
 ## Accessibility
 

@@ -41,7 +41,7 @@ export class App {
     this.textMode = new TextMode({ root: document.getElementById('textmode'), slug: SLUG, onDecision: (id, payload) => this._textDecision(id, payload) });
     this.poi = new PoiList(this.shell.overlays, { label: 'Inspectable areas' });
     this.moduleIndex = 0;
-    this.results = { pre: [], hunt: {}, replay: [], controls: [], speakup: null, transfer: {} };
+    this.results = { pre: [], post: [], hunt: {}, replay: [], controls: [], speakup: null, transfer: {}, reflection: null };
     this._init3D();
     this._initDialogs();
     this._initContent();
@@ -189,6 +189,7 @@ export class App {
     const dlg = document.getElementById('task-dialog');
     this.hunt.renderRatingDialog(found.def, found.zone, dlg, (result) => {
       closeDialog(dlg);
+      this._flagged(found.def, result);
       // Feedback stays until the learner closes it (no timers; agent review A4).
       this.shell.overlays.querySelector('.hunt-feedback')?.remove();
       const fb = document.createElement('div');
@@ -208,7 +209,7 @@ export class App {
         this.shell.setStatus(next[found.zone.id]);
         this.record.log('completed', { id: `hunt-zone-${found.zone.id}`, name: found.zone.name });
       }
-    });
+    }, { headingId: 'task-h' });
     openDialog(dlg);
   }
 
@@ -272,11 +273,19 @@ export class App {
   }
 
   _initDialogs() {
-    this.settings = new Settings({ slug: SLUG, dialog: document.getElementById('settings-dialog'), quality: this.engine?.quality, motion: this.motion });
+    this.settings = new Settings({
+      slug: SLUG, dialog: document.getElementById('settings-dialog'), quality: this.engine?.quality, motion: this.motion,
+      onFov: (fov) => { if (this.engine) { this.engine.camera.fov = fov; this.engine.camera.updateProjectionMatrix(); } },
+    });
+    this.settings._apply(); // restore saved text size, contrast and field of view
     this.shell.on('settings', (btn) => this.settings.open(btn));
     this.progressPage = new ProgressPage({ slug: SLUG, dialog: document.getElementById('progress-dialog'), record: this.record });
     this.shell.on('progress', (btn) => this.progressPage.open(btn));
-    this.shell.on('restart', () => this.gotoModule(this.moduleIndex));
+    this.shell.on('restart', () => {
+      // Restart clears this module's hunt answers (H-11).
+      for (const z of this._activeZones()) for (const i of z.inspectables) this.hunt.flags.delete(i.id);
+      this.gotoModule(this.moduleIndex);
+    });
     this.shell.on('textmode', () => {
       const on = !document.getElementById('textmode').hidden;
       if (on) this.textMode.show(MODULES[this.moduleIndex]);
@@ -374,14 +383,16 @@ export class App {
     for (const item of zone.inspectables) {
       const section = document.createElement('section');
       section.className = 'assessment-item';
-      section.innerHTML = `<h5>${item.area}</h5><p>${item.cue}</p>`;
+      const cue = Object.assign(document.createElement('p'), { textContent: item.cue });
       this.hunt.renderRatingDialog(item, zone, section, (result) => {
+        section.querySelector('.feedback')?.remove();
         const fb = document.createElement('div');
         fb.className = 'feedback';
         fb.innerHTML = `<p>${result.feedback.replace(/\*\*/g, '')}</p>`;
         section.appendChild(fb);
         this._flagged(item, result);
       });
+      section.querySelector('h3').after(cue);
       body.appendChild(section);
     }
     if (zone.hints) {
@@ -594,22 +605,96 @@ export class App {
     for (const item of zone.inspectables) {
       const section = document.createElement('section');
       section.className = 'assessment-item';
-      section.innerHTML = `<h4>${item.area}</h4><p>${item.cue}</p>`;
-      this.hunt.renderRatingDialog(item, zone, section, (result) => this._flagged(item, result));
+      const cue = Object.assign(document.createElement('p'), { textContent: item.cue });
+      this.hunt.renderRatingDialog(item, zone, section, (result) => {
+        section.querySelector('.feedback')?.remove();
+        section.appendChild(Object.assign(document.createElement('div'), { className: 'feedback', innerHTML: `<p>${result.feedback.replace(/\*\*/g, '')}</p>` }));
+        this._flagged(item, result);
+      });
+      section.querySelector('h3').after(cue);
       body.appendChild(section);
     }
     const refl = this.items.transferReflection;
-    body.appendChild(this._el(`<h3>Transfer reflection</h3><p>${refl.prompt}</p>`));
+    body.appendChild(this._el(`<h3>Transfer reflection</h3>`));
+    const rf = document.createElement('div');
+    rf.innerHTML = `<label for="reflection-input">${refl.prompt}</label><textarea id="reflection-input" rows="4"></textarea>`;
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.textContent = 'Save reflection';
+    const saved = Object.assign(document.createElement('p'), { className: 'feedback', hidden: true, textContent: 'Saved on this device. Reflections are not graded.' });
+    saved.setAttribute('role', 'status');
+    save.addEventListener('click', () => {
+      const text = rf.querySelector('textarea').value.trim();
+      if (!text) return;
+      this.results.reflection = text;
+      this.record.log('responded', { id: 'transfer-reflection', name: 'Transfer reflection' }, { response: text });
+      saved.hidden = false;
+    });
+    rf.append(save, saved);
+    body.appendChild(rf);
+
+    // Post-check (alignment matrix: objectives 1, 3, 4, 5), then the completion summary.
+    body.appendChild(this._el(`<h3>Post-check</h3>`));
+    body.appendChild(this._el(`<p>Five closing questions. Your pre- and post-check scores appear in the summary below.</p>`));
+    const summary = document.createElement('section');
+    summary.className = 'course-summary';
+    summary.setAttribute('aria-live', 'polite');
+    this.results.post = [];
+    for (const item of this.items.postCheck) {
+      mcItem({ item, container: body, onAnswered: (a) => {
+        this._answer(a, 'post');
+        if (this.results.post.length === this.items.postCheck.length) {
+          this._renderSummary(summary);
+          const s = scoreAnswers(this.results.post);
+          this.record.log('completed', { id: 'course', name: 'Hazard Hunt' }, { score: { raw: s.correct, max: this.items.postCheck.length, scaled: s.ratio }, completion: true });
+          this.shell.setStatus('Course complete. Your summary is at the end of Module 5.');
+        }
+      } });
+    }
+    body.appendChild(summary);
+    body.appendChild(this._el(`<p>The summary appears when all five post-check questions are answered.</p>`));
   }
 
+  /** Log one hunt judgment. Distractors count as success only when judged "not a hazard" (L2/H-1). */
   _flagged(def, result) {
-    this.results.hunt[def.id] = { kind: def.kind, accurate: result.accurate ?? true, score: result.score, trueScore: result.trueScore };
-    this.record.log('answered', { id: `hunt-${def.id}`, name: def.label || def.area }, { response: `L${result.score / (result.trueScore || 1) > 0 ? result.score : 0}`, success: def.kind === 'hazard' ? result.accurate : true });
+    this.results.hunt[def.id] = { kind: def.kind, classification: result.classification, discriminated: result.discriminated, accurate: result.accurate };
+    this.record.log('answered', { id: `hunt-${def.id}`, name: def.area }, {
+      response: result.classification,
+      success: !!result.accurate,
+      extensions: {
+        'urn:hazard-hunt:classification': result.classification,
+        'urn:hazard-hunt:discriminated': result.discriminated,
+        'urn:hazard-hunt:likelihood': result.likelihood ?? null,
+        'urn:hazard-hunt:severity': result.severity ?? null,
+        'urn:hazard-hunt:band': result.band?.label ?? null,
+        'urn:hazard-hunt:referenceBand': result.trueBand?.label ?? null,
+      },
+    });
     this.hunt._updateHint?.();
   }
 
+  /** Completion summary: pre/post scores, hunt discrimination and rating accuracy, missed hazards. */
+  _renderSummary(host) {
+    const pre = scoreAnswers(this.results.pre);
+    const post = scoreAnswers(this.results.post);
+    const judged = Object.entries(this.results.hunt);
+    const disc = judged.filter(([, r]) => r.discriminated).length;
+    const hazards = judged.filter(([, r]) => r.kind === 'hazard');
+    const rated = hazards.filter(([, r]) => r.accurate).length;
+    const missed = hazards.filter(([, r]) => !r.discriminated).map(([id]) => this.hunt.byId(id)?.def.label).filter(Boolean);
+    host.innerHTML = '<h3 id="summary-h">Course summary</h3>';
+    host.appendChild(dataTable(['Measure', 'Result'], [
+      ['Pre-check', `${pre.correct} of ${this.items.preCheck.length}`],
+      ['Post-check', `${post.correct} of ${this.items.postCheck.length}`],
+      ['Hazard or not: correct judgments', `${disc} of ${judged.length} areas judged`],
+      ['Hazards rated in the right band', `${rated} of ${hazards.length} hazards judged`],
+      ['Hazards you judged as not a hazard', missed.length ? missed.join('; ') : 'None'],
+    ], 'Your results (stored on this device only)'));
+    host.querySelector('table')?.classList.add('summary-table');
+  }
+
   _answer(a, phase) {
-    this.results[phase].push(a);
+    this.results[phase] = this.results[phase].filter((x) => x.itemId !== a.itemId).concat(a);
     this.record.log('answered', { id: a.itemId, name: 'Check item' }, { response: a.chosen, success: a.correct });
   }
 

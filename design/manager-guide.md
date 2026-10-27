@@ -25,7 +25,7 @@ For team leads and safety managers using Hazard Hunt in onboarding. (Northwind L
 - "The fix is always more training." Module 4 ranks engineering controls above training and PPE.
 
 ## Answer key (reference bands)
-High (▲▲): blocked fire exit, bent upright, frayed charging cable, unchocked trailer, loaded truck across the walkway, blocked battery bay. Medium (▲): spill, hose across the walkway, overhang, missing guard, leaning stack, misaligned mirror. Controlled conditions: ramped cable, wrapped stack, guarded machine side, striped gate. Full reasoning per item: `content/zones.json`.
+High (▲▲): blocked fire exit, missing machine guard (amputation risk, severity 5), bent upright, frayed charger supply cable, trailer not secured at the dock, loaded truck across the walkway, blocked battery bay. Medium (▲): spill, hose across the walkway, overhang, leaning stack, misaligned mirror. Controlled conditions: ramped cable, wrapped stack, guarded machine side, striped gate. Full reasoning per item: `content/zones.json`.
 
 ## About the learning record
 Progress is saved only in the learner's browser (slug-prefixed `localStorage`) and can be downloaded as xAPI-shaped JSON from "My progress". Nothing is sent anywhere. In a real deployment, aggregating which hazards are most often missed would need a learning record store, informed consent, and a clear rule that the data is used to improve the course and the workplace, not to rate individuals.

@@ -50,17 +50,23 @@ test('practice hunt: rate every inspectable item from text mode; hints visible',
   const zones = { count: 7 }; // 7 inspectables in practice zone
   const forms = page.locator('section.assessment-item fieldset');
   expect(await forms.count()).toBeGreaterThanOrEqual(zones.count * 2 - 7); // likelihood+severity per item
-  const submitButtons = page.getByRole('button', { name: 'Submit rating' });
+  const submitButtons = page.getByRole('button', { name: 'Submit', exact: true });
   const n = await submitButtons.count();
   expect(n).toBeGreaterThanOrEqual(7);
-  // rate the first item: pick middle radio of each grid then submit
-  for (let i = 0; i < Math.min(2, n); i++) {
-    const form = submitButtons.nth(i).locator('..');
-    await form.locator('input[name="likelihood"]').nth(2).check();
-    await form.locator('input[name="severity"]').nth(3).check();
-    await submitButtons.nth(i).click();
-    await expect(form.locator('.feedback')).toBeVisible();
-  }
+  // Hazard: classify as a hazard, then rate (the rating grid appears only after that).
+  const spill = page.locator('section.assessment-item', { hasText: 'Receiving floor, between dock doors' });
+  await expect(spill.locator('h3')).not.toContainText('spill'); // neutral heading (A1)
+  await spill.locator('input[value="hazard"]').check();
+  await spill.locator('input[name$="-likelihood"]').nth(2).check();
+  await spill.locator('input[name$="-severity"]').nth(3).check();
+  await spill.getByRole('button', { name: 'Submit', exact: true }).click();
+  await expect(spill.locator('.feedback')).toContainText('matches the reference band');
+  // Distractor: judged as a controlled condition, no rating needed.
+  const ramp = page.locator('section.assessment-item', { hasText: 'Charging area, floor next to the charger' });
+  await ramp.locator('input[value="controlled"]').check();
+  await expect(ramp.locator('input[name$="-likelihood"]').first()).toBeHidden();
+  await ramp.getByRole('button', { name: 'Submit', exact: true }).click();
+  await expect(ramp.locator('.feedback')).toContainText('Right: nothing to report');
 });
 
 test('module 2 has a hinted practice zone and an assessed zone without hints', async ({ page }) => {
@@ -70,7 +76,7 @@ test('module 2 has a hinted practice zone and an assessed zone without hints', a
   await expect(page.getByRole('heading', { name: /Part A: practice zone/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: /Part B: assessed zone/ })).toBeVisible();
   // 7 practice + 8 assessed inspectable areas, each with its own rating form
-  await expect(page.getByRole('button', { name: 'Submit rating' })).toHaveCount(15);
+  await expect(page.getByRole('button', { name: 'Submit', exact: true })).toHaveCount(15);
   // Hints appear only in the practice zone
   const hints = page.locator('section.assessment-item .hint');
   expect(await hints.count()).toBeGreaterThan(0);
@@ -121,4 +127,22 @@ test('replay module: pause-decide items give feedback; causes chart present', as
   await firstDecision.locator('label.choice').first().click();
   await firstDecision.getByRole('button', { name: 'Submit decision' }).click();
   await expect(firstDecision.locator('.feedback')).toBeVisible();
+});
+
+test('module 5: post-check, reflection input and completion summary with pre/post scores', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#textmode .assessment-item').first()).toBeVisible({ timeout: 20_000 });
+  for (const item of await page.locator('#textmode .assessment-item').all()) await item.locator('.choice-btn').first().click();
+  await page.locator('.module-nav button').nth(4).click();
+  await page.getByLabel(/Name one condition/).fill('Ramped cable at the charger; a fire door wedged open.');
+  await page.getByRole('button', { name: 'Save reflection' }).click();
+  await expect(page.getByText('Saved on this device')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Post-check' })).toBeVisible();
+  const post = page.locator('.assessment-item', { has: page.locator('h3', { hasText: /next step|rating should change|root causes|busy supervisor|strongest first control/ }) });
+  await expect(post).toHaveCount(5);
+  for (const item of await post.all()) await item.locator('.choice-btn').first().click();
+  const summary = page.locator('.course-summary');
+  await expect(summary.getByRole('heading', { name: 'Course summary' })).toBeVisible();
+  await expect(summary).toContainText('Pre-check');
+  await expect(summary).toContainText('5 of 5');
 });

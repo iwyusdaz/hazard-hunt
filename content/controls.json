@@ -1,6 +1,12 @@
 {
-  "note": "Controls are ranked per the NIOSH hierarchy of controls (Elimination > Substitution > Engineering controls > Administrative controls > PPE). Verified: research/sources.md, access date 2026-10-27.",
-  "hierarchy": ["elimination", "substitution", "engineering", "administrative", "ppe"],
+  "note": "Controls are ranked per the NIOSH hierarchy of controls (Elimination > Substitution > Engineering controls > Administrative controls > PPE). Verified: research/sources.md, access date 2026-10-27. Ranking is scored by tier: only pairs in different tiers that are out of hierarchy order count as errors; any order within a tier is accepted.",
+  "hierarchy": [
+    "elimination",
+    "substitution",
+    "engineering",
+    "administrative",
+    "ppe"
+  ],
   "hierarchyLabels": {
     "elimination": "Elimination — remove the hazard entirely",
     "substitution": "Substitution — replace with something less hazardous",
@@ -14,47 +20,143 @@
       "hazard": "Pallets overhanging rack beams",
       "prompt": "Rank these controls for overhanging pallets from most to least effective, using the hierarchy of controls.",
       "controls": [
-        { "id": "c1", "text": "Hi-vis vests for everyone in the aisle", "kind": "ppe" },
-        { "id": "c2", "text": "Rack layout change: deeper beams and load stops so pallets cannot sit past the edge", "kind": "engineering" },
-        { "id": "c3", "text": "Monthly 'watch your load overhang' toolbox talk", "kind": "administrative" },
-        { "id": "c4", "text": "Put-away process check: a pallet that cannot sit square is returned to the floor, never racked (removes the overhang state)", "kind": "elimination" },
-        { "id": "c5", "text": "Weekly supervisor spot-checks of beam edges", "kind": "administrative" }
+        {
+          "id": "c1",
+          "text": "Hi-vis vests for everyone in the aisle",
+          "kind": "ppe"
+        },
+        {
+          "id": "c2",
+          "text": "Load stops and deeper beams fitted to the rack so pallets cannot sit past the edge",
+          "kind": "engineering"
+        },
+        {
+          "id": "c3",
+          "text": "Monthly 'watch your load overhang' toolbox talk",
+          "kind": "administrative"
+        },
+        {
+          "id": "c4",
+          "text": "Put-away process check: a pallet that cannot sit square is returned to the floor, never racked",
+          "kind": "administrative"
+        },
+        {
+          "id": "c5",
+          "text": "Weekly supervisor spot-checks of beam edges",
+          "kind": "administrative"
+        }
       ],
-      "correctOrder": ["c4", "c2", "c5", "c3", "c1"],
-      "why": "Eliminating the overhang state beats detecting it; load stops (engineering) beat any amount of checking; spot-checks and talks are administrative; vests protect against consequences, not causes."
+      "correctOrder": [
+        "c2",
+        "c4",
+        "c5",
+        "c3",
+        "c1"
+      ],
+      "why": "Load stops (engineering) make the overhang physically impossible; the put-away check, spot-checks and talks are administrative and depend on people; vests protect against consequences, not causes. Order within the administrative tier is not scored."
     },
     {
       "id": "controls-frayed-cable",
       "hazard": "Frayed battery-charging cable",
       "prompt": "Rank these controls for the frayed charging cable.",
       "controls": [
-        { "id": "d1", "text": "Face shield and gloves for anyone near the charger", "kind": "ppe" },
-        { "id": "d2", "text": "Sign: 'Do not touch damaged cable'", "kind": "administrative" },
-        { "id": "d3", "text": "Replace the cable and fit a strain-relief gland so the bend cannot fray it again (removes the damage mechanism)", "kind": "elimination" },
-        { "id": "d4", "text": "Interlock: charger will not energize with a faulted cable (engineering)", "kind": "engineering" },
-        { "id": "d5", "text": "Weekly visual check of charging equipment by a named owner", "kind": "administrative" }
+        {
+          "id": "d1",
+          "text": "Face shield and gloves for anyone near the charger",
+          "kind": "ppe"
+        },
+        {
+          "id": "d2",
+          "text": "Sign: 'Do not touch damaged cable'",
+          "kind": "administrative"
+        },
+        {
+          "id": "d3",
+          "text": "Replace the cable and fit a strain-relief gland so the bend cannot fray it again",
+          "kind": "engineering"
+        },
+        {
+          "id": "d4",
+          "text": "Interlock: charger will not energize with a faulted cable (engineering)",
+          "kind": "engineering"
+        },
+        {
+          "id": "d5",
+          "text": "Weekly visual check of charging equipment by a named owner",
+          "kind": "administrative"
+        }
       ],
-      "correctOrder": ["d3", "d4", "d5", "d2", "d1"],
-      "why": "Removing the damage mechanism and adding an interlock are the durable fixes; checks and signs manage risk; PPE is the last line for residual risk."
+      "correctOrder": [
+        "d3",
+        "d4",
+        "d5",
+        "d2",
+        "d1"
+      ],
+      "why": "Replacing the cable with strain relief and adding an interlock are engineering fixes that do not depend on people; checks and signs are administrative; PPE is the last line. Order within a tier is not scored."
     },
     {
       "id": "controls-mirror",
       "hazard": "Misaligned convex mirror at the blind corner",
       "prompt": "Rank these controls for the misaligned mirror.",
       "controls": [
-        { "id": "e1", "text": "Sticker on the mirror: 'Check alignment weekly'", "kind": "administrative" },
-        { "id": "e2", "text": "Re-align the mirror and add it to a weekly pre-shift equipment walk with a named owner (keeps it true)", "kind": "administrative" },
-        { "id": "e3", "text": "Remove the blind corner: re-route the aisle end or fit a wide-angle camera with an in-cab display (removes the reliance on the mirror)", "kind": "engineering" },
-        { "id": "e4", "text": "Horn blast at the corner", "kind": "administrative" },
-        { "id": "e5", "text": "Reminder to drivers to 'double-check the mirror'", "kind": "administrative" }
+        {
+          "id": "e1",
+          "text": "Sticker on the mirror: 'Check alignment weekly'",
+          "kind": "administrative"
+        },
+        {
+          "id": "e2",
+          "text": "Re-align the mirror and add it to a weekly pre-shift equipment walk with a named owner (keeps it true)",
+          "kind": "administrative"
+        },
+        {
+          "id": "e3",
+          "text": "Re-route the aisle end so the blind corner no longer exists",
+          "kind": "elimination"
+        },
+        {
+          "id": "e4",
+          "text": "Horn blast at the corner",
+          "kind": "administrative"
+        },
+        {
+          "id": "e5",
+          "text": "Reminder to drivers to 'double-check the mirror'",
+          "kind": "administrative"
+        },
+        {
+          "id": "e6",
+          "text": "Fit a wide-angle camera with an in-cab display at the corner",
+          "kind": "engineering"
+        }
       ],
-      "correctOrder": ["e3", "e2", "e4", "e1", "e5"],
-      "why": "Removing the blind corner eliminates the reliance on any single device; a named-owner walk keeps the mirror honest; horns, stickers and reminders are the weakest tiers here."
+      "correctOrder": [
+        "e3",
+        "e6",
+        "e2",
+        "e4",
+        "e1",
+        "e5"
+      ],
+      "why": "Removing the blind corner eliminates the need for any device; a camera is an engineering control; a named-owner walk, horns, stickers and reminders are administrative. Order within the administrative tier is not scored."
     }
   ],
   "isItTraining": [
-    { "cause": "Misaligned mirror", "verdict": "Mostly not training", "because": "A check with a named owner is a system fix; drivers were behaving correctly given a lying mirror." },
-    { "cause": "Pallet put away with overhang", "verdict": "Partly training", "because": "The put-away decision under time pressure can be coached — but load stops (engineering) remove the failure mode entirely. Do both." },
-    { "cause": "Walking outside the marked lane", "verdict": "Partly training", "because": "Practice and feedback help — yet ask why the lane route feels slower, and fix the layout or the expectation-setting that rewards the shortcut." }
+    {
+      "cause": "Misaligned mirror",
+      "verdict": "Mostly not training",
+      "because": "A check with a named owner is a system fix; drivers were behaving correctly given a lying mirror."
+    },
+    {
+      "cause": "Pallet put away with overhang",
+      "verdict": "Partly training",
+      "because": "The put-away decision under time pressure can be coached — but load stops (engineering) remove the failure mode entirely. Do both."
+    },
+    {
+      "cause": "Walking outside the marked lane",
+      "verdict": "Partly training",
+      "because": "Practice and feedback help — yet ask why the lane route feels slower, and fix the layout or the expectation-setting that rewards the shortcut."
+    }
   ]
 }

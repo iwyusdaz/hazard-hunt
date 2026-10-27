@@ -36,6 +36,38 @@ export function rateRisk(def, likelihood, severity) {
   };
 }
 
+/** The classification each kind of inspectable should receive. */
+export const EXPECTED_CLASS = { hazard: 'hazard', distractor: 'controlled', neutral: 'acceptable' };
+
+/**
+ * Score one judgment: classification first (objective 2, discrimination), then the
+ * rating for hazards (objective 1). `discriminated` is the hazard / not-hazard
+ * decision; `accurate` additionally requires the right band for hazards.
+ * @param {object} def zones.json inspectable
+ * @param {'hazard'|'controlled'|'acceptable'} classification
+ */
+export function judge(def, classification, likelihood = 0, severity = 0) {
+  const isHazard = def.kind === 'hazard';
+  const saidHazard = classification === 'hazard';
+  const discriminated = isHazard === saidHazard;
+  const exactClass = classification === EXPECTED_CLASS[def.kind];
+  const label = `This was: ${def.label}.`;
+  if (isHazard) {
+    if (!saidHazard) {
+      const trueBand = riskBand(def.likelihood * def.severity, def.severity, def.likelihood);
+      return { classification, discriminated, exactClass, accurate: false, score: 0, trueScore: def.likelihood * def.severity, band: null, trueBand,
+        feedback: `${label} It is a **hazard to report** (reference: likelihood ${def.likelihood} × severity ${def.severity}, ${trueBand.label}). ${def.why}` };
+    }
+    const r = rateRisk(def, likelihood, severity);
+    return { ...r, classification, discriminated, exactClass, likelihood, severity, feedback: `${label} ${r.feedback}` };
+  }
+  const opening = saidHazard
+    ? 'You reported it as a hazard, but it is not one.'
+    : exactClass ? 'Right: nothing to report.' : 'Right that there is nothing to report.';
+  return { classification, discriminated, exactClass, accurate: discriminated, score: 0, trueScore: 0, band: null, trueBand: null,
+    feedback: `${label} ${opening} ${buildFeedback(def)}` };
+}
+
 function buildFeedback(def, band, trueBand) {
   if (def.kind === 'distractor') {
     return `This is a **controlled condition**, not a hazard to report. ${def.why} Flagging controlled conditions buries real hazards in the report queue — that is why discrimination is part of this exercise.`;
@@ -71,13 +103,36 @@ export class HuntController {
   }
 
   /** Rating dialog DOM (radio groups — fully keyboard operable, WCAG-friendly). */
-  renderRatingDialog(def, zone, container, onSubmit) {
+  renderRatingDialog(def, zone, container, onSubmit, { headingId = null } = {}) {
     container.innerHTML = '';
+    // Neutral heading: the area name only. The answer label appears only in the
+    // feedback (agent review A1 / H-2 / L3).
     const h = document.createElement('h3');
-    h.textContent = def.label || def.area;
-    const area = document.createElement('p');
-    area.textContent = def.area;
-    container.append(h, area);
+    h.textContent = def.area;
+    if (headingId) h.id = headingId;
+    container.append(h);
+    // Step 1: classify (objective 2, discrimination). Rating appears only for "hazard".
+    const cls = document.createElement('fieldset');
+    cls.className = 'rating-step';
+    cls.innerHTML = '<legend>Step 1: what is this?</legend>';
+    for (const [v, t] of [['hazard', 'A hazard to report'], ['controlled', 'A controlled condition (the risk is already managed)'], ['acceptable', 'Acceptable, nothing to report']]) {
+      const lab = document.createElement('label');
+      lab.className = 'choice';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'classification';
+      input.value = v;
+      lab.append(input, Object.assign(document.createElement('span'), { textContent: ` ${t}` }));
+      cls.appendChild(lab);
+    }
+    container.appendChild(cls);
+    const rateBox = document.createElement('div');
+    rateBox.className = 'rating-step';
+    rateBox.hidden = true;
+    rateBox.appendChild(Object.assign(document.createElement('p'), { textContent: 'Step 2: rate the risk.' }));
+    cls.addEventListener('change', () => {
+      rateBox.hidden = cls.querySelector('input:checked')?.value !== 'hazard';
+    });
     if (zone.hints && def.hintWarm) {
       const hint = document.createElement('p');
       hint.className = 'hint';
@@ -102,29 +157,33 @@ export class HuntController {
       });
       return fs;
     };
-    container.appendChild(makeGrid('likelihood', 'Likelihood (1 = rare, 5 = very likely)', [1, 2, 3, 4, 5]));
-    container.appendChild(makeGrid('severity', 'Severity (1 = minor first aid, 5 = life-changing or fatal)', [1, 2, 3, 4, 5]));
+    // Radio names are unique per item: the text page shows many forms at once, and
+    // shared names would make them one document-wide radio group.
+    const n = (k) => `${def.id}-${k}`;
+    for (const input of cls.querySelectorAll('input')) input.name = n('classification');
+    rateBox.appendChild(makeGrid(n('likelihood'), 'Likelihood (1 = rare, 5 = very likely)', [1, 2, 3, 4, 5]));
+    rateBox.appendChild(makeGrid(n('severity'), 'Severity (1 = minor first aid, 5 = life-changing or fatal)', [1, 2, 3, 4, 5]));
     const rule = document.createElement('p');
     rule.className = 'band-rule';
     rule.textContent = BAND_RULE;
-    container.appendChild(rule);
+    rateBox.appendChild(rule);
+    container.appendChild(rateBox);
     const err = document.createElement('p');
     err.className = 'error visually-hidden';
     err.setAttribute('role', 'alert');
     const submit = document.createElement('button');
     submit.type = 'button';
-    submit.textContent = 'Submit rating';
+    submit.textContent = 'Submit';
     submit.addEventListener('click', () => {
-      const l = container.querySelector('input[name="likelihood"]:checked');
-      const s = container.querySelector('input[name="severity"]:checked');
-      if (!l || !s) {
-        err.classList.remove('visually-hidden');
-        err.textContent = 'Choose both a likelihood and a severity before submitting.';
-        return;
-      }
-      const result = rateRisk(def, parseInt(l.value, 10), parseInt(s.value, 10));
+      const c = container.querySelector(`input[name="${n('classification')}"]:checked`);
+      const l = container.querySelector(`input[name="${n('likelihood')}"]:checked`);
+      const s = container.querySelector(`input[name="${n('severity')}"]:checked`);
+      const fail = (msg) => { err.classList.remove('visually-hidden'); err.textContent = msg; };
+      if (!c) return fail('Choose what this is before submitting.');
+      if (c.value === 'hazard' && (!l || !s)) return fail('Choose both a likelihood and a severity before submitting.');
+      const result = judge(def, c.value, l ? parseInt(l.value, 10) : 0, s ? parseInt(s.value, 10) : 0);
       this.flags.set(def.id, { def, result });
-      announce(`Rating submitted for ${def.label || def.id}`);
+      announce(`Answer submitted for ${def.area}`);
       onSubmit(result);
     });
     container.append(err, submit);

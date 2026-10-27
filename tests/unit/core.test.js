@@ -4,7 +4,7 @@
  * controls ranking scoring.
  */
 import { describe, it, expect } from 'vitest';
-import { rateRisk, riskBand } from '../../src/systems/hazard-hunt.js';
+import { rateRisk, riskBand, judge } from '../../src/systems/hazard-hunt.js';
 import { scoreRanking } from '../../src/systems/controls-activity.js';
 import { validateGraph } from '../../src/systems/dialogue.js';
 import { readFileSync } from 'node:fs';
@@ -30,8 +30,8 @@ describe('risk rating', () => {
   });
   it('matches the manager-guide answer key for every hazard', () => {
     const expected = {
-      High: ['hazard-blocked-exit', 't-hazard-straddle-load', 'hazard-unchocked-trailer', 'hazard-frayed-cable', 'hazard-damaged-upright', 't-hazard-charging-block'],
-      Medium: ['hazard-spill', 'hazard-trip-hose', 'hazard-overhang', 'hazard-missing-guard', 'hazard-misaligned-mirror', 'hazard-leaning-stack'],
+      High: ['hazard-blocked-exit', 't-hazard-straddle-load', 'hazard-unchocked-trailer', 'hazard-frayed-cable', 'hazard-damaged-upright', 't-hazard-charging-block', 'hazard-missing-guard'],
+      Medium: ['hazard-spill', 'hazard-trip-hose', 'hazard-overhang', 'hazard-misaligned-mirror', 'hazard-leaning-stack'],
     };
     const actual = { High: [], Medium: [], Low: [] };
     for (const z of zones.zones) for (const i of z.inspectables) {
@@ -66,6 +66,43 @@ describe('controls ranking', () => {
     const r = scoreRanking(task, reversed);
     expect(r.inversions).toBeGreaterThan(0);
     expect(r.accuracy).toBeLessThan(1);
+  });
+});
+
+describe('controls scoring by tier', () => {
+  it('accepts any order within a tier', () => {
+    const task = controls.tasks.find((t) => t.id === 'controls-mirror');
+    const order = ['e3', 'e6', 'e5', 'e1', 'e4', 'e2']; // administrative tier shuffled
+    expect(scoreRanking(task, order).perfect).toBe(true);
+  });
+  it('counts cross-tier inversions', () => {
+    const task = controls.tasks[0];
+    const r = scoreRanking(task, ['c1', 'c2', 'c4', 'c5', 'c3']); // PPE first
+    expect(r.inversions).toBe(4);
+  });
+});
+
+describe('hazard / controlled / acceptable judgment', () => {
+  const all = zones.zones.flatMap((z) => z.inspectables);
+  const distractor = all.find((i) => i.kind === 'distractor');
+  const hazard = all.find((i) => i.id === 'hazard-spill');
+  it('a distractor rated as a hazard is NOT a success', () => {
+    const r = judge(distractor, 'hazard', 3, 3);
+    expect(r.discriminated).toBe(false);
+    expect(r.accurate).toBe(false);
+  });
+  it('a distractor judged controlled is a success and reveals the label only in feedback', () => {
+    const r = judge(distractor, 'controlled');
+    expect(r.accurate).toBe(true);
+    expect(r.feedback).toContain(distractor.label);
+  });
+  it('a hazard judged acceptable is a miss; a hazard rated in band is accurate', () => {
+    expect(judge(hazard, 'acceptable').accurate).toBe(false);
+    expect(judge(hazard, 'hazard', 3, 4).accurate).toBe(true);
+  });
+  it('missing guard is High (amputation = severity 5)', () => {
+    const g = all.find((i) => i.id === 'hazard-missing-guard');
+    expect(riskBand(g.likelihood * g.severity, g.severity, g.likelihood).label).toBe('High');
   });
 });
 
