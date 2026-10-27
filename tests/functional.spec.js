@@ -20,6 +20,20 @@ test('all 5 modules reachable and activatable by keyboard', async ({ page }) => 
   }
 });
 
+test('intro cinematic is captioned and skippable with Esc', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#textmode .assessment-item').first()).toBeVisible({ timeout: 20_000 });
+  const play = page.getByRole('button', { name: /shift-start intro/i });
+  if ((await play.count()) === 0) test.skip(true, 'No WebGL in this browser; intro only exists in 3D');
+  await play.click();
+  const overlay = page.locator('.cinematic-overlay');
+  await expect(overlay).toBeVisible();
+  await expect(overlay.locator('.cinematic-caption')).toContainText('Northwind Logistics (fictional)');
+  await page.keyboard.press('Escape');
+  await expect(overlay).toBeHidden();
+  await expect(page.locator('#textmode')).toBeVisible();
+});
+
 test('pre-check items accept answers and give why-feedback', async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(900);
@@ -47,6 +61,28 @@ test('practice hunt: rate every inspectable item from text mode; hints visible',
     await submitButtons.nth(i).click();
     await expect(form.locator('.feedback')).toBeVisible();
   }
+});
+
+test('module 2 has a hinted practice zone and an assessed zone without hints', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#textmode .assessment-item').first()).toBeVisible({ timeout: 20_000 });
+  await page.locator('.module-nav button').nth(1).click();
+  await expect(page.getByRole('heading', { name: /Part A: practice zone/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Part B: assessed zone/ })).toBeVisible();
+  // 7 practice + 8 assessed inspectable areas, each with its own rating form
+  await expect(page.getByRole('button', { name: 'Submit rating' })).toHaveCount(15);
+  // Hints appear only in the practice zone
+  const hints = page.locator('section.assessment-item .hint');
+  expect(await hints.count()).toBeGreaterThan(0);
+  const assessedTable = page.locator('table', { hasText: 'Assessed zone' });
+  await expect(assessedTable).toBeVisible();
+  const partB = page.locator('h3', { hasText: 'Part B' });
+  const hintsAfterB = await partB.evaluate((h) => {
+    let n = 0;
+    for (let el = h.nextElementSibling; el; el = el.nextElementSibling) n += el.querySelectorAll('.hint').length;
+    return n;
+  });
+  expect(hintsAfterB).toBe(0);
 });
 
 test('speak-up: every outcome reachable across three runs', async ({ page }) => {

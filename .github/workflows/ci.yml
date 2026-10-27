@@ -1,0 +1,35 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v6
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v6
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Unit tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Validate showcase.json and required files
+        run: node scripts/validate-showcase.mjs "$(node -p "require('./package.json').version")"
+      - name: Functional, accessibility and sub-path tests
+        run: npx playwright test tests/functional.spec.js tests/a11y.spec.js tests/sub-path.spec.js
+      - name: Size check (no file over 20 MB)
+        run: |
+          du -sk dist
+          BIG=$(find dist -type f -size +20M)
+          if [ -n "$BIG" ]; then echo "Files over 20 MB:"; echo "$BIG"; exit 1; fi

@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
-import { selfHostedDecoders } from './vite-plugin-decoders.js';
 
 // base './' so the build works at any sub-path (build contract, 08 section 5.1).
+// No decoder plugin: this project loads no glTF/KTX2/Draco assets, so shipping the
+// 1.7 MB of decoders would only add transfer (see DECISIONS.md).
 export default defineConfig({
   base: './',
-  plugins: [selfHostedDecoders()],
   build: {
     target: 'es2022',
     chunkSizeWarningLimit: 1200,

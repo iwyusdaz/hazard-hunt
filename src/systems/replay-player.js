@@ -18,7 +18,8 @@ export class ReplayPlayer {
    * @param {Function} opts.onPausePoint (pausePoint, segment) — render decision UI
    * @param {Function} opts.onSegmentEnd (segment)
    */
-  constructor({ data, truck, pedestrian, camera, ui, onPausePoint, onSegmentEnd }) {
+  constructor({ data, truck, pedestrian, camera, ui, motion, onPausePoint, onSegmentEnd }) {
+    this.motion = motion;
     this.data = data;
     this.truck = truck;
     this.pedestrian = pedestrian;
@@ -78,11 +79,15 @@ export class ReplayPlayer {
     this.storyEl.textContent = this.current.story;
     this.causesEl.innerHTML = '';
     this.playing = false;
+    this._orbiting = false;
+    this._orbitAngle = null;
     this._apply(0);
   }
 
   play() {
     if (this.pausedAtPoint) return; // must decide first
+    this._orbiting = false;
+    this._orbitAngle = null;
     this.playing = true;
     let last = performance.now();
     const step = () => {
@@ -112,23 +117,36 @@ export class ReplayPlayer {
     requestAnimationFrame(step);
   }
 
-  /** Frozen-moment orbit: slow orbit around the current focus while paused. */
+  /**
+   * Frozen-moment inspection: each press moves the camera 45° around the current
+   * focus while the replay is paused. With reduced motion the move is a cut;
+   * otherwise it eases over 0.6 s. Never auto-orbits.
+   */
   frozenOrbit() {
-    const c = this.current.camera;
-    const center = new THREE.Vector3(...c.target);
+    if (!this.current) return;
+    this.playing = false;
+    this._orbiting = true;
+    const center = new THREE.Vector3(...this.current.camera.target);
     const radius = 8;
-    let angle = 0;
-    const orbit = () => {
-      if (this.playing) return;
-      angle += 0.004;
-      this.camera.position.set(center.x + radius * Math.sin(angle), center.y + 1.5, center.z + radius * Math.cos(angle));
+    const from = this._orbitAngle ?? Math.atan2(this.camera.position.x - center.x, this.camera.position.z - center.z);
+    const to = from + Math.PI / 4;
+    this._orbitAngle = to;
+    const place = (a) => {
+      this.camera.position.set(center.x + radius * Math.sin(a), center.y + 1.5, center.z + radius * Math.cos(a));
       this.camera.lookAt(center);
-      if (!this.playing && angle < Math.PI * 2) requestAnimationFrame(orbit);
     };
-    requestAnimationFrame(orbit);
+    if (this.motion?.reduced) { place(to); return; }
+    const start = performance.now();
+    const step = () => {
+      if (!this._orbiting) return;
+      const k = Math.min(1, (performance.now() - start) / 600);
+      place(from + (to - from) * (1 - (1 - k) ** 3));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   }
 
-  resolveDecision(chosen) {
+  resolveDecision() {
     this.pausedAtPoint = null;
     this.play();
   }
@@ -142,7 +160,8 @@ export class ReplayPlayer {
     this.pedestrian.position.set(...lerp(kf.pedestrian.from, kf.pedestrian.to));
     this.pedestrian.rotation.y = k < 0.5 ? Math.PI / 2 : Math.PI;
     const c = this.current.camera;
-    const pos = lerp(c.from, c.to);
+    // Reduced motion: one still framing per segment (a cut between segments), no camera glide.
+    const pos = this.motion?.reduced ? c.to : lerp(c.from, c.to);
     if (!this._orbiting) {
       this.camera.position.set(pos[0], pos[1], pos[2]);
       this.camera.lookAt(...c.target);

@@ -6,8 +6,15 @@
  */
 import { announce } from '../a11y/announcer.js';
 
-export function riskBand(score) {
-  if (score >= 15) return { label: 'High', icon: '▲▲' };
+/** Plain-language statement of the banding rule, shown with every rating. */
+export const BAND_RULE = 'High: score 15 or more, or any severity-5 hazard (life-changing or fatal) with likelihood 2 or more. Medium: score 8 to 14. Low: below 8.';
+
+/**
+ * Risk band from likelihood × severity. A severity-5 hazard with likelihood ≥ 2 is
+ * High regardless of score, so a rare-but-fatal hazard is never rated Medium.
+ */
+export function riskBand(score, severity = 0, likelihood = 0) {
+  if (score >= 15 || (severity === 5 && likelihood >= 2)) return { label: 'High', icon: '▲▲' };
   if (score >= 8) return { label: 'Medium', icon: '▲' };
   return { label: 'Low', icon: '●' };
 }
@@ -15,8 +22,8 @@ export function riskBand(score) {
 export function rateRisk(def, likelihood, severity) {
   const score = likelihood * severity;
   const trueScore = def.likelihood * def.severity;
-  const band = riskBand(score);
-  const trueBand = riskBand(trueScore);
+  const band = riskBand(score, severity, likelihood);
+  const trueBand = riskBand(trueScore, def.severity, def.likelihood);
   const bandDistance = Math.abs(score - trueScore);
   return {
     score,
@@ -97,6 +104,10 @@ export class HuntController {
     };
     container.appendChild(makeGrid('likelihood', 'Likelihood (1 = rare, 5 = very likely)', [1, 2, 3, 4, 5]));
     container.appendChild(makeGrid('severity', 'Severity (1 = minor first aid, 5 = life-changing or fatal)', [1, 2, 3, 4, 5]));
+    const rule = document.createElement('p');
+    rule.className = 'band-rule';
+    rule.textContent = BAND_RULE;
+    container.appendChild(rule);
     const err = document.createElement('p');
     err.className = 'error visually-hidden';
     err.setAttribute('role', 'alert');

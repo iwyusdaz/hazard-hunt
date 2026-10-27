@@ -22,6 +22,26 @@ describe('risk rating', () => {
     expect(r.score).toBe(12);
     expect(r.accurate).toBe(true);
   });
+  it('rates a rare but fatal hazard (severity 5, likelihood 2) as High, not Medium', () => {
+    expect(riskBand(10, 5, 2).label).toBe('High');
+    expect(riskBand(5, 5, 1).label).toBe('Low'); // likelihood 1 stays on the score
+    const r = rateRisk({ kind: 'hazard', likelihood: 2, severity: 5, why: '' }, 2, 5);
+    expect(r.trueBand.label).toBe('High');
+  });
+  it('matches the manager-guide answer key for every hazard', () => {
+    const expected = {
+      High: ['hazard-blocked-exit', 't-hazard-straddle-load', 'hazard-unchocked-trailer', 'hazard-frayed-cable', 'hazard-damaged-upright', 't-hazard-charging-block'],
+      Medium: ['hazard-spill', 'hazard-trip-hose', 'hazard-overhang', 'hazard-missing-guard', 'hazard-misaligned-mirror', 'hazard-leaning-stack'],
+    };
+    const actual = { High: [], Medium: [], Low: [] };
+    for (const z of zones.zones) for (const i of z.inspectables) {
+      if (i.kind !== 'hazard') continue;
+      actual[riskBand(i.likelihood * i.severity, i.severity, i.likelihood).label].push(i.id);
+    }
+    expect(actual.High.sort()).toEqual(expected.High.sort());
+    expect(actual.Medium.sort()).toEqual(expected.Medium.sort());
+    expect(actual.Low).toEqual([]);
+  });
   it('marks over- and under-rating as inaccurate', () => {
     const over = rateRisk({ kind: 'hazard', likelihood: 2, severity: 2, why: '' }, 5, 5);
     expect(over.accurate).toBe(false);
@@ -55,6 +75,16 @@ describe('speak-up dialogue graph', () => {
     expect(v.errors).toEqual([]);
     expect(v.reachable).toBe(v.total);
     expect(v.outcomes.sort()).toEqual(['mixed', 'poor', 'strong']);
+  });
+});
+
+describe('3D scene covers the hunt content', () => {
+  it('every inspectable in zones.json is a selectable object in the warehouse, and vice versa', () => {
+    const src = readFileSync(new URL('../../src/scenes/warehouse.js', import.meta.url), 'utf8');
+    const in3d = new Set([...src.matchAll(/inspectable: '([a-z0-9-]+)'/g)].map((m) => m[1]));
+    const content = zones.zones.flatMap((z) => z.inspectables.map((i) => i.id));
+    expect(content.filter((id) => !in3d.has(id))).toEqual([]);
+    expect([...in3d].filter((id) => !content.includes(id))).toEqual([]);
   });
 });
 

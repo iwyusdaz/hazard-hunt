@@ -1,0 +1,37 @@
+[
+  {
+    "asset": "Empty Warehouse 01 (HDRI, 1k .hdr)",
+    "author": "Sergej Majboroda",
+    "source": "https://polyhaven.com/a/empty_warehouse_01",
+    "license": "CC0",
+    "changes": "None. Used for image-based lighting and reflections only (not shown as a background). File renamed with a content hash."
+  },
+  {
+    "asset": "Concrete Floor Worn 001 (1k JPG: color, normal GL, roughness)",
+    "author": "Dimitrios Savva, Rico Cilliers",
+    "source": "https://polyhaven.com/a/concrete_floor_worn_001",
+    "license": "CC0",
+    "changes": "None to pixels. Tiled across the floor; files renamed with content hashes."
+  },
+  {
+    "asset": "Blue Metal Plate (1k JPG: normal GL, roughness)",
+    "author": "Rob Tuytel",
+    "source": "https://polyhaven.com/a/blue_metal_plate",
+    "license": "CC0",
+    "changes": "Only the normal and roughness maps are used, on the painted rack uprights; the color map was not kept. Files renamed with content hashes."
+  },
+  {
+    "asset": "Wood Planks Grey (1k JPG: color, normal GL, roughness)",
+    "author": "Rob Tuytel",
+    "source": "https://polyhaven.com/a/wood_planks_grey",
+    "license": "CC0",
+    "changes": "None to pixels. Used on pallets; files renamed with content hashes."
+  },
+  {
+    "asset": "three.js 0.186.1",
+    "author": "three.js authors",
+    "source": "https://github.com/mrdoob/three.js",
+    "license": "MIT",
+    "changes": "None. Bundled by Vite. No Draco/Basis decoders are shipped because this project loads no compressed models or textures."
+  }
+]

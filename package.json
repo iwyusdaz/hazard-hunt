@@ -9,7 +9,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/sync-content.mjs && vite build",
+    "build": "node scripts/sync-content.mjs && node scripts/build-attribution.mjs && vite build",
+    "poster": "node scripts/render-poster.mjs aisleNorth",
+    "validate:showcase": "node scripts/validate-showcase.mjs 1.0.0",
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",

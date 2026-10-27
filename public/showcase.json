@@ -1,0 +1,20 @@
+{
+  "slug": "hazard-hunt",
+  "version": "1.0.0",
+  "title": "Hazard Hunt",
+  "format": "Mini course",
+  "niche": "Workplace safety",
+  "audience": "New warehouse associates, team leads, L&D teams",
+  "summary": "Spot hazards in a realistic 3D warehouse, replay a near-miss with pause-and-decide moments, rank controls with the hierarchy of controls, and practice reporting to a busy supervisor. Fictional company. Does not replace training required by law or by your employer.",
+  "playTimeMinutes": 45,
+  "features": ["text-mode", "keyboard", "reduced-motion", "captions", "mobile-supported"],
+  "contentNotes": ["Includes a replay of a fictional warehouse near-miss. Nobody is hurt and no injuries are shown."],
+  "permissions": [],
+  "poster": {
+    "webp": "poster-1.0.0.webp",
+    "jpg": "poster-1.0.0.jpg",
+    "alt": "A warehouse aisle with blue racking, a worker in a hi-vis vest stepping out beside a red reach truck"
+  },
+  "repoUrl": "https://github.com/iwyusdaz/hazard-hunt",
+  "license": { "content": "CC BY 4.0", "code": "MIT" }
+}

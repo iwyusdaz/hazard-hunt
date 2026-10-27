@@ -34,6 +34,52 @@ export class Warehouse {
     this._workers = [];
     this._truck = null;
     this._build();
+    this._applyTextures();
+  }
+
+  /**
+   * CC0 PBR maps from Poly Haven (1k JPG; see ATTRIBUTION.md). Applied to the shared
+   * floor, rack-steel and pallet materials. The spill keeps its own glossy material,
+   * so the matte textured floor makes its sheen easier to see.
+   */
+  _applyTextures() {
+    const base = `${import.meta.env.BASE_URL}assets/tex/`;
+    const loader = new THREE.TextureLoader();
+    const set = (mat, prefix, repeat, { normalScale = 1 } = {}) => {
+      const load = (file, srgb) => {
+        const t = loader.load(base + file);
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.repeat.set(repeat[0], repeat[1]);
+        t.anisotropy = 4;
+        if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+        return t;
+      };
+      if (prefix.color) {
+        mat.map = load(prefix.color, true);
+        mat.color.set(0xffffff); // the color map carries the albedo
+      }
+      mat.normalMap = load(prefix.normal, false);
+      mat.normalScale.set(normalScale, normalScale);
+      mat.roughnessMap = load(prefix.rough, false);
+      mat.needsUpdate = true;
+    };
+    // Floor plane is 64 m x 44 m; one texture tile per ~3 m.
+    set(MAT.concrete, {
+      color: 'concrete_floor_worn_001_color-6e40c0fc90.jpg',
+      normal: 'concrete_floor_worn_001_normal-523bd94a1b.jpg',
+      rough: 'concrete_floor_worn_001_rough-069efe4ca0.jpg',
+    }, [21, 15], { normalScale: 0.6 });
+    // Uprights keep their painted blue (the plate's color map reads near-black at this
+    // scale); the normal and roughness maps add wear and scuffing.
+    set(MAT.steelBlue, {
+      normal: 'blue_metal_plate_normal-970f0273c9.jpg',
+      rough: 'blue_metal_plate_rough-37168cf571.jpg',
+    }, [1, 4], { normalScale: 0.5 });
+    set(MAT.palletWood, {
+      color: 'wood_planks_grey_color-d758be23e8.jpg',
+      normal: 'wood_planks_grey_normal-5e570e57d6.jpg',
+      rough: 'wood_planks_grey_rough-ef640502ce.jpg',
+    }, [1, 1], { normalScale: 0.8 });
   }
 
   _add(mesh, { inspectable = null, label = null } = {}) {
@@ -162,14 +208,23 @@ export class Warehouse {
     // Workers: low-detail hi-vis silhouettes (documented deviation: MakeHuman not used)
     this._worker(-14, -6, 0.9);
     this._worker(20, 0, -2.4, true); // pedestrian outside the marked lane (replay context)
-    this._worker(8, 16, 2.2);
+    this._worker(-8, 15, 2.2);
 
     // Reach truck (medium detail, primitives)
     this._truck = this._buildTruck();
     this._truck.position.set(24, 0, 2);
     this._truck.rotation.y = Math.PI / 2;
     this.scene.add(this._truck);
-    this._add(this._truck, { inspectable: 'neutral-truck', label: 'Parked reach truck (aisle)' });
+    this._add(this._truck, { inspectable: 'neutral-parked-truck', label: 'Parked reach truck (aisle)' });
+
+    // Clear aisle floor between the rack rows (assessed zone, neutral item)
+    const aisleFloor = new THREE.Mesh(new THREE.PlaneGeometry(14, 3), new THREE.MeshStandardMaterial({ color: 0x000000, transparent: true, opacity: 0, depthWrite: false }));
+    aisleFloor.rotation.x = -Math.PI / 2;
+    aisleFloor.position.set(23, 0.02, 0);
+    this._add(aisleFloor, { inspectable: 'neutral-empty-aisle-end', label: 'Aisle floor between the rack rows' });
+
+    this._buildDockExtras();
+    this._buildTransferZone();
 
     // Convex mirror at the aisle end (replay context: misaligned)
     const mirror = new THREE.Mesh(new THREE.CircleGeometry(0.45, 24), new THREE.MeshStandardMaterial({ color: 0x8fa8b8, roughness: 0.1, metalness: 0.9 }));
@@ -196,6 +251,81 @@ export class Warehouse {
       lamp.position.set(x, 8.8, z);
       this.scene.add(lamp);
     }
+  }
+
+  /** Practice-zone dock hazards that are visible from inside the building. */
+  _buildDockExtras() {
+    // Door at x = -7: trailer backed up, but the dock-lock signal shows red (not secured).
+    const trailerInterior = this._box(4.2, 4.2, 0.1, new THREE.MeshStandardMaterial({ color: 0x1b1d20, roughness: 0.9 }), -7, 2.3, -21.6);
+    trailerInterior.castShadow = false;
+    this.scene.add(trailerInterior);
+    const trailerFloor = this._box(4.2, 0.12, 1.2, MAT.palletWood, -7, 1.22, -21.2);
+    this.scene.add(trailerFloor);
+    const lightBox = this._box(0.35, 0.8, 0.12, MAT.darkPlastic, -4.2, 2.2, -21.6);
+    const red = new THREE.Mesh(new THREE.CircleGeometry(0.11, 16), new THREE.MeshStandardMaterial({ color: 0xff3b2f, emissive: 0xff2a1a, emissiveIntensity: 2.2 }));
+    red.position.set(-4.2, 2.42, -21.53);
+    const green = new THREE.Mesh(new THREE.CircleGeometry(0.11, 16), new THREE.MeshStandardMaterial({ color: 0x1d4d2a, roughness: 0.6 }));
+    green.position.set(-4.2, 1.98, -21.53);
+    this.scene.add(lightBox, red, green);
+    this._add(red, { inspectable: 'hazard-unchocked-trailer', label: 'Open dock door with a trailer and a red dock signal' });
+  }
+
+  /** Transfer zone: outbound staging lane on the south side (no hints). */
+  _buildTransferZone() {
+    // Walkway through the lane: two yellow lines running toward the south wall.
+    const lineA = this._box(0.15, 0.005, 10, MAT.paintedLine, 2.5, 0.003, 16.5);
+    const lineB = this._box(0.15, 0.005, 10, MAT.paintedLine, 5.5, 0.003, 16.5);
+    lineA.castShadow = lineB.castShadow = false;
+    this.scene.add(lineA);
+    this._add(lineB, { inspectable: 't-neutral-clear-line', label: 'Walkway through the staging lane' });
+
+    // A second reach truck, loaded too high to see over, parked across the walkway line.
+    const truck2 = this._buildTruck();
+    for (let i = 0; i < 3; i++) truck2.add(this._box(1.0, 0.75, 1.0, MAT.cardboard, 0, 1.3 + i * 0.78, -1.75));
+    truck2.position.set(5.2, 0, 18);
+    truck2.rotation.y = Math.PI * 0.55;
+    this.scene.add(truck2);
+    this._add(truck2, { inspectable: 't-hazard-straddle-load', label: 'Loaded truck parked across the walkway' });
+
+    // Battery-change bay door on the south wall, blocked by a wheeled cage; eyewash beside it.
+    this.scene.add(this._box(3.2, 3.4, 0.15, MAT.doorGrey, -3, 1.7, 21.7));
+    const cage = new THREE.Group();
+    const wire = new THREE.MeshStandardMaterial({ color: 0x9aa3ab, roughness: 0.4, metalness: 0.7, wireframe: true });
+    cage.add(this._box(1.2, 1.6, 0.8, wire, 0, 0.9, 0));
+    for (const [wx, wz] of [[-0.5, -0.3], [0.5, -0.3], [-0.5, 0.3], [0.5, 0.3]]) {
+      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.06, 10), MAT.rubber);
+      w.rotation.z = Math.PI / 2;
+      w.position.set(wx, 0.08, wz);
+      cage.add(w);
+    }
+    cage.position.set(-3, 0, 20.9);
+    this.scene.add(cage);
+    const eyewash = this._box(0.5, 0.7, 0.25, MAT.exitGreen, -0.6, 1.4, 21.7);
+    this.scene.add(eyewash);
+    const bottle = this._box(0.12, 0.28, 0.12, MAT.shrinkWrap, -0.6, 1.9, 21.6);
+    this.scene.add(bottle);
+    this._add(cage, { inspectable: 't-hazard-charging-block', label: 'Battery bay door and eyewash station' });
+
+    // Black-and-yellow striped self-closing gate at the lane entrance (controlled condition).
+    const c = document.createElement('canvas');
+    c.width = 128; c.height = 32;
+    const g = c.getContext('2d');
+    for (let i = -2; i < 10; i++) {
+      g.fillStyle = i % 2 ? '#111111' : '#f2c500';
+      g.beginPath();
+      g.moveTo(i * 16, 32); g.lineTo(i * 16 + 16, 32); g.lineTo(i * 16 + 32, 0); g.lineTo(i * 16 + 16, 0);
+      g.fill();
+    }
+    const stripes = new THREE.CanvasTexture(c);
+    stripes.colorSpace = THREE.SRGBColorSpace;
+    const gate = new THREE.Group();
+    const bar = this._box(2.4, 0.18, 0.08, new THREE.MeshStandardMaterial({ map: stripes, roughness: 0.6 }), 1.2, 1.0, 0);
+    const post = this._box(0.12, 1.2, 0.12, MAT.darkPlastic, 0, 0.6, 0);
+    gate.add(bar, post);
+    gate.position.set(2.6, 0, 11.6);
+    gate.rotation.y = -0.6;
+    this.scene.add(gate);
+    this._add(gate, { inspectable: 't-distractor-striped-gate', label: 'Striped swing gate at the lane entrance' });
   }
 
   _rack(x, z) {

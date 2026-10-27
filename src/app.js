@@ -5,6 +5,7 @@
  * @module app
  */
 import * as THREE from 'three';
+import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { Engine } from './core/engine.js';
 import { loadJSON, hasWebGL2 } from './core/assets.js';
 import { Input, LookController } from './core/input.js';
@@ -18,7 +19,7 @@ import { ShotPlayer } from './cinematics/shot-player.js';
 import { PoiList, openDialog, closeDialog } from './a11y/focus.js';
 import { announce } from './a11y/announcer.js';
 import { Warehouse } from './scenes/warehouse.js';
-import { HuntController, riskBand } from './systems/hazard-hunt.js';
+import { HuntController, BAND_RULE } from './systems/hazard-hunt.js';
 import { ReplayPlayer } from './systems/replay-player.js';
 import { ControlsActivity } from './systems/controls-activity.js';
 import { DialoguePlayer, validateGraph } from './systems/dialogue.js';
@@ -77,6 +78,7 @@ export class App {
     this.engine.camera.fov = 65;
     this.engine.camera.updateProjectionMatrix();
     this.warehouse = new Warehouse(this.engine.scene);
+    this._loadEnvironment();
     this.input = new Input(document.getElementById('app'));
     this.look = new LookController(this.engine.camera);
     this.input.onPointer((p, kind) => {
@@ -108,8 +110,34 @@ export class App {
     this.engine.start();
   }
 
+  /** Image-based lighting from a CC0 Poly Haven HDRI (Empty Warehouse 01, 1k). Used for
+   * lighting and reflections only; the background stays the modeled interior. */
+  _loadEnvironment() {
+    const url = `${import.meta.env.BASE_URL}assets/empty_warehouse_01_1k-9b3d611cad.hdr`;
+    const pmrem = new THREE.PMREMGenerator(this.engine.renderer);
+    new HDRLoader().load(url, (hdr) => {
+      const env = pmrem.fromEquirectangular(hdr).texture;
+      this.engine.scene.environment = env;
+      this.engine.scene.environmentIntensity = 0.6;
+      hdr.dispose();
+      pmrem.dispose();
+    }, undefined, () => {
+      // Lighting falls back to the analytic lights already in the scene.
+      pmrem.dispose();
+    });
+  }
+
+  /** Zones whose objects are selectable in the current module. */
+  _activeZones() {
+    if (this.moduleIndex === 1) return [this.zones[0], this.zones[1]];
+    if (this.moduleIndex === 4) return [this.zones[2]];
+    return [];
+  }
+
   _click(x, y) {
-    if (!this.engine || this.moduleIndex !== 1) return;
+    if (!this.engine) return;
+    const active = new Set(this._activeZones().flatMap((z) => z.inspectables.map((i) => i.id)));
+    if (!active.size) return;
     const nx = (x / window.innerWidth) * 2 - 1;
     const ny = -(y / window.innerHeight) * 2 + 1;
     const ray = new THREE.Raycaster();
@@ -122,7 +150,7 @@ export class App {
     for (const [iid, v] of this.warehouse.inspectables) {
       if (v.mesh === obj || (obj.parent && v.mesh === obj.parent)) { id = iid; break; }
     }
-    if (id) this._flag(id);
+    if (id && active.has(id)) this._flag(id);
   }
 
   _flag(id) {
@@ -134,14 +162,15 @@ export class App {
       closeDialog(dlg);
       const fb = document.createElement('div');
       fb.className = 'feedback hunt-feedback';
-      fb.innerHTML = `<p>${result.feedback.replace(/\*\*/g, '')}</p><p>Band legend: ${riskBand(1).label} (●), ${riskBand(9).label} (▲), ${riskBand(15).label} (▲▲).</p>`;
+      fb.innerHTML = `<p>${result.feedback.replace(/\*\*/g, '')}</p><p>Band legend: Low (●), Medium (▲), High (▲▲). ${BAND_RULE}</p>`;
       this.shell.overlays.querySelector('.hunt-feedback')?.remove();
       this.shell.overlays.appendChild(fb);
       setTimeout(() => fb.remove(), 14000);
       this._refreshPoi();
-      if (found.zone.id === 'practice' && this._zoneComplete('practice')) {
-        this.shell.setStatus('Practice zone complete. Continue to Module 3 — Incident replay.');
-        this.record.log('completed', { id: 'module-practice-hunt', name: 'Practice hazard hunt' });
+      const next = { practice: 'Practice zone complete. Continue with Part B, the assessed zone.', assessed: 'Assessed zone complete. Continue to Module 3, the incident replay.', transfer: 'Transfer zone complete.' };
+      if (this._zoneComplete(found.zone.id)) {
+        this.shell.setStatus(next[found.zone.id]);
+        this.record.log('completed', { id: `hunt-zone-${found.zone.id}`, name: found.zone.name });
       }
     });
     openDialog(dlg);
@@ -154,16 +183,16 @@ export class App {
 
   _refreshPoi() {
     this.poi.clear();
-    if (this.moduleIndex !== 1 && this.moduleIndex !== 4) return;
-    const zone = this.moduleIndex === 1 ? this.zones[0] : this.zones[2];
-    for (const item of zone.inspectables) {
-      // In the assessed/transfer zones ALL inspectable areas are listed (hazards,
-      // distractors and neutral) so the list itself gives nothing away (plan §11).
-      const rated = this.hunt.flags.has(item.id);
-      this.poi.set(item.id, {
-        label: `${rated ? '✓ ' : ''}${item.area}`,
-        onSelect: () => { this._gotoView(zone.views[0]); this._flag(item.id); },
-      });
+    for (const zone of this._activeZones()) {
+      for (const item of zone.inspectables) {
+        // ALL inspectable areas are listed (hazards, distractors and neutral items),
+        // so the list itself gives nothing away (plan §11).
+        const rated = this.hunt.flags.has(item.id);
+        this.poi.set(item.id, {
+          label: `${rated ? '✓ ' : ''}${item.area}`,
+          onSelect: () => { this._gotoView(zone.views[0]); this._flag(item.id); },
+        });
+      }
     }
   }
 
@@ -218,15 +247,45 @@ export class App {
   _module1(body) {
     body.appendChild(this._el(`<p><strong>Northwind Logistics (fictional)</strong> runs this distribution center with 140 staff. Near-misses are up this quarter. You walk this floor every shift — and that is exactly how hazards go invisible: nothing has gone wrong <em>yet</em>, so the risky starts looking normal.</p>`));
     body.appendChild(this._el(`<p>In this module you will learn to: (1) notice what has become invisible, (2) rate what you find, (3) analyze a near-miss to its causes, (4) choose controls that actually work, and (5) report so busy people can act. This course does not replace training required by law or by your employer.</p>`));
+    if (this.engine) {
+      const intro = document.createElement('button');
+      intro.type = 'button';
+      intro.textContent = 'Play the shift-start intro (14 s, captioned, skippable with Esc)';
+      intro.addEventListener('click', () => this._playIntro(intro));
+      body.appendChild(intro);
+    }
     body.appendChild(this._el(`<h3>Pre-check</h3>`));
     for (const item of this.items.preCheck) {
       mcItem({ item, container: body, onAnswered: (a) => this._answer(a, 'pre') });
     }
   }
 
+  /** Intro shot S1. Plays on request only (never during an assessment); with reduced
+   * motion the player shows a still frame with the same captions. */
+  _playIntro(trigger) {
+    const tm = document.getElementById('textmode');
+    const canvas = document.getElementById('app');
+    tm.hidden = true;
+    canvas.style.visibility = 'visible';
+    this.player.onDone = () => {
+      tm.hidden = false;
+      canvas.style.visibility = 'hidden';
+      this.record.log('experienced', { id: 'cinematic-S1', name: 'Shift start intro' });
+      trigger?.focus();
+    };
+    this.player.play();
+  }
+
   _module2(body, api) {
-    body.appendChild(this._el(`<p>Practice zone: receiving dock, main floor and charging area. Find and rate the conditions worth reporting — including things that <em>look</em> risky but are controlled. Hints are available here; in the assessed zone they are not.</p>`));
-    const zone = this.zones[0];
+    body.appendChild(this._el(`<p>Two parts. <strong>Part A, practice zone</strong> (receiving dock, main floor, charging area): hints are available. <strong>Part B, assessed zone</strong> (racking aisle and packing station): no hints. In both, rate the conditions worth reporting and leave alone the ones that only <em>look</em> risky.</p>`));
+    body.appendChild(this._el(`<h3>Part A: practice zone</h3>`));
+    this._renderZone(body, this.zones[0]);
+    body.appendChild(this._el(`<h3>Part B: assessed zone (no hints)</h3>`));
+    this._renderZone(body, this.zones[1]);
+  }
+
+  /** One hunt zone: viewpoint buttons (3D), an observation table, and a rating form per inspectable area. */
+  _renderZone(body, zone) {
     if (this.engine) {
       const views = document.createElement('div');
       views.className = 'view-buttons';
@@ -242,13 +301,13 @@ export class App {
       body.appendChild(views);
       body.appendChild(this._el(`<p>Click an object to flag it, or use the points-of-interest list on the right. Close text mode to look around in 3D.</p>`));
     }
-    body.appendChild(this._el(`<h3>Inspectable areas (all listed; decide which are hazards)</h3>`));
-    const table = dataTable(['Area', 'What you can observe'], zone.inspectables.map((i) => [i.area, i.cue]), 'Practice zone — flag and rate each area');
+    body.appendChild(this._el(`<h4>Inspectable areas (all listed; decide which are hazards)</h4>`));
+    const table = dataTable(['Area', 'What you can observe'], zone.inspectables.map((i) => [i.area, i.cue]), `${zone.name}: flag and rate each area`);
     body.appendChild(table);
     for (const item of zone.inspectables) {
       const section = document.createElement('section');
       section.className = 'assessment-item';
-      section.innerHTML = `<h4>${item.area}</h4><p>${item.cue}</p>`;
+      section.innerHTML = `<h5>${item.area}</h5><p>${item.cue}</p>`;
       this.hunt.renderRatingDialog(item, zone, section, (result) => {
         const fb = document.createElement('div');
         fb.className = 'feedback';
@@ -258,12 +317,14 @@ export class App {
       });
       body.appendChild(section);
     }
-    const hint = document.createElement('p');
-    hint.className = 'hint';
-    const updateHint = () => { hint.textContent = this.hunt.hintText(zone, this.hunt.flags.size); };
-    updateHint();
-    body.appendChild(hint);
-    this.hunt._updateHint = updateHint;
+    if (zone.hints) {
+      const hint = document.createElement('p');
+      hint.className = 'hint';
+      const updateHint = () => { hint.textContent = this.hunt.hintText(zone, this.hunt.flags.size); };
+      updateHint();
+      body.appendChild(hint);
+      this.hunt._updateHint = updateHint;
+    }
   }
 
   _module3(body, api) {
@@ -342,6 +403,7 @@ export class App {
       pedestrian,
       camera: this.engine.camera,
       ui,
+      motion: this.motion,
       onPausePoint: (pp, seg) => {
         const dlg = document.getElementById('task-dialog');
         dlg.innerHTML = `<h2 id="task-h">Decision point</h2><p>${pp.question}</p>`;
