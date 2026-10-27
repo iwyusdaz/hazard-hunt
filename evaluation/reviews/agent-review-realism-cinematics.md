@@ -1,0 +1,34 @@
+# Agent review: realism matrix and cinematic budget
+
+Agent review. Written by a reviewer agent that did not build the course. Sources checked: `design/realism-matrix.md`, `design/shot-list.md`, `content/cinematics.json`, `content/replay.json`, `src/scenes/warehouse.js`, `src/cinematics/shot-player.js`, `src/systems/replay-player.js`, plus screenshots in `screenshots/` (see `agent-review-visual.md`).
+
+## Cinematic budget audit
+
+| Rule | Result | Evidence |
+|---|---|---|
+| Total ≤ 90 s | Pass: 14 + 18 + 16 + 14 + 15 = 77 s | `cinematics.json:8`; `replay.json` durations |
+| Every shot ≤ 25 s | Pass (max 18 s) | same |
+| Purpose tags | Partial: S1 has `purpose: "orient"`. R1–R4 have no `purpose` field in `replay.json`; it exists only in `shot-list.md` | `replay.json` segments |
+| Skippable from first frame | S1: pass (Skip button + Esc, `shot-player.js:39-48`). Replay: **no skip control**, only Play/Pause/scrub (`replay-player.js:40-47`); leaving needs module navigation | `rev-replay-seg1.png` |
+| Captions | S1: pass, but both captions show at once for the whole shot (`shot-player.js:66`), not timed. Replay: the story paragraph acts as a caption (pass) | |
+| Reduced-motion version | S1: pass (still frame, auto-advance after 9.8 s). Replay: camera cuts, but the truck and pedestrian still animate (`replay-player.js:157-160`). That is probably acceptable (object motion, not camera), but undocumented | |
+| Never during assessment | Pass in the sense that the replay stops at decision points and nothing auto-plays. Decision items are asked *inside* the replay | `replay-player.js:84-93` |
+
+## Findings
+
+| # | Severity | Finding | Evidence | Fix |
+|---|---|---|---|---|
+| R1 | critical | **The high-realism cue elements in the matrix are not implemented at high realism.** The matrix rates "spill sheen, frayed cable, bent upright, overhang, missing guard, leaning stack, red dock signal" as High realism because noticing them is the skill. In the build they are untextured primitive boxes and discs: the frayed cable is 3 black slivers, the bent upright is a straight tilted orange post, the mirror is a flat disc. Meanwhile the medium-realism elements (floor, pallets) carry the PBR textures. The realism budget is inverted relative to the matrix. | `warehouse.js:187-284`; `realism-matrix.md:7`; visual V3–V8 | Put the detail budget on the 12 cue objects first (modeled kink, frayed strands with copper, real dock-signal housing, tilted pole mirror). Keep the boxes and walls plain. |
+| R2 | critical | **Distractors are not "as convincing as the hazard"** (matrix row 8). The ramped cable has no yellow ramp. The guarded/missing-guard pair is one orange panel on one side of a black box, so there is nothing that *looks* unguarded to compare. The wrapped stack is a glass-like box. Discrimination training (objective 2) depends on this row. | `warehouse.js:198, 205, 212` | Model each distractor at the same fidelity as its paired hazard, with the visible control feature (ramp, guard, wrap) as the only difference. |
+| R3 | major | **There is a decorative, misleading worker in the assessed zone.** The `laneOffender` silhouette (`warehouse.js:261`) stands in the aisle with a trolley arm beside the reach truck. In the hunt it shows a pedestrian–truck conflict (`rev-low-aisleNorth.png`) that is not inspectable, so a learner who notices it gets no response. It exists only for the replay. | `warehouse.js:261`; `app.js:405` | Hide replay-only actors during the hunt, or make the pedestrian position an inspectable neutral or hazard item. |
+| R4 | major | **The parked reach truck is moved by the replay and never reset.** It is the "neutral-parked-truck" inspectable in the practice zone and the same object as `_truck` in the replay (`warehouse.js:265-269`, `app.js:408`). After Module 3 the "parked" truck stays at the near-miss position. Also, the "keys removed, lockout card" cue is not modeled, and it sits in the assessed aisle, not the practice zone. | as cited | Use a separate replay truck, or restore its position when the replay closes. Move the neutral truck into the practice zone, or reassign it to the assessed zone in `zones.json`. |
+| R5 | major | **Cue text and model disagree**, so text-mode and 3D learners see different things: the spill is "dark" but renders light; the trailer hint says "wheels" but there are none; the upright is "blue, scuffed orange at the impact point" but is fully orange; the mirror is "aimed at the ceiling" but faces horizontally; the stack is "three meters" but about 2 m. | `zones.json:9-29` vs `warehouse.js` | Treat `zones.json` cues as the spec and add a checklist test (manual or screenshot) per item. |
+| R6 | major | **The replay cameras miss the narrated causes.** Seg1 says the mirror "now aims at the roof", but the seg1 camera is filled by one carton and the mirror is out of frame (`rev-replay-seg1.png`). The causal chain is the content (README), so each segment camera should frame its `causesVisible` items. | `replay.json` seg1 `camera` | Re-frame each segment on its causes, and add a "show cause" button that cuts to each cause. |
+| R7 | major | **The replay has no skip and no purpose tags in the data.** See the table above. | `replay-player.js:40-47`; `replay.json` | Add "Skip to the decision / storyboard" and `purpose: "consequence"` per segment. |
+| R8 | minor | **S1 captions are not timed.** Both captions appear together for 14 s, which reads as a block of text over a moving camera (a modality and split-attention cost). | `shot-player.js:66` | Add a time per caption (for example 0–7 s, 7–14 s). |
+| R9 | minor | **S1's flight goes from x -24 to -4 at z 2–6, looking at [4, 1.2, -6].** The shot list says "toward the dock" (north wall). The camera's target is mid-floor, so the dock may not be framed. I did not verify every frame; `rev-intro-S1.png` is a frame at about 3 s. | `cinematics.json:10-11` | Check the final frame shows the dock doors and the red signal (motivating the hunt). |
+| R10 | minor | **The HDRI is matrix-rated "No learning cue" but is the main reason the spill reads as a white highlight** (V5). Image-based lighting is affecting a cue's readability. | `app.js:121-134`; `MAT.spill` | Lower `environmentIntensity` for the spill material, or tune the spill roughness. |
+| R11 | minor | **The decorative ceiling lamp discs are placed at x 24, z 14 over the packing bench**, so the lamps are near the cue objects there. Not harmful, but the only bright objects in the roof plane draw the eye upward in several shots. | `warehouse.js:300-305` | Acceptable; leave as is or dim slightly. |
+
+## Summary
+The budget arithmetic is correct and S1 is compliant. The realism matrix is not reflected in the build: the cue objects that the matrix rates High are the least detailed objects in the scene, and several cue descriptions don't match the models. Fixing R1, R2 and R5 matters more than any cinematic polish.
