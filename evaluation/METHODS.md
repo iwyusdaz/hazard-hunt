@@ -26,7 +26,7 @@ Run 2026-10-27 with `../_tools/perf-sample.mjs` on an Apple M1 (ANGLE Metal), he
 | High | 60.1 | 18.6 ms | 122 | 7,420 | 2880×1592 |
 | Ultra | 60.0 | 18.6 ms | 122 | 7,420 | 2880×1592 |
 
-Against the budgets (standards 4.5): ≥ 55 fps on Medium (pass), ≤ 300 draw calls on Medium (pass), ≤ 1.5 M triangles (pass), menu interactive in 1.07 s (< 3 s, pass), 3.78 MB transferred before first interaction (≤ 15 MB desktop and ≤ 8 MB mobile, pass). Frame rate is capped by the 60 Hz display. Mobile performance is inferred from the Low preset; no physical phone was tested. High and Ultra currently render the same scene as Medium (the scene has no AO pass), so they offer no extra fidelity.
+Against the budgets (standards 4.5): ≥ 55 fps on Medium (pass), ≤ 300 draw calls on Medium (pass), ≤ 1.5 M triangles (pass), menu interactive in 0.33 s (< 3 s, pass; measured in the page from navigation start until the Menu button is visible and no long task is running, on a local server), 3.78 MB transferred before first interaction (≤ 15 MB desktop and ≤ 8 MB mobile, pass). Frame rate is capped by the 60 Hz display. Mobile performance is inferred from the Low preset; no physical phone was tested. High and Ultra currently render the same scene as Medium (the scene has no AO pass), so they offer no extra fidelity.
 
 ## Not yet run (tracked in STATUS.md)
 - Agent-based design reviews and the revisions they lead to.
