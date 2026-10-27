@@ -78,6 +78,12 @@ export class App {
     this.engine.camera.fov = 65;
     this.engine.camera.updateProjectionMatrix();
     this.warehouse = new Warehouse(this.engine.scene);
+    // Presets drive real-time shadows and resolution (standards 4.4).
+    this.warehouse.applyPreset(this.engine.renderer, this.engine.quality.presetDef);
+    this.engine.quality.onChange((def) => {
+      this.warehouse.applyPreset(this.engine.renderer, def);
+      this.engine.resize();
+    });
     this._loadEnvironment();
     this.input = new Input(document.getElementById('app'));
     this.look = new LookController(this.engine.camera);

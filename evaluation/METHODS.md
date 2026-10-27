@@ -16,8 +16,19 @@ What was checked, how, and what it can and can't show. No real learners have use
 
 **Can't show:** whether learners notice hazards better, whether the risk ratings match a real site's judgment, or how a screen-reader user experiences it.
 
+## Performance (headed, real GPU)
+Run 2026-10-27 with `../_tools/perf-sample.mjs` on an Apple M1 (ANGLE Metal), headed Chromium, 1440×900 CSS px at 2× pixel ratio, assessed-zone aisle view. Each preset: 3 s warm-up, then 8 s of frame times. Raw output: `results/perf-2026-10-27.json`.
+
+| Preset | Mean fps | p95 frame | Draw calls | Triangles | Canvas |
+|---|---|---|---|---|---|
+| Low | 60.1 | 18.6 ms | 41 | 3,372 | 2160×1194 |
+| Medium | 60.1 | 18.6 ms | 122 | 7,420 | 2880×1592 |
+| High | 60.1 | 18.6 ms | 122 | 7,420 | 2880×1592 |
+| Ultra | 60.0 | 18.6 ms | 122 | 7,420 | 2880×1592 |
+
+Against the budgets (standards 4.5): ≥ 55 fps on Medium (pass), ≤ 300 draw calls on Medium (pass), ≤ 1.5 M triangles (pass), menu interactive in 1.07 s (< 3 s, pass), 3.78 MB transferred before first interaction (≤ 15 MB desktop and ≤ 8 MB mobile, pass). Frame rate is capped by the 60 Hz display. Mobile performance is inferred from the Low preset; no physical phone was tested. High and Ultra currently render the same scene as Medium (the scene has no AO pass), so they offer no extra fidelity.
+
 ## Not yet run (tracked in STATUS.md)
-- Headed GPU performance runs per preset (fps, draw calls, triangles, texture memory).
 - Agent-based design reviews and the revisions they lead to.
 - Captioned trailer.
 
@@ -33,3 +44,4 @@ Changes made because of checks during the build (agent-review revisions will be 
 4. Reduced motion didn't apply to the replay camera, and the frozen-moment orbit spun automatically. The replay now cuts with reduced motion, and orbit moves 45° per press.
 5. A hidden cinematic overlay blocked every click (CSS `display:flex` overrode `hidden`). Fixed and covered by the functional tests.
 6. An unverifiable regulation citation on the trailer item was removed (eCFR was bot-blocked).
+7. The first headed performance run found 395 draw calls on Medium (budget 300), and quality presets changed nothing in the scene. Static, non-inspectable geometry is now merged per material, and presets switch real-time shadows. Medium dropped to 122 draw calls; Low to 41.

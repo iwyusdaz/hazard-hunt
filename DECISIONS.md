@@ -16,4 +16,5 @@
 | 12 | Unchocked-trailer item cites no regulation paragraph | Cite 1910.178(k) | eCFR was bot-blocked when checking the exact wheel-chock paragraph; per the honesty rules the item explains the hazard without a citation | 2026-10-27 |
 | 13 | Content in `content/*.json`, copied into the build by `scripts/sync-content.mjs` | Inline in code | Designers can edit content without touching JavaScript (standards 3.4) | 2026-10-27 |
 | 14 | README evaluation notice says reviews and performance tests are "in progress" | Use the standard notice now | The standard notice states agent reviews are complete; that would be false until they run. Switch to the verbatim notice once they have. | 2026-10-27 |
+| 16 | Merge static, non-inspectable meshes per material at load; presets toggle real-time shadows | Instancing; leave as is | Measured 395 draw calls on Medium (budget 300). Merging keeps inspectables and moving vehicles separate for raycasting and the replay; result 122 on Medium | 2026-10-27 |
 | 15 | Linked companion repos `ai-literacy-program` and `should-this-be-a-course` | Name only | Both exist on GitHub (checked with `gh repo view`, 2026-10-27) | 2026-10-27 |

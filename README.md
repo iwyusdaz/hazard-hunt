@@ -1,4 +1,4 @@
-> **Evaluation status:** Automated functional and accessibility testing is complete. Agent-based design reviews and headed performance testing are in progress (see `STATUS.md`). No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
+> **Evaluation status:** Automated functional, accessibility and performance testing is complete. Agent-based design reviews are in progress (see `STATUS.md`). No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
 
 # Hazard Hunt + Incident Replay
 
@@ -66,7 +66,8 @@ Cinematic budget: one 14-second intro (S1) plus four replay segments of 14–18 
 **What was measured** (details in [evaluation/METHODS.md](evaluation/METHODS.md)):
 - 11 unit tests: risk-rating bands, including the rule that a rare but fatal hazard is High; the answer key matches the content; controls-ranking scoring; speak-up graph validity (no dead ends, every node and all three outcomes reachable); content counts (12 hazards, 4 distractors, 2 deliberately subtle hazards); every hunt item exists as a selectable 3D object.
 - 9 browser tests: module navigation by keyboard, pre-check feedback, practice-zone rating, a hinted practice zone plus an assessed zone without hints, every speak-up outcome reached, replay decisions and causes chart, intro captioned and skippable, an axe scan of every overlay state (zero critical or serious issues) and the sub-path test at `/play/hazard-hunt/` (no failed requests, no console errors).
-- **Pending:** agent-based design reviews (heuristics, cognitive walkthrough, multimedia principles, realism and cinematics, game accessibility, plus "workplace safety trainer" and "corporate L&D lead" persona reviews) by a reviewer that didn't build the course, to be labeled "Agent review" in [evaluation/reviews/](evaluation/reviews/). Also pending: headed performance runs per preset.
+- Headed performance on an Apple M1: 60 fps on every preset, 122 draw calls on Medium (budget 300), menu interactive in 1.1 s, 3.8 MB downloaded before the first interaction.
+- **Pending:** agent-based design reviews (heuristics, cognitive walkthrough, multimedia principles, realism and cinematics, game accessibility, plus "workplace safety trainer" and "corporate L&D lead" persona reviews) by a reviewer that didn't build the course, to be labeled "Agent review" in [evaluation/reviews/](evaluation/reviews/).
 
 **What it can show:** the course works end to end by keyboard and in text mode, every branch and outcome is reachable, the overlay passes automated WCAG 2.1 AA checks, and the build works under the shared showcase path.
 

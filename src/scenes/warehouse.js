@@ -6,6 +6,7 @@
  * @module scenes/warehouse
  */
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const MAT = {
   concrete: new THREE.MeshStandardMaterial({ color: 0x9a9a97, roughness: 0.92, metalness: 0.02 }),
@@ -35,6 +36,56 @@ export class Warehouse {
     this._truck = null;
     this._build();
     this._applyTextures();
+    this._mergeStatic();
+  }
+
+  /**
+   * Merge every static mesh that is neither inspectable nor animated into one
+   * mesh per material (draw-call budget: ≤ 300 on Medium). Inspectables stay
+   * separate so raycasting can identify them; trucks and workers stay separate
+   * because the replay moves them.
+   */
+  _mergeStatic() {
+    this.scene.updateMatrixWorld(true);
+    const keep = new Set();
+    const markTree = (o) => o.traverse((c) => keep.add(c));
+    for (const { mesh } of this.inspectables.values()) markTree(mesh);
+    for (const w of this._workers) markTree(w);
+    for (const o of this.scene.children) if (o.userData.dynamic) markTree(o);
+    const byMaterial = new Map();
+    this.scene.traverse((o) => {
+      if (!o.isMesh || keep.has(o) || o.material.transparent) return;
+      if (!byMaterial.has(o.material)) byMaterial.set(o.material, []);
+      byMaterial.get(o.material).push(o);
+    });
+    for (const [material, meshes] of byMaterial) {
+      if (meshes.length < 2) continue;
+      const geos = meshes.map((m) => {
+        const g = (m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone()).applyMatrix4(m.matrixWorld);
+        for (const name of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(name)) g.deleteAttribute(name);
+        return g;
+      });
+      const merged = mergeGeometries(geos, false);
+      if (!merged) continue;
+      for (const g of geos) g.dispose();
+      const mesh = new THREE.Mesh(merged, material);
+      mesh.castShadow = meshes.some((m) => m.castShadow);
+      mesh.receiveShadow = true;
+      for (const m of meshes) m.removeFromParent();
+      this.scene.add(mesh);
+    }
+  }
+
+  /** Apply a quality preset: real-time shadows only when the preset has a shadow map. */
+  applyPreset(renderer, def) {
+    const on = def.shadowMapSize > 0;
+    renderer.shadowMap.enabled = on;
+    if (on && this.keyLight.shadow.mapSize.x !== def.shadowMapSize) {
+      this.keyLight.shadow.mapSize.set(def.shadowMapSize, def.shadowMapSize);
+      this.keyLight.shadow.map?.dispose();
+      this.keyLight.shadow.map = null;
+    }
+    this.scene.traverse((o) => { if (o.material) o.material.needsUpdate = true; });
   }
 
   /**
@@ -245,6 +296,7 @@ export class Warehouse {
     key.shadow.camera.far = 60;
     key.shadow.bias = -0.0004;
     this.scene.add(key);
+    this.keyLight = key;
     for (const [x, z] of [[-20, -14], [0, -14], [-20, 8], [8, 8], [24, 14]]) {
       const lamp = new THREE.Mesh(new THREE.CircleGeometry(0.55, 16), new THREE.MeshStandardMaterial({ color: 0xf5efdc, emissive: 0xfff3d6, emissiveIntensity: 1.4 }));
       lamp.rotation.x = Math.PI / 2;
