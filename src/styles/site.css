@@ -119,7 +119,13 @@ caption { text-align: left; font-weight: 600; padding: 0.2rem 0; }
 .skip-link { position: absolute; left: -9999px; top: 0; z-index: 100; background: var(--accent-strong); color: #fff; padding: 0.5rem 1rem; }
 .skip-link:focus { left: 0.5rem; top: 0.5rem; }
 
+.your-answer { font-weight: 600; }
+.disclaimer { font-size: 0.85rem; color: var(--muted); margin: 0.6rem 0 0; }
+
 @media (max-width: 700px) {
   .hud { top: 5.8rem; }
-  #overlays > .poi-list { width: 70vw; }
+  /* Mobile (review N8): the POI panel becomes a bottom sheet above the look pad, so
+     it never covers the module tabs or page text. In text mode it is hidden (R7). */
+  #overlays > h3 { top: auto; bottom: calc(7.5rem + 30vh + 0.6rem); right: 0.5rem; }
+  #overlays > .poi-list { top: auto; bottom: 7.5rem; right: 0.5rem; width: min(18rem, 82vw); max-height: 30vh; }
 }

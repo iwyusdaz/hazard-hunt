@@ -25,7 +25,7 @@ export class ProgressPage {
       byVerb[v] = (byVerb[v] || 0) + 1;
     }
     d.innerHTML = `
-      <h2>My progress</h2>
+      <h2 id="progress-h">My progress</h2>
       <p id="progress-status">Your learning record is saved only in this browser. Nothing is sent anywhere.</p>
       <p>Events recorded: <strong>${events.length}</strong>
         (${Object.entries(byVerb).map(([v, n]) => `${v}: ${n}`).join(', ') || 'none yet'})</p>

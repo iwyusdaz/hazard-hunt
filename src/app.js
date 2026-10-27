@@ -23,7 +23,7 @@ import { HuntController, BAND_RULE } from './systems/hazard-hunt.js';
 import { ReplayPlayer } from './systems/replay-player.js';
 import { ControlsActivity } from './systems/controls-activity.js';
 import { DialoguePlayer, validateGraph } from './systems/dialogue.js';
-import { mcItem, scoreAnswers } from './learning/assess.js';
+import { mcItem, scoreAnswers, shuffled } from './learning/assess.js';
 
 export const SLUG = 'hazard-hunt';
 window.__SLUG__ = SLUG;
@@ -75,6 +75,7 @@ export class App {
       return;
     }
     this.engine = new Engine(document.getElementById('app'));
+    this.engine.quality.restore(); // the saved preset wins over auto-selection (review N16)
     this.engine.camera.fov = 65;
     this.engine.camera.updateProjectionMatrix();
     this.warehouse = new Warehouse(this.engine.scene);
@@ -89,8 +90,11 @@ export class App {
     this.look = new LookController(this.engine.camera);
     this.input.onPointer((p, kind) => {
       if (kind === 'move' && p.down) this.look.drag(p.dx, p.dy);
-      if (kind === 'move' && !p.down) this._hover(p.x, p.y);
-      if (kind === 'up' && Math.abs(p.dx) + Math.abs(p.dy) < 4) this._click(p.x, p.y);
+      // Only the canvas itself can hover or select, never HTML on top of it, and never
+      // while a modal dialog is open (review N1).
+      const blocked = !p.onTarget || document.querySelector('dialog[open]');
+      if (kind === 'move' && !p.down) { if (blocked) this._clearHover(); else this._hover(p.x, p.y); }
+      if (kind === 'up' && !blocked && p.moved < 4) this._click(p.x, p.y);
     });
     this.input.onKey((code, e) => {
       if (e.target instanceof HTMLElement && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
@@ -174,6 +178,8 @@ export class App {
     this.engine.canvas.style.cursor = ok ? 'pointer' : '';
   }
 
+  _clearHover() { if (this.engine) this.engine.canvas.style.cursor = ''; }
+
   _click(x, y) {
     const { id, active } = this._pickAt(x, y);
     if (!id) return;
@@ -190,6 +196,7 @@ export class App {
     this.hunt.renderRatingDialog(found.def, found.zone, dlg, (result) => {
       closeDialog(dlg);
       this._flagged(found.def, result);
+      this._syncSection(id);
       // Feedback stays until the learner closes it (no timers; agent review A4).
       this.shell.overlays.querySelector('.hunt-feedback')?.remove();
       const fb = document.createElement('div');
@@ -199,11 +206,19 @@ export class App {
       const close = document.createElement('button');
       close.type = 'button';
       close.textContent = 'Close feedback';
-      close.addEventListener('click', () => { fb.remove(); this.warehouse?.highlight(null); });
+      this._refreshPoi();
+      // Focus goes to the feedback, and back to the rebuilt POI button for this item
+      // when the feedback is closed (review N6: the old button no longer exists).
+      close.addEventListener('click', () => {
+        fb.remove();
+        this.warehouse?.highlight(null);
+        const poiBtn = this.shell.overlays.querySelector(`[data-poi="${CSS.escape(id)}"]`);
+        if (poiBtn && poiBtn.offsetParent !== null) poiBtn.focus();
+        else document.querySelector('.back-to-list')?.focus();
+      });
       fb.appendChild(close);
       this.shell.overlays.appendChild(fb);
       close.focus();
-      this._refreshPoi();
       const next = { practice: 'Practice zone complete. Continue with Part B, the assessed zone.', assessed: 'Assessed zone complete. Continue to Module 3, the incident replay.', transfer: 'Transfer zone complete.' };
       if (this._zoneComplete(found.zone.id)) {
         this.shell.setStatus(next[found.zone.id]);
@@ -300,6 +315,10 @@ export class App {
     this.shell.setModule(i);
     document.getElementById('textmode').hidden = false;
     document.getElementById('app').style.visibility = 'hidden';
+    // Start each module from a real viewpoint, never the world origin (review N9):
+    // the first view of the active zone, or the receiving dock otherwise.
+    const firstZone = this._activeZones()[0] || this.zones[0];
+    this._gotoView(firstZone.views[0], { quiet: true });
     this.textMode.show(MODULES[i]);
     this._refreshPoi();
     this.record.log('experienced', { id: `module-${i + 1}`, name: MODULES[i] });
@@ -332,7 +351,9 @@ export class App {
     }
     body.appendChild(this._el(`<h3>Pre-check</h3>`));
     for (const item of this.items.preCheck) {
-      mcItem({ item, container: body, onAnswered: (a) => this._answer(a, 'pre') });
+      // Answered items stay answered across module switches; no second answer (N5).
+      const previous = this.results.pre.find((a) => a.itemId === item.id) || null;
+      mcItem({ item, container: body, previous, onAnswered: (a) => this._answer(a, 'pre') });
     }
   }
 
@@ -380,21 +401,7 @@ export class App {
     body.appendChild(this._el(`<h4>Inspectable areas (all listed; decide which are hazards)</h4>`));
     const table = dataTable(['Area', 'What you can observe'], zone.inspectables.map((i) => [i.area, i.cue]), `${zone.name}: flag and rate each area`);
     body.appendChild(table);
-    for (const item of zone.inspectables) {
-      const section = document.createElement('section');
-      section.className = 'assessment-item';
-      const cue = Object.assign(document.createElement('p'), { textContent: item.cue });
-      this.hunt.renderRatingDialog(item, zone, section, (result) => {
-        section.querySelector('.feedback')?.remove();
-        const fb = document.createElement('div');
-        fb.className = 'feedback';
-        fb.innerHTML = `<p>${result.feedback.replace(/\*\*/g, '')}</p>`;
-        section.appendChild(fb);
-        this._flagged(item, result);
-      });
-      section.querySelector('h3').after(cue);
-      body.appendChild(section);
-    }
+    for (const item of zone.inspectables) body.appendChild(this._ratingSection(item, zone));
     if (zone.hints) {
       const hint = document.createElement('p');
       hint.className = 'hint';
@@ -403,6 +410,69 @@ export class App {
       body.appendChild(hint);
       this.hunt._updateHint = updateHint;
     }
+  }
+
+  /**
+   * One text-page rating section. A rating already in `hunt.flags` (from this page,
+   * from the 3D dialog, or from before a module switch) is shown read-only with its
+   * feedback and a "Change my answer" button, so one item has one rating in both
+   * views (review N5).
+   */
+  _ratingSection(item, zone, section = document.createElement('section')) {
+    section.className = 'assessment-item';
+    section.dataset.item = item.id;
+    const showFeedback = (result) => {
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.innerHTML = `<p>${result.feedback.replace(/\*\*/g, '')}</p>`;
+      section.appendChild(fb);
+      return fb;
+    };
+    const prev = this.hunt.flags.get(item.id);
+    if (prev) {
+      section.innerHTML = '';
+      const h = Object.assign(document.createElement('h3'), { textContent: item.area });
+      const cue = Object.assign(document.createElement('p'), { textContent: item.cue });
+      const yours = Object.assign(document.createElement('p'), { className: 'your-answer', textContent: `Your answer: ${this._describeJudgment(prev.result)}` });
+      section.append(h, cue, yours);
+      showFeedback(prev.result);
+      const again = document.createElement('button');
+      again.type = 'button';
+      again.textContent = 'Change my answer';
+      again.setAttribute('aria-label', `Change my answer: ${item.area}`);
+      again.addEventListener('click', () => {
+        section.innerHTML = '';
+        this._ratingForm(item, zone, section, showFeedback);
+        section.querySelector('input')?.focus();
+      });
+      section.appendChild(again);
+      return section;
+    }
+    this._ratingForm(item, zone, section, showFeedback);
+    return section;
+  }
+
+  _ratingForm(item, zone, section, showFeedback) {
+    this.hunt.renderRatingDialog(item, zone, section, (result) => {
+      section.querySelector('.feedback')?.remove();
+      showFeedback(result);
+      this._flagged(item, result);
+      this._refreshPoi();
+    });
+    const cue = Object.assign(document.createElement('p'), { textContent: item.cue });
+    section.querySelector('h3').after(cue);
+  }
+
+  _describeJudgment(r) {
+    if (r.classification === 'hazard') return `a hazard to report, likelihood ${r.likelihood} × severity ${r.severity} (${r.band?.label}).`;
+    return r.classification === 'controlled' ? 'a controlled condition.' : 'acceptable, nothing to report.';
+  }
+
+  /** Re-render the text-page section of an item rated in 3D (review N5). */
+  _syncSection(id) {
+    const section = document.querySelector(`#textmode section[data-item="${CSS.escape(id)}"]`);
+    const found = this.hunt.byId(id);
+    if (section && found) this._ratingSection(found.def, found.zone, section);
   }
 
   _module3(body, api) {
@@ -429,7 +499,7 @@ export class App {
         const lg = document.createElement('legend');
         lg.textContent = pp.question;
         fs.appendChild(lg);
-        for (const opt of pp.options) {
+        for (const opt of shuffled(pp.options, `replay-${seg.id}@${pp.at}`)) {
           const lab = document.createElement('label');
           lab.className = 'choice';
           const input = document.createElement('input');
@@ -442,20 +512,28 @@ export class App {
         const submit = document.createElement('button');
         submit.type = 'button';
         submit.textContent = 'Submit decision';
-        submit.addEventListener('click', () => {
-          const sel = fs.querySelector('input:checked');
-          if (!sel) return;
-          const opt = pp.options.find((o) => o.id === sel.value);
+        const key = `${seg.id}@${pp.at}`;
+        this._replayAnswers ??= new Map();
+        const showResult = (opt) => {
           const fb = document.createElement('div');
           fb.className = 'feedback';
           fb.innerHTML = `<p><strong>${opt.correct ? 'Good decision.' : 'Consider the alternative:'}</strong> ${opt.why}</p>`;
           fs.appendChild(fb);
+          for (const input of fs.querySelectorAll('input')) { input.checked = input.value === opt.id; input.disabled = true; }
+          submit.disabled = true;
+        };
+        submit.addEventListener('click', () => {
+          const sel = fs.querySelector('input:checked');
+          if (!sel || this._replayAnswers.has(key)) return;
+          const opt = pp.options.find((o) => o.id === sel.value);
+          // One answer per decision across the storyboard and the 3D replay (N3/N5).
+          this._replayAnswers.set(key, opt);
           this.results.replay.push({ segment: seg.id, chosen: opt.id, correct: opt.correct });
           this.record.log('answered', { id: `replay-${seg.id}`, name: pp.question }, { response: opt.id, success: opt.correct });
-          for (const input of fs.querySelectorAll('input')) input.disabled = true;
-          submit.disabled = true;
+          showResult(opt);
         });
         fs.appendChild(submit);
+        if (this._replayAnswers.has(key)) showResult(this._replayAnswers.get(key));
         section.appendChild(fs);
       }
       body.appendChild(section);
@@ -493,7 +571,10 @@ export class App {
 
   _startReplay3D() {
     this._setReplayActors(true);
-    if (this._replay) { this._replayUi.hidden = false; this._replay.loadSegment(0); this._replay.play(); return; }
+    // Opens paused on frame 0 with focus on Play, so the learner can read the
+    // segment text before anything moves (review N14; reduced motion included).
+    const focusPlay = () => this._replayUi.querySelector('[data-replay="play"]')?.focus();
+    if (this._replay) { this._replayUi.hidden = false; this._replay.loadSegment(0); focusPlay(); return; }
     const ui = document.createElement('div');
     ui.className = 'replay-ui';
     this._replayUi = ui;
@@ -507,39 +588,7 @@ export class App {
       camera: this.engine.camera,
       ui,
       motion: this.motion,
-      onPausePoint: (pp, seg) => {
-        const dlg = document.getElementById('task-dialog');
-        dlg.innerHTML = `<h2 id="task-h">Decision point</h2><p>${pp.question}</p>`;
-        const opts = document.createElement('div');
-        opts.setAttribute('role', 'radiogroup');
-        opts.setAttribute('aria-label', pp.question);
-        for (const opt of pp.options) {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'choice-btn';
-          b.textContent = opt.text;
-          b.addEventListener('click', () => {
-            const fb = document.createElement('div');
-            fb.className = 'feedback';
-            fb.innerHTML = `<p><strong>${opt.correct ? 'Good decision.' : 'Consider the alternative:'}</strong> ${opt.why}</p>`;
-            dlg.appendChild(fb);
-            this.results.replay.push({ segment: seg.id, chosen: opt.id, correct: opt.correct });
-            this.record.log('answered', { id: `replay-${seg.id}`, name: pp.question }, { response: opt.id, success: opt.correct });
-            const cont = document.createElement('button');
-            cont.type = 'button';
-            cont.textContent = 'Continue replay';
-            cont.addEventListener('click', () => {
-              closeDialog(dlg);
-              this._replay.showCauses(seg.causesVisible, this.replayData.causes);
-              this._replay.resolveDecision(opt);
-            });
-            dlg.appendChild(cont);
-          });
-          opts.appendChild(b);
-        }
-        dlg.appendChild(opts);
-        openDialog(dlg);
-      },
+      onPausePoint: (pp, seg) => this._replayDecision(pp, seg),
       onSegmentEnd: (seg) => {
         this._replay.showCauses(seg.causesVisible, this.replayData.causes);
         if (seg.id === 'seg4') this.record.log('completed', { id: 'replay-complete', name: 'Incident replay' });
@@ -547,28 +596,113 @@ export class App {
       },
     });
     this._replay.loadSegment(0);
-    this._replay.play();
+    focusPlay();
+  }
+
+  /**
+   * 3D replay decision dialog. One answer per decision (review N3): the options are
+   * disabled after the first choice and only one `answered` statement is logged, also
+   * when the dialog is closed with Esc and reopened. Closing without "Continue" leaves
+   * the replay paused at the decision; Play reopens it (review N2).
+   */
+  _replayDecision(pp, seg) {
+    const key = `${seg.id}@${pp.at}`;
+    this._replayAnswers ??= new Map();
+    const dlg = document.getElementById('task-dialog');
+    dlg.innerHTML = `<h2 id="task-h">Decision point</h2><p>${pp.question}</p>`;
+    const opts = document.createElement('div');
+    opts.setAttribute('role', 'group');
+    opts.setAttribute('aria-label', pp.question);
+    const buttons = [];
+    const showResult = (opt) => {
+      for (const x of buttons) x.disabled = true;
+      const fb = document.createElement('div');
+      fb.className = 'feedback';
+      fb.setAttribute('role', 'status');
+      fb.innerHTML = `<p><strong>${opt.correct ? 'Good decision.' : 'Consider the alternative:'}</strong> ${opt.why}</p>`;
+      const cont = document.createElement('button');
+      cont.type = 'button';
+      cont.textContent = 'Continue replay';
+      cont.addEventListener('click', () => {
+        dlg.__answeredClose = true;
+        closeDialog(dlg);
+        this._replay.showCauses(seg.causesVisible, this.replayData.causes);
+        this._replay.resolveDecision(opt);
+      });
+      dlg.append(fb, cont);
+      cont.focus();
+    };
+    for (const opt of shuffled(pp.options, `replay-${key}`)) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'choice-btn';
+      b.textContent = opt.text;
+      b.addEventListener('click', () => {
+        if (this._replayAnswers.has(key)) return;
+        this._replayAnswers.set(key, opt);
+        this.results.replay.push({ segment: seg.id, chosen: opt.id, correct: opt.correct });
+        this.record.log('answered', { id: `replay-${seg.id}`, name: pp.question }, { response: opt.id, success: opt.correct });
+        b.setAttribute('aria-pressed', 'true');
+        showResult(opt);
+      });
+      buttons.push(b);
+      opts.appendChild(b);
+    }
+    dlg.appendChild(opts);
+    dlg.__answeredClose = false;
+    // Esc (or any close without "Continue") keeps the replay paused at the decision
+    // and says how to get back to it.
+    dlg.onclose = () => {
+      dlg.onclose = null;
+      if (dlg.__answeredClose || !this._replay?.pausedAtPoint) return;
+      this._replay.storyEl.textContent = 'Decision waiting. Press Play to answer it and continue the replay.';
+      announce('Replay paused at a decision. Press Play to answer it.');
+      this._replayUi.querySelector('[data-replay="play"]')?.focus();
+    };
+    openDialog(dlg, this._replayUi.querySelector('[data-replay="play"]'));
+    const prev = this._replayAnswers.get(key);
+    if (prev) {
+      buttons[shuffled(pp.options, `replay-${key}`).indexOf(prev)]?.setAttribute('aria-pressed', 'true');
+      showResult(prev);
+    }
   }
 
   _module4(body, api) {
-    body.appendChild(this._el(`<p>For each hazard from the replay, rank the candidate controls. The hierarchy of controls (NIOSH, verified in research/sources.md): Elimination → Substitution → Engineering → Administrative → PPE.</p>`));
+    body.appendChild(this._el(`<p>For three hazards from this course, rank the candidate controls. The hierarchy of controls (source: NIOSH, the US National Institute for Occupational Safety and Health): Elimination → Substitution → Engineering → Administrative → PPE.</p>`));
     const host = document.createElement('div');
     body.appendChild(host);
-    const activity = new ControlsActivity({
-      data: this.controlsData,
-      container: host,
-      onComplete: (results) => {
-        this.results.controls = results;
-        this.record.log('completed', { id: 'controls-activity', name: 'Hierarchy of controls ranking' }, { 'response': results.map((r) => r.taskId + ':' + (r.perfect ? 'perfect' : 'revised')).join(',') });
+    const showIsIt = () => {
         const isIt = this.controlsData.isItTraining;
         const table = dataTable(['Cause', 'Is it training?', 'Why'], isIt.map((r) => [r.cause, r.verdict, r.because]), '"Is it training?" — performance-consulting view');
         body.appendChild(this._el(`<h3>Is it training?</h3>`));
         body.appendChild(table);
         body.appendChild(this._el(`<p>Some causes are system or layout problems that training alone will not fix — that judgment is part of the job. (See the portfolio's "should-this-be-a-course" thread for the full analysis method.)</p>`));
-        this.record.log('experienced', { id: 'is-it-training', name: 'Is it training reflection' });
-      },
-    });
-    activity.next();
+    };
+    const start = () => {
+      const activity = new ControlsActivity({
+        data: this.controlsData,
+        container: host,
+        onComplete: (results) => {
+          this.results.controls = results;
+          this.record.log('completed', { id: 'controls-activity', name: 'Hierarchy of controls ranking' }, { 'response': results.map((r) => r.taskId + ':' + (r.perfect ? 'perfect' : 'revised')).join(',') });
+          showIsIt();
+          this.record.log('experienced', { id: 'is-it-training', name: 'Is it training reflection' });
+        },
+      });
+      activity.next();
+    };
+    // A finished ranking stays finished when the learner comes back (review N5).
+    if (this.results.controls.length) {
+      host.appendChild(this._el(`<h3>Your rankings</h3>`));
+      host.appendChild(dataTable(['Hazard', 'Result'], this.results.controls.map((r) => [
+        this.controlsData.tasks.find((t) => t.id === r.taskId)?.hazard ?? r.taskId,
+        r.perfect ? 'Follows the hierarchy' : `${r.inversions} pair(s) out of hierarchy order`,
+      ]), 'Hierarchy of controls ranking, completed'));
+      const again = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Rank the controls again' });
+      again.addEventListener('click', () => { host.innerHTML = ''; start(); host.querySelector('button')?.focus(); });
+      host.appendChild(again);
+      showIsIt();
+    } else start();
   }
 
   _module5(body, api) {
@@ -595,29 +729,27 @@ export class App {
         dlgHost.appendChild(again);
       },
     });
-    speakPlayer.start();
+    if (this.results.speakup) {
+      // Coming back to Module 5 shows the outcome reached earlier (review N5).
+      const line = Object.values(this.speakupData.nodes).find((n) => n.outcome === this.results.speakup)?.line ?? '';
+      dlgHost.appendChild(this._el(`<p class="your-answer">Your earlier outcome: ${this.results.speakup}.</p>`));
+      dlgHost.appendChild(Object.assign(document.createElement('div'), { className: 'feedback', innerHTML: `<p>${line}</p>` }));
+      const again = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Try a different approach' });
+      again.addEventListener('click', () => speakPlayer.start());
+      dlgHost.appendChild(again);
+    } else speakPlayer.start();
 
     body.appendChild(this._el(`<h3>Transfer hunt: outbound staging lane (no hints)</h3>`));
     body.appendChild(this._el(`<p>A new zone, no hints. Flag and rate what deserves a report — and leave the controlled conditions alone.</p>`));
     const zone = this.zones[2];
     const table = dataTable(['Area', 'What you can observe'], zone.inspectables.map((i) => [i.area, i.cue]), 'Transfer zone');
     body.appendChild(table);
-    for (const item of zone.inspectables) {
-      const section = document.createElement('section');
-      section.className = 'assessment-item';
-      const cue = Object.assign(document.createElement('p'), { textContent: item.cue });
-      this.hunt.renderRatingDialog(item, zone, section, (result) => {
-        section.querySelector('.feedback')?.remove();
-        section.appendChild(Object.assign(document.createElement('div'), { className: 'feedback', innerHTML: `<p>${result.feedback.replace(/\*\*/g, '')}</p>` }));
-        this._flagged(item, result);
-      });
-      section.querySelector('h3').after(cue);
-      body.appendChild(section);
-    }
+    for (const item of zone.inspectables) body.appendChild(this._ratingSection(item, zone));
     const refl = this.items.transferReflection;
     body.appendChild(this._el(`<h3>Transfer reflection</h3>`));
     const rf = document.createElement('div');
     rf.innerHTML = `<label for="reflection-input">${refl.prompt}</label><textarea id="reflection-input" rows="4"></textarea>`;
+    if (this.results.reflection) rf.querySelector('textarea').value = this.results.reflection;
     const save = document.createElement('button');
     save.type = 'button';
     save.textContent = 'Save reflection';
@@ -639,9 +771,9 @@ export class App {
     const summary = document.createElement('section');
     summary.className = 'course-summary';
     summary.setAttribute('aria-live', 'polite');
-    this.results.post = [];
     for (const item of this.items.postCheck) {
-      mcItem({ item, container: body, onAnswered: (a) => {
+      const previous = this.results.post.find((a) => a.itemId === item.id) || null;
+      mcItem({ item, container: body, previous, onAnswered: (a) => {
         this._answer(a, 'post');
         if (this.results.post.length === this.items.postCheck.length) {
           this._renderSummary(summary);
@@ -652,6 +784,7 @@ export class App {
       } });
     }
     body.appendChild(summary);
+    if (this.results.post.length === this.items.postCheck.length) this._renderSummary(summary);
     body.appendChild(this._el(`<p>The summary appears when all five post-check questions are answered.</p>`));
   }
 
@@ -691,6 +824,8 @@ export class App {
       ['Hazards you judged as not a hazard', missed.length ? missed.join('; ') : 'None'],
     ], 'Your results (stored on this device only)'));
     host.querySelector('table')?.classList.add('summary-table');
+    // The legal disclaimer is repeated at the end of the course (second-pass review N17).
+    host.appendChild(this._el(`<p class="disclaimer">This course does not replace training required by law or by your employer.</p>`));
   }
 
   _answer(a, phase) {

@@ -40,6 +40,7 @@ export class Shell {
           <li><button type="button" data-action="progress">My progress</button></li>
           <li><a href="/">All projects</a></li>
         </ul>
+        <p class="disclaimer">This course does not replace training required by law or by your employer.</p>
       </dialog>
       <div class="visually-hidden" id="announcer"></div>
     `;

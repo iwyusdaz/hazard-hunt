@@ -132,7 +132,18 @@ test('replay module: pause-decide items give feedback; causes chart present', as
 test('module 5: post-check, reflection input and completion summary with pre/post scores', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#textmode .assessment-item').first()).toBeVisible({ timeout: 20_000 });
-  for (const item of await page.locator('#textmode .assessment-item').all()) await item.locator('.choice-btn').first().click();
+  // Options are shuffled per item at render time (review N4), so the correct choice
+  // is identified by its text from the served content data, not by position.
+  const items = await (await page.request.get('/content/items.json')).json();
+  const answerCorrectly = async (scope, list) => {
+    for (const item of await scope.all()) {
+      const prompt = (await item.locator('h3').first().textContent()).trim();
+      const data = list.find((i) => i.prompt === prompt);
+      const correctText = data.options.find((o) => o.id === data.correct).text;
+      await item.getByRole('button', { name: correctText, exact: true }).click();
+    }
+  };
+  await answerCorrectly(page.locator('#textmode .assessment-item'), items.preCheck);
   await page.locator('.module-nav button').nth(4).click();
   await page.getByLabel(/Name one condition/).fill('Ramped cable at the charger; a fire door wedged open.');
   await page.getByRole('button', { name: 'Save reflection' }).click();
@@ -140,9 +151,9 @@ test('module 5: post-check, reflection input and completion summary with pre/pos
   await expect(page.getByRole('heading', { name: 'Post-check' })).toBeVisible();
   const post = page.locator('.assessment-item', { has: page.locator('h3', { hasText: /next step|rating should change|root causes|busy supervisor|strongest first control/ }) });
   await expect(post).toHaveCount(5);
-  for (const item of await post.all()) await item.locator('.choice-btn').first().click();
+  await answerCorrectly(post, items.postCheck);
   const summary = page.locator('.course-summary');
   await expect(summary.getByRole('heading', { name: 'Course summary' })).toBeVisible();
-  await expect(summary).toContainText('Pre-check');
-  await expect(summary).toContainText('5 of 5');
+  await expect(summary.locator('tr', { hasText: 'Pre-check' })).toContainText('5 of 5');
+  await expect(summary.locator('tr', { hasText: 'Post-check' })).toContainText('5 of 5');
 });

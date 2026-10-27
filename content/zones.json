@@ -98,7 +98,7 @@
           "label": "Pallet overhanging the beam",
           "likelihood": 3,
           "severity": 4,
-          "why": "An overhanging pallet sits at head height for a driver and can be struck or dropped by the next truck through the aisle. The incident replay starts exactly here. Control: restack now, and retrain the put-away step plus a rack-inspection routine.",
+          "why": "An overhanging pallet sits at head height for a driver and can be struck or dropped by the next truck through the aisle. The incident replay starts exactly here. Immediate: restack the pallet now. Lasting fix: load stops on the beam (an engineering control); a put-away quality check backs that up.",
           "hintCold": "Compare each pallet's front edge with its beam."
         },
         {

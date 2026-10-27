@@ -4,6 +4,7 @@
  * @module cinematics/shot-player
  */
 import { Vector3, CatmullRomCurve3 } from 'three';
+import { announce } from '../a11y/announcer.js';
 
 export const EASINGS = {
   linear: (t) => t,
@@ -54,6 +55,11 @@ export class ShotPlayer {
     if (!this.shots.length) { this.onDone?.(); return; }
     this.playing = true;
     this.root.hidden = false;
+    // Screen-reader cue (review N13): focus lands on Skip and the live region
+    // announces that a cinematic is playing and how long it runs.
+    this.root.querySelector('.cinematic-skip')?.focus();
+    const secs = Math.round(this.shots.reduce((s, x) => s + (x.duration || 10), 0));
+    announce(`Cinematic playing, about ${secs} seconds. Skip with the Skip button or Escape.`);
     this.index = -1;
     this._nextShot();
   }

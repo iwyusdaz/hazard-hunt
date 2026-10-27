@@ -86,6 +86,7 @@ export class ReplayPlayer {
     this.segmentIndex = i;
     this.current = this.data.segments[i];
     this.t = 0;
+    this.pausedAtPoint = null;
     this._firedPauses.clear();
     this.storyEl.textContent = this.current.story;
     const segEl = this.ui.querySelector('.replay-seg');
@@ -98,7 +99,17 @@ export class ReplayPlayer {
   }
 
   play() {
-    if (this.pausedAtPoint) return; // must decide first
+    if (this.pausedAtPoint) {
+      // Review N2: a decision closed without an answer (Esc) must not lock the replay.
+      // Scrubbed back before the pause point: let it fire again naturally.
+      // Otherwise reopen the same decision.
+      if (this.current && this.t < this.pausedAtPoint.at * this.current.duration) {
+        this.pausedAtPoint = null;
+      } else {
+        this.onPausePoint?.(this.pausedAtPoint, this.current);
+        return;
+      }
+    }
     this._orbiting = false;
     this._orbitAngle = null;
     this.playing = true;

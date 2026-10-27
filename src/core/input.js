@@ -7,7 +7,9 @@ export class Input {
   constructor(domElement) {
     this.dom = domElement;
     this.keys = new Set();
-    this.pointer = { down: false, x: 0, y: 0, dx: 0, dy: 0 };
+    // `onTarget`: the event happened on the canvas itself (not on HTML above it).
+    // `moved`: total travel since pointerdown, so a drag is never treated as a click.
+    this.pointer = { down: false, x: 0, y: 0, dx: 0, dy: 0, startX: 0, startY: 0, moved: 0, onTarget: false };
     this._onKey = []; this._onPointer = [];
     this._kd = (e) => {
       if (e.target instanceof HTMLElement && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
@@ -15,9 +17,29 @@ export class Input {
       for (const fn of this._onKey) fn(e.code, e, 'down');
     };
     this._ku = (e) => { this.keys.delete(e.code); for (const fn of this._onKey) fn(e.code, e, 'up'); };
-    this._pd = (e) => { this.pointer.down = true; this.pointer.x = e.clientX; this.pointer.y = e.clientY; for (const fn of this._onPointer) fn(this.pointer, 'down'); };
-    this._pm = (e) => { this.pointer.dx = e.clientX - this.pointer.x; this.pointer.dy = e.clientY - this.pointer.y; this.pointer.x = e.clientX; this.pointer.y = e.clientY; for (const fn of this._onPointer) fn(this.pointer, 'move'); };
-    this._pu = () => { this.pointer.down = false; this.pointer.dx = 0; this.pointer.dy = 0; for (const fn of this._onPointer) fn(this.pointer, 'up'); };
+    this._pd = (e) => {
+      if (e.target !== this.dom) return;
+      Object.assign(this.pointer, { down: true, x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY, moved: 0, onTarget: true });
+      for (const fn of this._onPointer) fn(this.pointer, 'down');
+    };
+    this._pm = (e) => {
+      this.pointer.dx = e.clientX - this.pointer.x; this.pointer.dy = e.clientY - this.pointer.y;
+      this.pointer.x = e.clientX; this.pointer.y = e.clientY;
+      this.pointer.onTarget = e.target === this.dom;
+      for (const fn of this._onPointer) fn(this.pointer, 'move');
+    };
+    // pointerup stays on window so a drag released over HTML still ends the drag, but
+    // it only reports an 'up' for a press that STARTED on the canvas (review N1): a
+    // click on an overlay button never reaches the 3D picking code.
+    this._pu = (e) => {
+      if (!this.pointer.down) return;
+      this.pointer.down = false;
+      this.pointer.moved = Math.abs(e.clientX - this.pointer.startX) + Math.abs(e.clientY - this.pointer.startY);
+      this.pointer.onTarget = e.target === this.dom;
+      this.pointer.x = e.clientX; this.pointer.y = e.clientY;
+      this.pointer.dx = 0; this.pointer.dy = 0;
+      for (const fn of this._onPointer) fn(this.pointer, 'up');
+    };
     window.addEventListener('keydown', this._kd);
     window.addEventListener('keyup', this._ku);
     this.dom.addEventListener('pointerdown', this._pd);

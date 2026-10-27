@@ -27,7 +27,7 @@ export class Settings {
   _build() {
     const q = this.dialog;
     q.innerHTML = `
-      <h2>Settings</h2>
+      <h2 id="settings-h">Settings</h2>
       <form method="dialog">
         <fieldset>
           <legend>Graphics quality</legend>
