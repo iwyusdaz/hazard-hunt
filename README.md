@@ -106,3 +106,7 @@ three.js 0.186.1, Vite 8.3.5, Vitest, Playwright with axe-core, Poly Haven CC0 H
 ## License and attribution
 
 Code: MIT ([LICENSE](LICENSE)). Learning content: CC BY 4.0 ([LICENSE-CONTENT](LICENSE-CONTENT)). Third-party assets: [ATTRIBUTION.md](ATTRIBUTION.md).
+
+## Trailer
+
+**Trailer:** [docs/trailer.webm](docs/trailer.webm) (54 s, captioned; WebVTT sidecar at [docs/trailer.vtt](docs/trailer.vtt)). Recorded from the real app on the Mac GPU; the caption text is also in the sidecar file.

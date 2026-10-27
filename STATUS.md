@@ -11,7 +11,7 @@ Last updated: 2026-10-27
 | Replay pauses, scrubber and causes builder work by keyboard | done — buttons and a range input; decisions tested in the text flow |
 | Disclaimer present; no compliance claims | done — README, Module 1, Menu dialog, completion summary, showcase.json summary, manager guide |
 | Every speak-up branch reachable | done — unit test (graph) + browser test (all three outcomes) |
-| Performance budgets met | done — Apple M1, headed: 60 fps on every preset, 122 draw calls on Medium, menu interactive 0.33 s, 3.78 MB before first interaction (`evaluation/results/perf-2026-10-27.json`) |
+| Performance budgets met | done — Apple M1, headed, re-measured 2026-10-27 after the revisions: 60 fps on every preset, 139 draw calls on Medium, menu interactive 0.14 s, 3.83 MB before first interaction (`evaluation/results/perf-2026-10-27.json`) |
 | Release v1.0.0 published with archive, checksum and showcase.json; sub-path test passes | partly — sub-path test passes; showcase.json validates; release not yet tagged |
 | README: play link, trailer, realism rationale, evaluation notice, link to should-this-be-a-course | partly — all except the trailer (not yet recorded) |
 

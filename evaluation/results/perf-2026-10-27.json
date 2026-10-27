@@ -1,22 +1,22 @@
 {
   "repo": "hazard-hunt",
   "version": "1.0.0",
-  "measuredAt": "2026-10-27T12:41:28.014Z",
+  "measuredAt": "2026-10-27T19:45:42.036Z",
   "method": "Headed Chromium (Playwright) on the local Mac GPU; test-hooks build served locally; 3 s warm-up then 8 s of requestAnimationFrame frame times per preset; renderer.info read at the end of each sample.",
   "machine": {
     "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",
     "viewport": "1440x900 CSS px at deviceScaleFactor 2"
   },
-  "menuInteractiveMs": 334,
+  "menuInteractiveMs": 143,
   "startup": {
-    "menuVisibleMs": 334,
-    "menuInteractiveMs": 334,
-    "longTaskMsBeforeInteractive": 229,
+    "menuVisibleMs": 142,
+    "menuInteractiveMs": 143,
+    "longTaskMsBeforeInteractive": 104,
     "definition": "ms from navigation start until the Menu button is visible and no long task (>50 ms) is running; local server, so network time is near zero"
   },
   "network": {
     "requests": 19,
-    "bytes": 3959641
+    "bytes": 4013167
   },
   "budgets": {
     "fpsMediumMin": 55,
@@ -29,13 +29,13 @@
     {
       "preset": "low",
       "frames": 481,
-      "fpsMean": 60,
+      "fpsMean": 60.1,
       "frameMsP50": 16.7,
-      "frameMsP95": 17.7,
-      "drawCalls": 41,
-      "triangles": 3372,
+      "frameMsP95": 18.6,
+      "drawCalls": 45,
+      "triangles": 3474,
       "textures": 12,
-      "geometries": 90,
+      "geometries": 111,
       "resolutionScale": 0.75,
       "pixelRatio": 1.5,
       "canvas": "2160x1194"
@@ -45,11 +45,11 @@
       "frames": 481,
       "fpsMean": 60.1,
       "frameMsP50": 16.7,
-      "frameMsP95": 17.6,
-      "drawCalls": 122,
-      "triangles": 7420,
+      "frameMsP95": 18.5,
+      "drawCalls": 139,
+      "triangles": 7630,
       "textures": 12,
-      "geometries": 90,
+      "geometries": 111,
       "resolutionScale": 1,
       "pixelRatio": 2,
       "canvas": "2880x1592"
@@ -57,13 +57,13 @@
     {
       "preset": "high",
       "frames": 481,
-      "fpsMean": 60,
+      "fpsMean": 60.1,
       "frameMsP50": 16.7,
-      "frameMsP95": 17.6,
-      "drawCalls": 122,
-      "triangles": 7420,
+      "frameMsP95": 18.4,
+      "drawCalls": 139,
+      "triangles": 7630,
       "textures": 12,
-      "geometries": 90,
+      "geometries": 111,
       "resolutionScale": 1,
       "pixelRatio": 2,
       "canvas": "2880x1592"
@@ -73,11 +73,11 @@
       "frames": 481,
       "fpsMean": 60.1,
       "frameMsP50": 16.7,
-      "frameMsP95": 17.6,
-      "drawCalls": 122,
-      "triangles": 7420,
+      "frameMsP95": 18.4,
+      "drawCalls": 139,
+      "triangles": 7630,
       "textures": 12,
-      "geometries": 90,
+      "geometries": 111,
       "resolutionScale": 1,
       "pixelRatio": 2,
       "canvas": "2880x1592"
