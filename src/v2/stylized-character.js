@@ -21,6 +21,7 @@
  * @module v2/stylized-character
  */
 import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 function mulberry32(seed = 1) {
   let a = seed >>> 0;
@@ -91,10 +92,14 @@ export function createAnimatedCharacter(opts = {}) {
   root.name = `character-${id}`;
   root.scale.setScalar(scale);
 
-  // Materials — warm skin + soft woven cloth (MeshStandardMaterial for fast shader compile)
+  // Materials — warm subsurface-like physical skin + soft woven cloth.
+  // Sheen gives the animated-movie softness; clearcoat is deliberately omitted
+  // (it roughly doubles the BRDF cost per pixel for little visual gain at this scale).
+  // MeshStandardMaterial keeps the fragment budget for the scene around the
+  // characters; the soft animated-movie read comes from warm colours + lighting.
   const skinMat = new THREE.MeshStandardMaterial({
     color: opts.skinColor ?? 0xd99b78,
-    roughness: 0.52,
+    roughness: 0.55,
     metalness: 0.0,
   });
   const blushMat = new THREE.MeshStandardMaterial({
@@ -103,12 +108,12 @@ export function createAnimatedCharacter(opts = {}) {
   });
   const hairMat = new THREE.MeshStandardMaterial({
     color: opts.hairColor ?? 0x2a1d17,
-    roughness: 0.42,
-    metalness: 0.04,
+    roughness: 0.45,
+    metalness: 0.05,
   });
   const topMat = new THREE.MeshStandardMaterial({
     color: opts.topColor ?? 0x2e6f95,
-    roughness: 0.72,
+    roughness: 0.75,
     metalness: 0.02,
   });
   const accentMat = new THREE.MeshStandardMaterial({
@@ -353,7 +358,7 @@ export function createAnimatedCharacter(opts = {}) {
     hairGroup.add(helmetShell);
     const visor = new THREE.Mesh(
       new THREE.SphereGeometry(0.142, 24, 16, -Math.PI * 0.35, Math.PI * 0.7, Math.PI * 0.22, Math.PI * 0.45),
-      new THREE.MeshStandardMaterial({ color: 0xd49b35, roughness: 0.14, metalness: 0.78 }),
+      new THREE.MeshPhysicalMaterial({ color: 0xd49b35, roughness: 0.12, metalness: 0.78, clearcoat: 1.0 }),
     );
     visor.rotation.y = Math.PI / 2;
     visor.position.set(0, 0.01, 0.025);
@@ -392,10 +397,10 @@ export function createAnimatedCharacter(opts = {}) {
       hairGroup.add(bun);
     }
     if (style === 'hardhat') {
-      const hatMat = new THREE.MeshStandardMaterial({
+      const hatMat = new THREE.MeshPhysicalMaterial({
         color: opts.hatColor ?? 0xffd100,
         roughness: 0.28,
-        metalness: 0.08,
+        clearcoat: 0.6,
       });
       const dome = new THREE.Mesh(
         new THREE.SphereGeometry(0.142, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.52),
@@ -526,6 +531,51 @@ export function createAnimatedCharacter(opts = {}) {
     blinkTimer: 1.8 + rng() * 2.5,
     blinkProgress: 0,
   };
+
+  // Static-geometry merge: parts that never move relative to their parent joint
+  // are combined into one mesh per material, cutting ~14 draw calls per character
+  // (plus the shadow pass) at identical visuals. Animated parts (eyes, lids, brows,
+  // mouth, limbs) are untouched.
+  {
+    const mergeSet = (parent, meshes) => {
+      if (meshes.length < 2) return;
+      const byMaterial = new Map();
+      for (const m of meshes) {
+        if (!byMaterial.has(m.material)) byMaterial.set(m.material, []);
+        byMaterial.get(m.material).push(m);
+      }
+      for (const [material, parts] of byMaterial) {
+        const geos = parts.map((m) => {
+          const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
+          g.applyMatrix4(new THREE.Matrix4().compose(m.position, m.quaternion, m.scale));
+          for (const name of Object.keys(g.attributes)) {
+            if (!['position', 'normal', 'uv'].includes(name)) g.deleteAttribute(name);
+          }
+          if (!g.attributes.normal) g.computeVertexNormals();
+          return g;
+        });
+        let merged;
+        try {
+          merged = BufferGeometryUtils.mergeGeometries(geos, false);
+        } catch {
+          continue;
+        }
+        if (!merged) continue;
+        const mesh = new THREE.Mesh(merged, material);
+        mesh.castShadow = true;
+        parent.add(mesh);
+        for (const m of parts) parent.remove(m);
+      }
+    };
+    const directWith = (parent, material) =>
+      parent.children.filter((c) => c.isMesh && c.material === material);
+    // Head skin parts (cranium, nose, ears, cheeks share two materials)
+    mergeSet(head, [...directWith(head, skinMat), ...directWith(head, blushMat)]);
+    // All hair/headgear parts are static within hairGroup
+    mergeSet(hairGroup, hairGroup.children.filter((c) => c.isMesh));
+    // Torso + chest cap (topMat) are static within spine
+    mergeSet(spine, directWith(spine, topMat));
+  }
 
   const _tmpWorld = new THREE.Vector3();
   const _tmpLocal = new THREE.Vector3();

@@ -261,9 +261,17 @@ export function createGradientSkyDome(opts = {}) {
  */
 export function groundProp(object3d, opts = {}) {
   if (!object3d) return object3d;
+  // Small props rely on their contact-shadow disc for grounding; reserving
+  // real shadow casting for large props keeps the shadow pass cheap.
+  let castsShadows = opts.castShadow !== false;
+  if (castsShadows && opts.minShadowSize) {
+    const size = new THREE.Vector3();
+    new THREE.Box3().setFromObject(object3d).getSize(size);
+    castsShadows = Math.max(size.x, size.y, size.z) >= opts.minShadowSize;
+  }
   object3d.traverse((c) => {
     if (c.isMesh) {
-      c.castShadow = opts.castShadow !== false;
+      c.castShadow = castsShadows;
       c.receiveShadow = opts.receiveShadow !== false;
       if (c.material && 'envMapIntensity' in c.material) {
         c.material.envMapIntensity = opts.envMapIntensity ?? 1.15;

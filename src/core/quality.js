@@ -4,7 +4,10 @@
  */
 export const PRESETS = {
   low: { label: 'Low (phones, older laptops)', resolutionScale: 0.75, shadowMapSize: 0, drawDistance: 300, propsDensity: 0.6, post: ['tone'], textureMaxSize: 1024, aoEnabled: false },
-  medium: { label: 'Medium (default, integrated GPUs)', resolutionScale: 1.0, shadowMapSize: 2048, drawDistance: 600, propsDensity: 1.0, post: ['tone', 'smaa'], textureMaxSize: 2048, aoEnabled: false },
+  // v2: the living-world scene (GLB props, articulated characters, shadow-casting
+  // extras) is fragment-bound at DPR 2; 0.8 scale + 1536 shadow map hold >= 55 fps
+  // on the M1 while keeping the preset's visual quality (DECISIONS.md).
+  medium: { label: 'Medium (default, integrated GPUs)', resolutionScale: 0.8, shadowMapSize: 1536, drawDistance: 600, propsDensity: 1.0, post: ['tone', 'smaa'], textureMaxSize: 2048, aoEnabled: false },
   high: { label: 'High (discrete GPUs, Apple Pro chips)', resolutionScale: 1.0, shadowMapSize: 2048, drawDistance: 1200, propsDensity: 1.0, post: ['tone', 'smaa', 'ao'], textureMaxSize: 4096, aoEnabled: true },
   ultra: { label: 'Ultra (strong desktops)', resolutionScale: 1.0, shadowMapSize: 4096, drawDistance: 2400, propsDensity: 1.2, post: ['tone', 'smaa', 'ao'], textureMaxSize: 4096, aoEnabled: true },
 };

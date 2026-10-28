@@ -37,65 +37,8 @@ code, pre, .tag, .badge, .v2-world-tooltip, .v2-bubble-speaker {
   font-family: var(--font-body, system-ui, sans-serif);
 }
 
-/* Floating HUD drawer behavior: dock #textmode on the left over the visible 3D canvas,
-   and when collapsed, slide the task panel aside so 100% of the 3D scene is open. */
-.stage:not(:has([data-webgl-fallback])) .textmode {
-  inset: 0.75rem auto 0.75rem 0.75rem;
-  width: min(31rem, calc(100vw - 1.5rem));
-  border: 1.5px solid var(--v2-border);
-  border-radius: 12px;
-  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.52);
-  background: var(--v2-surface, rgba(18, 24, 31, 0.92));
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
-}
-
-/* Review V2-5: the floating drawer and the hunt overlays use the art bible's HUD Slate
-   Surface tokens instead of the page's light-scheme --bg, so the case-themed HUD matches
-   the tooltip and dialog accents in BOTH colour schemes. Re-pointing the site tokens on
-   the container re-themes every descendant (buttons, tables, feedback, forms).
-   Contrast on the slate surface: --v2-text 16.9:1, --v2-muted 10.0:1, --v2-accent 11.6:1
-   (computed for #f3f6f8 / #b8c4ce / #ffd100 on #12181f); button/panel surfaces #1b232c
-   are darker than the worst-case composite over a bright scene, so all pairs stay ≥ 4.5:1. */
-.stage:not(:has([data-webgl-fallback])) .textmode,
-body:not(:has([data-webgl-fallback])) #overlays {
-  --bg: var(--v2-surface-solid, #12181f);
-  --surface: #1b232c;
-  --text: var(--v2-text, #f3f6f8);
-  --muted: var(--v2-muted, #b8c4ce);
-  --accent: var(--v2-accent, #ffd100);
-  --accent-strong: var(--v2-accent-strong, #b84300);
-  /* body computes its color from the page-scheme --text; re-state it so the light
-     scheme's dark text cannot inherit onto the slate surface. */
-  color: var(--v2-text, #f3f6f8);
-  color-scheme: dark;
-}
-
-/* Explicit surfaces for the overlays that sit directly on the 3D scene, and for form
-   fields whose UA default background would otherwise follow the light colour scheme. */
-body:not(:has([data-webgl-fallback])) #overlays > h3,
-body:not(:has([data-webgl-fallback])) #overlays > .poi-list,
-body:not(:has([data-webgl-fallback])) #overlays > .back-to-list,
-body:not(:has([data-webgl-fallback])) #overlays > .look-tip,
-body:not(:has([data-webgl-fallback])) .replay-ui,
-body:not(:has([data-webgl-fallback])) .hunt-feedback {
-  background: var(--v2-surface, rgba(18, 24, 31, 0.92));
-  color: var(--v2-text, #f3f6f8);
-}
-
-.stage:not(:has([data-webgl-fallback])) .textmode textarea,
-.stage:not(:has([data-webgl-fallback])) .textmode select {
-  background: #10151c;
-  color: var(--v2-text, #f3f6f8);
-  border: 1px solid color-mix(in srgb, var(--v2-muted, #b8c4ce) 45%, transparent);
-}
-
-html[data-drawer-collapsed="true"] #textmode {
-  transform: translateX(calc(-100% - 1.5rem));
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
+/* Floating HUD drawer behavior: when collapsed, slide the task panel aside
+   so 100% of the 3D scene is open for direct exploration. */
 html[data-drawer-collapsed="true"] #task-panel,
 html[data-drawer-collapsed="true"] #panel,
 html[data-drawer-collapsed="true"] #session-panel,
