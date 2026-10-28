@@ -3,35 +3,112 @@
     "asset": "Empty Warehouse 01 (HDRI, 1k .hdr)",
     "author": "Sergej Majboroda",
     "source": "https://polyhaven.com/a/empty_warehouse_01",
-    "license": "CC0",
+    "license": "CC0 1.0",
     "changes": "None. Used for image-based lighting and reflections only (not shown as a background). File renamed with a content hash."
   },
   {
     "asset": "Concrete Floor Worn 001 (1k JPG: color, normal GL, roughness)",
     "author": "Dimitrios Savva, Rico Cilliers",
     "source": "https://polyhaven.com/a/concrete_floor_worn_001",
-    "license": "CC0",
+    "license": "CC0 1.0",
     "changes": "None to pixels. Tiled across the floor; files renamed with content hashes."
   },
   {
     "asset": "Blue Metal Plate (1k JPG: normal GL, roughness)",
     "author": "Rob Tuytel",
     "source": "https://polyhaven.com/a/blue_metal_plate",
-    "license": "CC0",
+    "license": "CC0 1.0",
     "changes": "Only the normal and roughness maps are used, on the painted rack uprights; the color map was not kept. Files renamed with content hashes."
   },
   {
     "asset": "Wood Planks Grey (1k JPG: color, normal GL, roughness)",
     "author": "Rob Tuytel",
     "source": "https://polyhaven.com/a/wood_planks_grey",
-    "license": "CC0",
+    "license": "CC0 1.0",
     "changes": "None to pixels. Used on pallets; files renamed with content hashes."
+  },
+  {
+    "asset": "Wet Floor Sign 01 (`WetFloorSign_01-d4a94c3c.glb`)",
+    "author": "Fran Calvente",
+    "source": "https://polyhaven.com/a/WetFloorSign_01",
+    "license": "CC0 1.0",
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+  },
+  {
+    "asset": "Cardboard Box 01 (`cardboard_box_01-34708497.glb`)",
+    "author": "Rahul Chaudhary",
+    "source": "https://polyhaven.com/a/cardboard_box_01",
+    "license": "CC0 1.0",
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+  },
+  {
+    "asset": "Barrel 01 (`Barrel_01-9611019b.glb`)",
+    "author": "Jorge Camacho",
+    "source": "https://polyhaven.com/a/Barrel_01",
+    "license": "CC0 1.0",
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+  },
+  {
+    "asset": "Wooden Crate 01 (`wooden_crate_01-1d3c029f.glb`)",
+    "author": "James Ray Cock",
+    "source": "https://polyhaven.com/a/wooden_crate_01",
+    "license": "CC0 1.0",
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+  },
+  {
+    "asset": "Korean Fire Extinguisher 01 (`korean_fire_extinguisher_01-79e1e9ff.glb`)",
+    "author": "UM JOORIN",
+    "source": "https://polyhaven.com/a/korean_fire_extinguisher_01",
+    "license": "CC0 1.0",
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+  },
+  {
+    "asset": "Hanging Industrial Lamp (`hanging_industrial_lamp-c4f36443.glb`)",
+    "author": "Kuutti Siitonen",
+    "source": "https://polyhaven.com/a/hanging_industrial_lamp",
+    "license": "CC0 1.0",
+    "changes": "Converted to self-contained GLB with resized JPEG textures for high-bay overhead lighting."
+  },
+  {
+    "asset": "Tool Cart (`tool_cart-4bc2c4e8.glb`)",
+    "author": "Savva Zakharov",
+    "source": "https://polyhaven.com/a/tool_cart",
+    "license": "CC0 1.0",
+    "changes": "Converted to self-contained GLB with resized JPEG textures for maintenance bay dressing."
+  },
+  {
+    "asset": "Ladder Sectioned 01 (`ladder_sectioned_01-87f86eeb.glb`)",
+    "author": "MP",
+    "source": "https://polyhaven.com/a/ladder_sectioned_01",
+    "license": "CC0 1.0",
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+  },
+  {
+    "asset": "Big Shoulders Stencil Display (Latin 700 WOFF2, via `@fontsource/big-shoulders-stencil-display`)",
+    "author": "Patric King, XO Type Co",
+    "source": "https://github.com/xotypeco/big_shoulders",
+    "license": "SIL OFL 1.1",
+    "changes": "Self-hosted Latin WOFF2 subset for display headings."
+  },
+  {
+    "asset": "Barlow (Latin 400/600/700 WOFF2, via `@fontsource/barlow`)",
+    "author": "Jeremy Tribby",
+    "source": "https://github.com/jpt/barlow",
+    "license": "SIL OFL 1.1",
+    "changes": "Self-hosted Latin WOFF2 subset for body copy and controls."
+  },
+  {
+    "asset": "Share Tech Mono (Latin 400 WOFF2, via `@fontsource/share-tech-mono`)",
+    "author": "Carrois Apostrophe",
+    "source": "https://fonts.google.com/specimen/Share+Tech+Mono",
+    "license": "SIL OFL 1.1",
+    "changes": "Self-hosted Latin WOFF2 subset for in-world telemetry, tags, and tooltips."
   },
   {
     "asset": "three.js 0.186.1",
     "author": "three.js authors",
     "source": "https://github.com/mrdoob/three.js",
     "license": "MIT",
-    "changes": "None. Bundled by Vite. No Draco/Basis decoders are shipped because this project loads no compressed models or textures."
+    "changes": "None. Bundled by Vite."
   }
 ]

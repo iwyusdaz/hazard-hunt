@@ -1,0 +1,74 @@
+{
+  "WetFloorSign_01": {
+    "id": "WetFloorSign_01",
+    "file": "assets/models/WetFloorSign_01-d4a94c3c.glb",
+    "name": "Wet Floor Sign 01",
+    "authors": "Fran Calvente",
+    "source": "https://polyhaven.com/a/WetFloorSign_01",
+    "license": "CC0 1.0",
+    "sizeKB": 78
+  },
+  "cardboard_box_01": {
+    "id": "cardboard_box_01",
+    "file": "assets/models/cardboard_box_01-34708497.glb",
+    "name": "Cardboard Box 01",
+    "authors": "Rahul Chaudhary",
+    "source": "https://polyhaven.com/a/cardboard_box_01",
+    "license": "CC0 1.0",
+    "sizeKB": 482
+  },
+  "Barrel_01": {
+    "id": "Barrel_01",
+    "file": "assets/models/Barrel_01-9611019b.glb",
+    "name": "Barrel_01",
+    "authors": "Jorge Camacho",
+    "source": "https://polyhaven.com/a/Barrel_01",
+    "license": "CC0 1.0",
+    "sizeKB": 215
+  },
+  "wooden_crate_01": {
+    "id": "wooden_crate_01",
+    "file": "assets/models/wooden_crate_01-1d3c029f.glb",
+    "name": "Wooden Crate 01",
+    "authors": "James Ray Cock",
+    "source": "https://polyhaven.com/a/wooden_crate_01",
+    "license": "CC0 1.0",
+    "sizeKB": 307
+  },
+  "korean_fire_extinguisher_01": {
+    "id": "korean_fire_extinguisher_01",
+    "file": "assets/models/korean_fire_extinguisher_01-79e1e9ff.glb",
+    "name": "Korean Fire Extinguisher 01",
+    "authors": "UM JOORIN",
+    "source": "https://polyhaven.com/a/korean_fire_extinguisher_01",
+    "license": "CC0 1.0",
+    "sizeKB": 545
+  },
+  "hanging_industrial_lamp": {
+    "id": "hanging_industrial_lamp",
+    "file": "assets/models/hanging_industrial_lamp-c4f36443.glb",
+    "name": "Hanging Industrial Lamp",
+    "authors": "Kuutti Siitonen",
+    "source": "https://polyhaven.com/a/hanging_industrial_lamp",
+    "license": "CC0 1.0",
+    "sizeKB": 501
+  },
+  "tool_cart": {
+    "id": "tool_cart",
+    "file": "assets/models/tool_cart-4bc2c4e8.glb",
+    "name": "Tool Cart",
+    "authors": "Savva Zakharov",
+    "source": "https://polyhaven.com/a/tool_cart",
+    "license": "CC0 1.0",
+    "sizeKB": 999
+  },
+  "ladder_sectioned_01": {
+    "id": "ladder_sectioned_01",
+    "file": "assets/models/ladder_sectioned_01-87f86eeb.glb",
+    "name": "Ladder Sectioned 01",
+    "authors": "MP",
+    "source": "https://polyhaven.com/a/ladder_sectioned_01",
+    "license": "CC0 1.0",
+    "sizeKB": 1016
+  }
+}
