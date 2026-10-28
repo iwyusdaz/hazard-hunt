@@ -1,7 +1,7 @@
 /**
- * App controller: 5 modules (Why hazards hide → Practice hunt → Incident replay →
- * Fix it → Speak up + transfer), zone viewpoints, POI list, text mode parity,
- * learning record logging.
+ * App controller (v2.0.0): 5 modules (Why hazards hide → Practice hunt → Incident replay →
+ * Fix it → Speak up + transfer), zone viewpoints with smooth camera glide & WASD walk,
+ * POI list, floating HUD drawer with full text-mode parity, Calm Mode, and learning record logging.
  * @module app
  */
 import * as THREE from 'three';
@@ -24,11 +24,22 @@ import { ReplayPlayer } from './systems/replay-player.js';
 import { ControlsActivity } from './systems/controls-activity.js';
 import { DialoguePlayer, validateGraph } from './systems/dialogue.js';
 import { mcItem, scoreAnswers, shuffled } from './learning/assess.js';
+import { applyCaseGrade, initFloatingHud } from './v2/cinematic-grade.js';
 
 export const SLUG = 'hazard-hunt';
 window.__SLUG__ = SLUG;
 
 const MODULES = ['1. Why hazards hide', '2. Practice hunt', '3. Incident replay', '4. Fix it', '5. Speak up + transfer'];
+
+function easeInOutCubic(x) {
+  return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
+}
+
+function lerpAngle(a, b, t) {
+  let diff = ((b - a + Math.PI) % (Math.PI * 2)) - Math.PI;
+  if (diff < -Math.PI) diff += Math.PI * 2;
+  return a + diff * t;
+}
 
 export class App {
   constructor() {
@@ -41,7 +52,9 @@ export class App {
     this.textMode = new TextMode({ root: document.getElementById('textmode'), slug: SLUG, onDecision: (id, payload) => this._textDecision(id, payload) });
     this.poi = new PoiList(this.shell.overlays, { label: 'Inspectable areas' });
     this.moduleIndex = 0;
+    this._cameraGlide = null;
     this.results = { pre: [], post: [], hunt: {}, replay: [], controls: [], speakup: null, transfer: {}, reflection: null };
+    initFloatingHud({ slug: SLUG, panel: document.getElementById('textmode') });
     this._init3D();
     this._initDialogs();
     this._initContent();
@@ -59,7 +72,7 @@ export class App {
     this.items = items;
     this.graphCheck = validateGraph(speakup);
     this.hunt = new HuntController({ zones: this.zones, onFlagged: (def, result) => this._flagged(def, result) });
-    this.player = new ShotPlayer({ container: document.getElementById('cinematic-host'), camera: this.engine.camera, motion: this.motion, onDone: () => {} });
+    this.player = new ShotPlayer({ container: document.getElementById('cinematic-host'), camera: this.engine?.camera, motion: this.motion, onDone: () => {} });
     this.player.load(cinematics);
     this._registerTextModes();
     this.gotoModule(0);
@@ -69,6 +82,7 @@ export class App {
 
   _init3D() {
     if (!hasWebGL2()) {
+      applyCaseGrade(SLUG, {});
       this.stage.insertAdjacentHTML('beforeend',
         '<div data-webgl-fallback role="alert"><p>WebGL is not available in this browser. Every objective can be completed in <strong>Text mode</strong>.</p></div>');
       this.engine = null;
@@ -78,7 +92,13 @@ export class App {
     this.engine.quality.restore(); // the saved preset wins over auto-selection (review N16)
     this.engine.camera.fov = 65;
     this.engine.camera.updateProjectionMatrix();
-    this.warehouse = new Warehouse(this.engine.scene);
+    applyCaseGrade(SLUG, {
+      renderer: this.engine.renderer,
+      scene: this.engine.scene,
+      skyRadius: 400,
+    });
+    this.warehouse = new Warehouse(this.engine.scene, { reducedMotion: this.motion?.reduced });
+    this.motion.onChange((reduced) => this.warehouse?.setReducedMotion(reduced));
     // Presets drive real-time shadows and resolution (standards 4.4).
     this.warehouse.applyPreset(this.engine.renderer, this.engine.quality.presetDef);
     this.engine.quality.onChange((def) => {
@@ -86,10 +106,21 @@ export class App {
       this.engine.resize();
     });
     this._loadEnvironment();
+
+    // Projected 3D hover tooltip
+    this.tooltip = document.createElement('div');
+    this.tooltip.className = 'v2-world-tooltip';
+    this.tooltip.setAttribute('aria-hidden', 'true');
+    this.tooltip.hidden = true;
+    this.shell.overlays.appendChild(this.tooltip);
+
     this.input = new Input(document.getElementById('app'));
     this.look = new LookController(this.engine.camera);
     this.input.onPointer((p, kind) => {
-      if (kind === 'move' && p.down) this.look.drag(p.dx, p.dy);
+      if (kind === 'move' && p.down) {
+        this._cameraGlide = null;
+        this.look.drag(p.dx, p.dy);
+      }
       // Only the canvas itself can hover or select, never HTML on top of it, and never
       // while a modal dialog is open (review N1).
       const blocked = !p.onTarget || document.querySelector('dialog[open]');
@@ -98,10 +129,10 @@ export class App {
     });
     this.input.onKey((code, e) => {
       if (e.target instanceof HTMLElement && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
-      if (code === 'ArrowLeft') this.look.steps({ yaw: -1 });
-      if (code === 'ArrowRight') this.look.steps({ yaw: 1 });
-      if (code === 'ArrowUp') this.look.steps({ pitch: 1 });
-      if (code === 'ArrowDown') this.look.steps({ pitch: -1 });
+      if (code === 'ArrowLeft') { this._cameraGlide = null; this.look.steps({ yaw: -1 }); }
+      if (code === 'ArrowRight') { this._cameraGlide = null; this.look.steps({ yaw: 1 }); }
+      if (code === 'ArrowUp') { this._cameraGlide = null; this.look.steps({ pitch: 1 }); }
+      if (code === 'ArrowDown') { this._cameraGlide = null; this.look.steps({ pitch: -1 }); }
     });
     // On-screen look buttons (pointer alternatives, WCAG 2.5.1)
     const lookPad = document.createElement('div');
@@ -113,7 +144,7 @@ export class App {
       b.type = 'button';
       b.textContent = label;
       b.setAttribute('aria-label', `Look ${label === '◀' ? 'left' : label === '▶' ? 'right' : label === '▲' ? 'up' : 'down'}`);
-      b.addEventListener('click', () => this.look.steps({ yaw, pitch }));
+      b.addEventListener('click', () => { this._cameraGlide = null; this.look.steps({ yaw, pitch }); });
       lookPad.appendChild(b);
     }
     this.shell.overlays.appendChild(lookPad);
@@ -123,16 +154,56 @@ export class App {
     back.className = 'back-to-list';
     back.textContent = 'Back to the list';
     back.addEventListener('click', () => {
-      document.getElementById('app').style.visibility = 'hidden';
+      document.getElementById('app').style.visibility = 'visible';
       document.getElementById('textmode').hidden = false;
       this.warehouse.highlight(null);
+      this._clearHover();
     });
     this.shell.overlays.appendChild(back);
     this.shell.overlays.appendChild(Object.assign(document.createElement('p'), {
-      className: 'look-tip', textContent: 'Drag, use the arrow keys or the look buttons to look around. Click an object to judge it.',
+      className: 'look-tip', textContent: 'Drag, use WASD / arrow keys or the look buttons to explore. Click an object to judge it.',
     }));
-    this.engine.onUpdate(() => {});
+    this.engine.onUpdate((dt) => this._update3D(dt));
     this.engine.start();
+  }
+
+  _update3D(dt) {
+    if (!this.engine || !this.warehouse) return;
+
+    // 1. Smooth camera glide between viewpoints
+    if (this._cameraGlide) {
+      this._cameraGlide.elapsed += dt;
+      const u = Math.min(1, this._cameraGlide.elapsed / this._cameraGlide.duration);
+      const k = easeInOutCubic(u);
+      this.engine.camera.position.lerpVectors(this._cameraGlide.fromPos, this._cameraGlide.toPos, k);
+      this.look.yaw = lerpAngle(this._cameraGlide.fromYaw, this._cameraGlide.toYaw, k);
+      this.look.pitch = THREE.MathUtils.lerp(this._cameraGlide.fromPitch, this._cameraGlide.toPitch, k);
+      this.look.apply();
+      if (u >= 1) this._cameraGlide = null;
+    } else if (!document.querySelector('dialog[open]') && !this._replay?.playing) {
+      // 2. Free WASD floor walking inside the warehouse bay
+      const tag = document.activeElement?.tagName;
+      if (!tag || !/INPUT|TEXTAREA|SELECT/.test(tag)) {
+        let fwd = 0;
+        let strafe = 0;
+        if (this.input?.isDown('KeyW')) fwd += 1;
+        if (this.input?.isDown('KeyS')) fwd -= 1;
+        if (this.input?.isDown('KeyD')) strafe += 1;
+        if (this.input?.isDown('KeyA')) strafe -= 1;
+        if (fwd !== 0 || strafe !== 0) {
+          const speed = 3.8 * dt;
+          const sinY = Math.sin(this.look.yaw);
+          const cosY = Math.cos(this.look.yaw);
+          const dx = (-sinY * fwd + cosY * strafe) * speed;
+          const dz = (-cosY * fwd - sinY * strafe) * speed;
+          this.engine.camera.position.x = THREE.MathUtils.clamp(this.engine.camera.position.x + dx, -30, 30);
+          this.engine.camera.position.z = THREE.MathUtils.clamp(this.engine.camera.position.z + dz, -20, 20);
+        }
+      }
+    }
+
+    // 3. Advance warehouse ambient life & character animations
+    this.warehouse.update(dt, this.engine.camera);
   }
 
   /** Image-based lighting from a CC0 Poly Haven HDRI (Empty Warehouse 01, 1k). Used for
@@ -159,32 +230,61 @@ export class App {
     return [];
   }
 
-  /** Pick the inspectable under a screen point (hit proxies; clear floor is low priority). */
+  /** Pick the inspectable or viewpoint ring under a screen point. */
   _pickAt(x, y) {
-    if (!this.engine || document.getElementById('app').style.visibility === 'hidden') return { id: null, active: new Set() };
+    if (!this.engine || document.getElementById('app').style.visibility === 'hidden') return { id: null, viewId: null, active: new Set() };
     const active = new Set(this._activeZones().flatMap((z) => z.inspectables.map((i) => i.id)));
     const rect = this.engine.canvas.getBoundingClientRect();
     const nx = ((x - rect.left) / rect.width) * 2 - 1;
     const ny = -((y - rect.top) / rect.height) * 2 + 1;
     const ray = new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2(nx, ny), this.engine.camera);
-    return { id: this.warehouse.pick(ray), active };
+    const id = this.warehouse.pick(ray);
+    const viewId = id ? null : this.warehouse.pickViewpoint(ray);
+    return { id, viewId, active };
   }
 
   _hover(x, y) {
-    const { id, active } = this._pickAt(x, y);
+    const { id, viewId, active } = this._pickAt(x, y);
     const ok = id && active.has(id);
     this.warehouse.highlight(ok ? id : null);
-    this.engine.canvas.style.cursor = ok ? 'pointer' : '';
+    if (ok) {
+      this.engine.canvas.style.cursor = 'pointer';
+      const found = this.hunt?.byId(id);
+      if (this.tooltip && found) {
+        this.tooltip.hidden = false;
+        this.tooltip.textContent = `${found.def.area} — Click to judge`;
+        this.tooltip.style.left = `${Math.min(window.innerWidth - 240, Math.max(16, x + 14))}px`;
+        this.tooltip.style.top = `${Math.max(16, y - 36)}px`;
+      }
+    } else if (viewId && Warehouse.VIEWS[viewId]) {
+      this.engine.canvas.style.cursor = 'pointer';
+      if (this.tooltip) {
+        this.tooltip.hidden = false;
+        this.tooltip.textContent = `Viewpoint: ${Warehouse.VIEWS[viewId].label} — Click to move here`;
+        this.tooltip.style.left = `${Math.min(window.innerWidth - 240, Math.max(16, x + 14))}px`;
+        this.tooltip.style.top = `${Math.max(16, y - 36)}px`;
+      }
+    } else {
+      this._clearHover();
+    }
   }
 
-  _clearHover() { if (this.engine) this.engine.canvas.style.cursor = ''; }
+  _clearHover() {
+    if (this.engine) this.engine.canvas.style.cursor = '';
+    if (this.tooltip) this.tooltip.hidden = true;
+  }
 
   _click(x, y) {
-    const { id, active } = this._pickAt(x, y);
-    if (!id) return;
-    if (active.has(id)) { this._flag(id); return; }
-    if (active.size) announce('That object belongs to a different zone. It is not part of this hunt.');
+    const { id, viewId, active } = this._pickAt(x, y);
+    if (id) {
+      if (active.has(id)) { this._flag(id); return; }
+      if (active.size) announce('That object belongs to a different zone. It is not part of this hunt.');
+      return;
+    }
+    if (viewId) {
+      this._gotoView(viewId, { glide: true });
+    }
   }
 
   _flag(id) {
@@ -192,9 +292,12 @@ export class App {
     if (!found) return;
     if (this.hunt.flags.has(id)) { announce('Already rated. Submitting again replaces your earlier answer.'); }
     this.warehouse?.highlight(id);
+    this.warehouse?.setCalmMode(true);
     const dlg = document.getElementById('task-dialog');
+    dlg.addEventListener('close', () => this.warehouse?.setCalmMode(false), { once: true });
     this.hunt.renderRatingDialog(found.def, found.zone, dlg, (result) => {
       closeDialog(dlg);
+      this.warehouse?.setCalmMode(false);
       this._flagged(found.def, result);
       this._syncSection(id);
       // Feedback stays until the learner closes it (no timers; agent review A4).
@@ -276,15 +379,29 @@ export class App {
     document.getElementById('textmode').hidden = true;
   }
 
-  _gotoView(viewId, { quiet = false } = {}) {
+  _gotoView(viewId, { quiet = false, glide = false } = {}) {
     if (!this.engine) return;
     const v = Warehouse.VIEWS[viewId];
     if (!v) return;
-    this.engine.camera.position.set(...v.pos);
-    this.look.yaw = v.yaw;
-    this.look.pitch = v.pitch || 0;
-    this.look.apply();
-    if (!quiet) announce(`View: ${v.label}. Drag, or use the arrow keys or the look buttons, to look around.`);
+    if (glide && !this.motion?.reduced) {
+      this._cameraGlide = {
+        fromPos: this.engine.camera.position.clone(),
+        toPos: new THREE.Vector3(...v.pos),
+        fromYaw: this.look.yaw,
+        toYaw: v.yaw,
+        fromPitch: this.look.pitch,
+        toPitch: v.pitch || 0,
+        elapsed: 0,
+        duration: 0.78,
+      };
+    } else {
+      this._cameraGlide = null;
+      this.engine.camera.position.set(...v.pos);
+      this.look.yaw = v.yaw;
+      this.look.pitch = v.pitch || 0;
+      this.look.apply();
+    }
+    if (!quiet) announce(`View: ${v.label}. Drag, or use WASD, the arrow keys or the look buttons, to look around.`);
   }
 
   _initDialogs() {
@@ -311,10 +428,11 @@ export class App {
     this._exitReplay(); // clears the replay overlay and actors on any module change (A7)
     this.shell.overlays.querySelector('.hunt-feedback')?.remove();
     this.warehouse?.highlight(null);
+    this._clearHover();
     this.moduleIndex = i;
     this.shell.setModule(i);
     document.getElementById('textmode').hidden = false;
-    document.getElementById('app').style.visibility = 'hidden';
+    document.getElementById('app').style.visibility = this.engine ? 'visible' : 'hidden';
     // Start each module from a real viewpoint, never the world origin (review N9):
     // the first view of the active zone, or the receiving dock otherwise.
     const firstZone = this._activeZones()[0] || this.zones[0];
@@ -366,7 +484,7 @@ export class App {
     canvas.style.visibility = 'visible';
     this.player.onDone = () => {
       tm.hidden = false;
-      canvas.style.visibility = 'hidden';
+      canvas.style.visibility = 'visible';
       this.record.log('experienced', { id: 'cinematic-S1', name: 'Shift start intro' });
       trigger?.focus();
     };
@@ -392,11 +510,15 @@ export class App {
         const b = document.createElement('button');
         b.type = 'button';
         b.textContent = `Go to: ${Warehouse.VIEWS[v].label}`;
-        b.addEventListener('click', () => { this._gotoView(v); document.getElementById('app').style.visibility = 'visible'; document.getElementById('textmode').hidden = true; });
+        b.addEventListener('click', () => {
+          this._gotoView(v, { glide: true });
+          document.getElementById('app').style.visibility = 'visible';
+          document.getElementById('textmode').hidden = true;
+        });
         views.appendChild(b);
       }
       body.appendChild(views);
-      body.appendChild(this._el(`<p>Click an object to flag it, or use the points-of-interest list on the right. Close text mode to look around in 3D.</p>`));
+      body.appendChild(this._el(`<p>Click an object in the 3D warehouse to flag it, or use the points-of-interest list on the right. Use "Hide panel" or a viewpoint button to explore full-screen 3D.</p>`));
     }
     body.appendChild(this._el(`<h4>Inspectable areas (all listed; decide which are hazards)</h4>`));
     const table = dataTable(['Area', 'What you can observe'], zone.inspectables.map((i) => [i.area, i.cue]), `${zone.name}: flag and rate each area`);
@@ -561,10 +683,11 @@ export class App {
     this._replay.pausedAtPoint = null;
     this._replayUi.hidden = true;
     this._setReplayActors(false);
+    this.warehouse?.setCalmMode(false);
     const dlg = document.getElementById('task-dialog');
     if (dlg.open) closeDialog(dlg);
     if (this.moduleIndex === 2) {
-      document.getElementById('app').style.visibility = 'hidden';
+      document.getElementById('app').style.visibility = this.engine ? 'visible' : 'hidden';
       document.getElementById('textmode').hidden = false;
     }
   }
@@ -608,6 +731,7 @@ export class App {
   _replayDecision(pp, seg) {
     const key = `${seg.id}@${pp.at}`;
     this._replayAnswers ??= new Map();
+    this.warehouse?.setCalmMode(true);
     const dlg = document.getElementById('task-dialog');
     dlg.innerHTML = `<h2 id="task-h">Decision point</h2><p>${pp.question}</p>`;
     const opts = document.createElement('div');
@@ -626,6 +750,7 @@ export class App {
       cont.addEventListener('click', () => {
         dlg.__answeredClose = true;
         closeDialog(dlg);
+        this.warehouse?.setCalmMode(false);
         this._replay.showCauses(seg.causesVisible, this.replayData.causes);
         this._replay.resolveDecision(opt);
       });
@@ -654,6 +779,7 @@ export class App {
     // and says how to get back to it.
     dlg.onclose = () => {
       dlg.onclose = null;
+      this.warehouse?.setCalmMode(false);
       if (dlg.__answeredClose || !this._replay?.pausedAtPoint) return;
       this._replay.storyEl.textContent = 'Decision waiting. Press Play to answer it and continue the replay.';
       announce('Replay paused at a decision. Press Play to answer it.');

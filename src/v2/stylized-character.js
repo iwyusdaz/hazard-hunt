@@ -91,35 +91,25 @@ export function createAnimatedCharacter(opts = {}) {
   root.name = `character-${id}`;
   root.scale.setScalar(scale);
 
-  // Materials — warm subsurface-like physical skin + soft woven cloth
-  const skinMat = new THREE.MeshPhysicalMaterial({
+  // Materials — warm skin + soft woven cloth (MeshStandardMaterial for fast shader compile)
+  const skinMat = new THREE.MeshStandardMaterial({
     color: opts.skinColor ?? 0xd99b78,
     roughness: 0.52,
     metalness: 0.0,
-    sheen: 0.35,
-    sheenRoughness: 0.6,
-    sheenColor: new THREE.Color(opts.skinColor ?? 0xd99b78).lerp(new THREE.Color(0xffbfa0), 0.45),
-    clearcoat: 0.08,
-    clearcoatRoughness: 0.45,
   });
   const blushMat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(opts.skinColor ?? 0xd99b78).lerp(new THREE.Color(0xd96b6b), 0.32),
     roughness: 0.6,
   });
-  const hairMat = new THREE.MeshPhysicalMaterial({
+  const hairMat = new THREE.MeshStandardMaterial({
     color: opts.hairColor ?? 0x2a1d17,
     roughness: 0.42,
     metalness: 0.04,
-    sheen: 0.5,
-    sheenRoughness: 0.35,
-    clearcoat: 0.12,
   });
-  const topMat = new THREE.MeshPhysicalMaterial({
+  const topMat = new THREE.MeshStandardMaterial({
     color: opts.topColor ?? 0x2e6f95,
     roughness: 0.72,
     metalness: 0.02,
-    sheen: 0.25,
-    sheenRoughness: 0.8,
   });
   const accentMat = new THREE.MeshStandardMaterial({
     color: opts.accentColor ?? 0xf4e7cf,
@@ -363,7 +353,7 @@ export function createAnimatedCharacter(opts = {}) {
     hairGroup.add(helmetShell);
     const visor = new THREE.Mesh(
       new THREE.SphereGeometry(0.142, 24, 16, -Math.PI * 0.35, Math.PI * 0.7, Math.PI * 0.22, Math.PI * 0.45),
-      new THREE.MeshPhysicalMaterial({ color: 0xd49b35, roughness: 0.12, metalness: 0.78, clearcoat: 1.0 }),
+      new THREE.MeshStandardMaterial({ color: 0xd49b35, roughness: 0.14, metalness: 0.78 }),
     );
     visor.rotation.y = Math.PI / 2;
     visor.position.set(0, 0.01, 0.025);
@@ -402,10 +392,10 @@ export function createAnimatedCharacter(opts = {}) {
       hairGroup.add(bun);
     }
     if (style === 'hardhat') {
-      const hatMat = new THREE.MeshPhysicalMaterial({
+      const hatMat = new THREE.MeshStandardMaterial({
         color: opts.hatColor ?? 0xffd100,
         roughness: 0.28,
-        clearcoat: 0.6,
+        metalness: 0.08,
       });
       const dome = new THREE.Mesh(
         new THREE.SphereGeometry(0.142, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.52),

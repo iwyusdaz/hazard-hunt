@@ -76,12 +76,15 @@ export class ShotPlayer {
       this._placeAt(shot, 1);
       this._stillTimer = setTimeout(() => this._nextShot(), Math.max(2500, (shot.duration || 10) * 700));
     } else {
-      this._start = performance.now();
+      this._last = performance.now();
       cancelAnimationFrame(this._raf);
       const step = () => {
         if (!this.playing) return;
-        const elapsed = (performance.now() - this._start) / 1000;
-        const t = Math.min(1, elapsed / (shot.duration || 10));
+        const now = performance.now();
+        const dt = Math.min(0.2, Math.max(0, (now - this._last) / 1000));
+        this._last = now;
+        this._t += dt;
+        const t = Math.min(1, this._t / (shot.duration || 10));
         this._placeAt(shot, t);
         if (t >= 1) { this._nextShot(); return; }
         this._raf = requestAnimationFrame(step);

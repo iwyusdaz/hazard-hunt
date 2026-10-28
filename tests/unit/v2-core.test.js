@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { createAnimatedCharacter } from '../../src/v2/stylized-character.js';
 import { AmbientLifeManager } from '../../src/v2/ambient-life.js';
 import { applyCaseGrade, CASE_THEMES, groundProp, createGradientSkyDome } from '../../src/v2/cinematic-grade.js';
+import { Warehouse } from '../../src/scenes/warehouse.js';
 
 describe('v2 Living World, Stylized Characters & Cinematic Grade', () => {
   it('creates an articulated animated-movie character with head, eyes, eyelids, brows, arms, legs, and contact shadow', () => {
@@ -79,5 +80,26 @@ describe('v2 Living World, Stylized Characters & Cinematic Grade', () => {
     expect(mesh.receiveShadow).toBe(true);
     expect(prop.getObjectByName('v2-contact-shadow')).toBeTruthy();
     expect(createGradientSkyDome({ radius: 100 })).toBeInstanceOf(THREE.Mesh);
+  });
+
+  it('integrates living ambient systems, animated characters, and viewpoint rings in Warehouse', () => {
+    const scene = new THREE.Scene();
+    const wh = new Warehouse(scene, { headless: true });
+    expect(wh._characterCtrls.length).toBeGreaterThanOrEqual(4);
+    expect(wh.life).toBeInstanceOf(AmbientLifeManager);
+    expect(wh.life.particleVolumes.length).toBeGreaterThanOrEqual(1);
+    expect(wh.life.lightShafts.length).toBeGreaterThanOrEqual(1);
+    expect(wh.life.splineMovers.length).toBeGreaterThanOrEqual(1);
+    expect(wh.viewpointRings.length).toBe(Object.keys(Warehouse.VIEWS).length);
+
+    const startCartPos = wh.patrolCart.position.clone();
+    const cam = new THREE.PerspectiveCamera(65, 16 / 10, 0.1, 200);
+    cam.position.set(0, 1.7, 0);
+    wh.update(0.25, cam);
+    expect(wh.patrolCart.position.distanceTo(startCartPos)).toBeGreaterThan(0.01);
+
+    wh.setCalmMode(true);
+    for (let i = 0; i < 30; i++) wh.update(0.05, cam);
+    expect(wh.life.calmFactor).toBeLessThan(0.5);
   });
 });

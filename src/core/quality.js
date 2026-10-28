@@ -14,7 +14,14 @@ export class QualityManager {
   constructor(renderer, forcedPreset) {
     this.renderer = renderer;
     this.auto = !forcedPreset;
-    this.name = forcedPreset || (Math.min(window.innerWidth, window.innerHeight) < 700 ? 'low' : 'medium');
+    let isSoftware = false;
+    try {
+      const gl = renderer?.getContext?.();
+      const dbg = gl?.getExtension?.('WEBGL_debug_renderer_info');
+      const rName = (dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl?.getParameter?.(gl.RENDERER)) || '';
+      if (/swiftshader|llvmpipe|software/i.test(String(rName))) isSoftware = true;
+    } catch { /* ignore */ }
+    this.name = forcedPreset || (isSoftware || Math.min(window.innerWidth, window.innerHeight) < 700 ? 'low' : 'medium');
     this.resolutionScale = this.presetDef.resolutionScale;
     this.listeners = [];
   }

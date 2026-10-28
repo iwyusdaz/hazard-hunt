@@ -37,8 +37,25 @@ code, pre, .tag, .badge, .v2-world-tooltip, .v2-bubble-speaker {
   font-family: var(--font-body, system-ui, sans-serif);
 }
 
-/* Floating HUD drawer behavior: when collapsed, slide the task panel aside
-   so 100% of the 3D scene is open for direct exploration. */
+/* Floating HUD drawer behavior: dock #textmode on the left over the visible 3D canvas,
+   and when collapsed, slide the task panel aside so 100% of the 3D scene is open. */
+.stage:not(:has([data-webgl-fallback])) .textmode {
+  inset: 0.75rem auto 0.75rem 0.75rem;
+  width: min(31rem, calc(100vw - 1.5rem));
+  border: 1.5px solid var(--v2-border);
+  border-radius: 12px;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.52);
+  background: var(--bg);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+}
+
+html[data-drawer-collapsed="true"] #textmode {
+  transform: translateX(calc(-100% - 1.5rem));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 html[data-drawer-collapsed="true"] #task-panel,
 html[data-drawer-collapsed="true"] #panel,
 html[data-drawer-collapsed="true"] #session-panel,

@@ -89,7 +89,11 @@ export class Shell {
     const canvas = document.getElementById('app');
     const showing = tm.hidden;
     tm.hidden = !showing;
-    canvas.style.visibility = showing ? 'hidden' : 'visible';
+    if (canvas && !document.querySelector('[data-webgl-fallback]')) {
+      canvas.style.visibility = 'visible';
+    } else if (canvas) {
+      canvas.style.visibility = showing ? 'hidden' : 'visible';
+    }
     announce(showing ? 'Text mode on' : 'Text mode off');
     return showing;
   }

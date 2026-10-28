@@ -1,25 +1,32 @@
 /**
- * Warehouse scene: procedural kit with PBR materials (primitives only — no external
- * models), two hunt zones + transfer zone, hazard/distractor objects with visual
- * cues, low-detail workers (hi-vis silhouettes, no faces — documented deviation),
- * and a reach truck. 1 unit = 1 meter. Fixed viewpoints per zone with free look.
+ * Warehouse scene (v2.0.0): Northwind Logistics Bay 4 (night shift).
+ * Combines the verified 19 inspectable hazard/distractor/neutral cues across three zones
+ * with animated-movie stylized characters (`createAnimatedCharacter`), 8 curated Poly Haven
+ * CC0 3D models (`ModelLibrary`), volumetric high-bay light shafts, floating dust motes,
+ * a patrolling perimeter utility cart with proximity safety stop, an animated packing
+ * conveyor, and glowing floor viewpoint rings (`AmbientLifeManager`).
+ * 1 unit = 1 meter. Fixed viewpoints per zone with smooth glide, WASD walk, and free look.
  * @module scenes/warehouse
  */
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { AmbientLifeManager } from '../v2/ambient-life.js';
+import { createAnimatedCharacter } from '../v2/stylized-character.js';
+import { ModelLibrary } from '../v2/model-placer.js';
+import { groundProp } from '../v2/cinematic-grade.js';
 
 const MAT = {
-  concrete: new THREE.MeshStandardMaterial({ color: 0x9a9a97, roughness: 0.92, metalness: 0.02 }),
-  paintedLine: new THREE.MeshStandardMaterial({ color: 0xd9b93b, roughness: 0.7 }),
+  concrete: new THREE.MeshStandardMaterial({ color: 0x8a8d8f, roughness: 0.92, metalness: 0.02 }),
+  paintedLine: new THREE.MeshStandardMaterial({ color: 0xffd100, roughness: 0.65 }),
   steelBlue: new THREE.MeshStandardMaterial({ color: 0x2e5f8a, roughness: 0.55, metalness: 0.35 }),
-  steelOrange: new THREE.MeshStandardMaterial({ color: 0xc25e1e, roughness: 0.6, metalness: 0.3 }),
+  steelOrange: new THREE.MeshStandardMaterial({ color: 0xff6a13, roughness: 0.55, metalness: 0.3 }),
   cardboard: new THREE.MeshStandardMaterial({ color: 0xb08a5a, roughness: 0.95 }),
   palletWood: new THREE.MeshStandardMaterial({ color: 0x8a6f4d, roughness: 0.9 }),
   darkPlastic: new THREE.MeshStandardMaterial({ color: 0x22262b, roughness: 0.6 }),
   rubber: new THREE.MeshStandardMaterial({ color: 0x181a1d, roughness: 0.95 }),
-  hiVis: new THREE.MeshStandardMaterial({ color: 0xc8e034, roughness: 0.8 }),
+  hiVis: new THREE.MeshStandardMaterial({ color: 0xffd100, roughness: 0.75 }),
   darkTrous: new THREE.MeshStandardMaterial({ color: 0x30363d, roughness: 0.9 }),
-  truckBody: new THREE.MeshStandardMaterial({ color: 0xb23a24, roughness: 0.45, metalness: 0.25 }),
+  truckBody: new THREE.MeshStandardMaterial({ color: 0xd7263d, roughness: 0.45, metalness: 0.25 }),
   doorGrey: new THREE.MeshStandardMaterial({ color: 0x6f7780, roughness: 0.5, metalness: 0.5 }),
   exitGreen: new THREE.MeshStandardMaterial({ color: 0x1e8a4c, roughness: 0.6, emissive: 0x0d3a20 }),
   shrinkWrap: new THREE.MeshStandardMaterial({ color: 0xcfd8e0, roughness: 0.35, metalness: 0.05, transparent: true, opacity: 0.55 }),
@@ -28,13 +35,13 @@ const MAT = {
   spill: new THREE.MeshStandardMaterial({ color: 0x15120f, roughness: 0.26, metalness: 0.0, envMapIntensity: 0.35 }),
   innerSheath: new THREE.MeshStandardMaterial({ color: 0xd8d2c4, roughness: 0.8 }),
   copper: new THREE.MeshStandardMaterial({ color: 0xc8743a, roughness: 0.35, metalness: 0.9 }),
-  rampYellow: new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.75 }),
+  rampYellow: new THREE.MeshStandardMaterial({ color: 0xffd100, roughness: 0.72 }),
   blade: new THREE.MeshStandardMaterial({ color: 0xc9ced3, roughness: 0.25, metalness: 0.95 }),
   scuff: new THREE.MeshStandardMaterial({ color: 0xc9772e, roughness: 0.5, metalness: 0.6 }),
   mirror: new THREE.MeshStandardMaterial({ color: 0xb8c6d0, roughness: 0.06, metalness: 1.0 }),
   hit: new THREE.MeshBasicMaterial({ visible: false }),
-  wall: new THREE.MeshStandardMaterial({ color: 0xb9bcc0, roughness: 0.95 }),
-  roof: new THREE.MeshStandardMaterial({ color: 0x565b61, roughness: 0.9 }),
+  wall: new THREE.MeshStandardMaterial({ color: 0x9ea4aa, roughness: 0.94 }),
+  roof: new THREE.MeshStandardMaterial({ color: 0x383e45, roughness: 0.9 }),
 };
 
 /** Camera field of view used by the app (app.js sets the same value). */
@@ -44,18 +51,24 @@ export class Warehouse {
   /**
    * @param {THREE.Scene} scene
    * @param {object} [opts]
-   * @param {boolean} [opts.headless] skip texture loading and canvas textures (unit tests in Node)
+   * @param {boolean} [opts.headless] skip texture/model loading and canvas textures (unit tests in Node)
+   * @param {boolean} [opts.reducedMotion] disable non-essential ambient animation
    */
-  constructor(scene, { headless = false } = {}) {
+  constructor(scene, { headless = false, reducedMotion = false } = {}) {
     this.scene = scene;
     this.headless = headless;
     this.inspectables = new Map(); // id -> { mesh, label, focus: Vector3, box: Box3, proxy }
     this._workers = [];
+    this._characterCtrls = [];
     this._truck = null;
+    this.viewpointRings = [];
+    this.viewpointProxies = [];
     this._build();
     if (!headless) this._applyTextures();
     this._mergeStatic();
     this._buildHitProxies();
+    this._initAmbientLife({ reducedMotion });
+    if (!headless) this._loadPolyHavenModels();
   }
 
   /**
@@ -88,8 +101,8 @@ export class Warehouse {
       if (!entry.focus) entry.focus = center;
       this.proxies.push(proxy);
     }
-    // Hover / focus outline: a yellow box drawn on top of the scene.
-    this.outline = new THREE.Box3Helper(new THREE.Box3(), 0xffd400);
+    // Hover / focus outline: a safety-yellow box drawn on top of the scene.
+    this.outline = new THREE.Box3Helper(new THREE.Box3(), 0xffd100);
     this.outline.material.depthTest = false;
     this.outline.material.transparent = true;
     this.outline.renderOrder = 999;
@@ -108,6 +121,16 @@ export class Warehouse {
       .filter((h) => !active || active.has(h.object.userData.inspectable));
     const strong = hits.find((h) => !h.object.userData.lowPriority);
     return (strong || hits[0])?.object.userData.inspectable ?? null;
+  }
+
+  /**
+   * Resolve a ray to a floor viewpoint ring id (`dock`, `main`, etc.) if hit.
+   * @param {THREE.Raycaster} ray
+   */
+  pickViewpoint(ray) {
+    if (!this.viewpointProxies.length) return null;
+    const hits = ray.intersectObjects(this.viewpointProxies, false);
+    return hits[0]?.object.userData.viewId ?? null;
   }
 
   /** Show the outline around one inspectable (or hide it with null). */
@@ -174,7 +197,7 @@ export class Warehouse {
    * Merge every static mesh that is neither inspectable nor animated into one
    * mesh per material (draw-call budget: ≤ 300 on Medium). Inspectables stay
    * separate so raycasting can identify them; trucks and workers stay separate
-   * because the replay moves them.
+   * because the replay and ambient life systems move them.
    */
   _mergeStatic() {
     this.scene.updateMatrixWorld(true);
@@ -209,12 +232,16 @@ export class Warehouse {
 
   /** Apply a quality preset: real-time shadows only when the preset has a shadow map. */
   applyPreset(renderer, def) {
+    this._renderer = renderer;
     const on = def.shadowMapSize > 0;
     renderer.shadowMap.enabled = on;
+    renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.needsUpdate = on;
     if (on && this.keyLight.shadow.mapSize.x !== def.shadowMapSize) {
       this.keyLight.shadow.mapSize.set(def.shadowMapSize, def.shadowMapSize);
       this.keyLight.shadow.map?.dispose();
       this.keyLight.shadow.map = null;
+      renderer.shadowMap.needsUpdate = true;
     }
     this.scene.traverse((o) => { if (o.material) o.material.needsUpdate = true; });
   }
@@ -301,9 +328,16 @@ export class Warehouse {
     roof.castShadow = false;
     this.scene.add(roof);
 
+    // Overhead structural steel ceiling trusses for warehouse depth
+    for (let z = -16; z <= 16; z += 8) {
+      const truss = this._box(62, 0.28, 0.22, MAT.doorGrey, 0, 8.65, z);
+      truss.castShadow = false;
+      this.scene.add(truss);
+    }
+
     // Dock doors (north wall) — one is the blocked-exit hazard context
     for (let i = -2; i <= 2; i++) {
-      this._box(4.4, 4.6, 0.15, MAT.doorGrey, i * 7, 2.3, -21.7);
+      this.scene.add(this._box(4.4, 4.6, 0.15, MAT.doorGrey, i * 7, 2.3, -21.7));
     }
     const exitSign = this._box(1.4, 0.4, 0.08, MAT.exitGreen, 14, 3.4, -21.5);
     this._add(exitSign, { inspectable: null });
@@ -426,24 +460,59 @@ export class Warehouse {
     this.scene.add(leaning);
     this._add(leaning, { inspectable: 'hazard-leaning-stack', label: 'Leaning stack of boxes (aisle)' });
 
-    // Workers: low-detail hi-vis silhouettes (documented deviation: MakeHuman not used)
-    this._worker(-14, -6, 0.9);
+    // Animated-movie stylized warehouse characters (v2.0.0)
+    this._worker(-14, -6, 0.9, false, {
+      id: 'worker-1',
+      name: 'Associate Maya',
+      skinColor: 0xd99b78,
+      hairColor: 0x2a1d17,
+      hatColor: 0xffd100,
+      topColor: 0x243b55,
+      prop: 'clipboard',
+    });
     // Replay-only pedestrian: hidden during the hunt (realism review R3).
-    this.replayPedestrian = this._worker(20, 0, -2.4, true);
+    this.replayPedestrian = this._worker(20, 0, -2.4, true, {
+      id: 'replay-pedestrian',
+      name: 'Order Picker Alex',
+      skinColor: 0xc68662,
+      hairColor: 0x231914,
+      hatColor: 0xffd100,
+      topColor: 0x2b5070,
+      initialAction: 'walk',
+    });
     this.replayPedestrian.visible = false;
-    this._worker(-8, 15, 2.2);
+    this._worker(-8, 15, 2.2, false, {
+      id: 'worker-2',
+      name: 'Associate Devon',
+      skinColor: 0x8d583c,
+      hairColor: 0x181311,
+      hatColor: 0xffd100,
+      topColor: 0x2e4c6d,
+      prop: 'tablet',
+    });
+    this.supervisorSam = this._worker(11, -10, -0.6, false, {
+      id: 'supervisor-sam',
+      name: 'Supervisor Sam',
+      skinColor: 0xe2ab8b,
+      hairColor: 0x4a3525,
+      hatColor: 0xf4f6f8,
+      topColor: 0x1e3a5f,
+      prop: 'clipboard',
+      glasses: true,
+    });
 
     // Reach truck (medium detail, primitives)
     this._truck = this._buildTruck();
-    // Parked truck (practice-zone neutral item) now stands in the charging area, where
+    // Parked truck (practice-zone neutral item) stands in the charging area, where
     // its zone is; the replay uses its own truck, hidden during the hunt (R4).
     const parked = this._buildTruck();
     parked.position.set(-25, 0, 6);
     parked.rotation.y = 0.3;
     // Lockout card on the cab (cue: keys removed, card shows lockout).
-    const card = this._box(0.22, 0.3, 0.02, new THREE.MeshStandardMaterial({ color: 0xe23b2b, roughness: 0.7 }), 0, 1.7, 0.72);
+    const card = this._box(0.22, 0.3, 0.02, new THREE.MeshStandardMaterial({ color: 0xd7263d, roughness: 0.7 }), 0, 1.7, 0.72);
     card.castShadow = false;
     parked.add(card);
+    groundProp(parked, { contactShadow: !this.headless });
     this.scene.add(parked);
     this._add(parked, { inspectable: 'neutral-parked-truck', label: 'Parked reach truck (charging area)' });
     this._truck.position.set(10, 0, 2);
@@ -478,7 +547,7 @@ export class Warehouse {
     const dome = new THREE.Mesh(new THREE.SphereGeometry(0.75, 28, 12, 0, Math.PI * 2, 0, 0.62), MAT.mirror);
     dome.rotation.x = Math.PI / 2; // dome faces +z before tilting
     dome.position.z = -0.6;
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.44, 0.04, 8, 28), new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.6 }));
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.44, 0.04, 8, 28), new THREE.MeshStandardMaterial({ color: 0xffd100, roughness: 0.6 }));
     rim.position.z = -0.03;
     const back = new THREE.Mesh(new THREE.CircleGeometry(0.46, 28), MAT.darkPlastic);
     back.rotation.y = Math.PI;
@@ -491,11 +560,11 @@ export class Warehouse {
     this._add(mirror, { inspectable: 'hazard-misaligned-mirror', label: 'Convex mirror at the aisle end (misaligned)' });
     this.inspectables.get('hazard-misaligned-mirror').focus = new THREE.Vector3(14.8, 3.4, -1.6);
 
-    // Lighting: dim ambient + 4 high-bay area lights (emissive discs) + one shadow-casting key light
-    this.scene.add(new THREE.AmbientLight(0xcfd4da, 0.55));
-    const hemi = new THREE.HemisphereLight(0xdfe4ea, 0x6a6a68, 0.5);
+    // Lighting: cold industrial LED high-bay palette + shadow-casting key light
+    this.scene.add(new THREE.AmbientLight(0xd4e0ec, 0.58));
+    const hemi = new THREE.HemisphereLight(0xe8f1f5, 0x4b5056, 0.55);
     this.scene.add(hemi);
-    const key = new THREE.DirectionalLight(0xfff2df, 1.5);
+    const key = new THREE.DirectionalLight(0xe8f1f5, 1.55);
     key.position.set(18, 12, 10);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -506,7 +575,10 @@ export class Warehouse {
     this.scene.add(key);
     this.keyLight = key;
     for (const [x, z] of [[-20, -14], [0, -14], [-20, 8], [8, 8], [24, 14]]) {
-      const lamp = new THREE.Mesh(new THREE.CircleGeometry(0.55, 16), new THREE.MeshStandardMaterial({ color: 0xf5efdc, emissive: 0xfff3d6, emissiveIntensity: 1.4 }));
+      const lamp = new THREE.Mesh(
+        new THREE.CircleGeometry(0.55, 16),
+        new THREE.MeshStandardMaterial({ color: 0xe8f1f5, emissive: 0xe8f1f5, emissiveIntensity: 1.5 }),
+      );
       lamp.rotation.x = Math.PI / 2;
       lamp.position.set(x, 8.8, z);
       this.scene.add(lamp);
@@ -525,7 +597,7 @@ export class Warehouse {
     // lamp and an unlit green lamp, sized to read from the dock viewpoint (V6).
     const signal = new THREE.Group();
     signal.add(this._box(0.6, 1.2, 0.18, MAT.darkPlastic, -4.2, 2.2, -21.55));
-    const red = new THREE.Mesh(new THREE.CircleGeometry(0.19, 20), new THREE.MeshStandardMaterial({ color: 0xff3b2f, emissive: 0xff2a1a, emissiveIntensity: 2.4 }));
+    const red = new THREE.Mesh(new THREE.CircleGeometry(0.19, 20), new THREE.MeshStandardMaterial({ color: 0xd7263d, emissive: 0xd7263d, emissiveIntensity: 2.5 }));
     red.position.set(-4.2, 2.48, -21.45);
     const green = new THREE.Mesh(new THREE.CircleGeometry(0.19, 20), new THREE.MeshStandardMaterial({ color: 0x1d4d2a, roughness: 0.6 }));
     green.position.set(-4.2, 1.92, -21.45);
@@ -585,7 +657,7 @@ export class Warehouse {
       c.width = 128; c.height = 32;
       const g = c.getContext('2d');
       for (let i = -2; i < 10; i++) {
-        g.fillStyle = i % 2 ? '#111111' : '#f2c500';
+        g.fillStyle = i % 2 ? '#111111' : '#ffd100';
         g.beginPath();
         g.moveTo(i * 16, 32); g.lineTo(i * 16 + 16, 32); g.lineTo(i * 16 + 32, 0); g.lineTo(i * 16 + 16, 0);
         g.fill();
@@ -594,7 +666,7 @@ export class Warehouse {
       stripes.colorSpace = THREE.SRGBColorSpace;
     }
     const gate = new THREE.Group();
-    const bar = this._box(2.4, 0.18, 0.08, new THREE.MeshStandardMaterial(stripes ? { map: stripes, roughness: 0.6 } : { color: 0xf2c500, roughness: 0.6 }), 1.2, 1.0, 0);
+    const bar = this._box(2.4, 0.18, 0.08, new THREE.MeshStandardMaterial(stripes ? { map: stripes, roughness: 0.6 } : { color: 0xffd100, roughness: 0.6 }), 1.2, 1.0, 0);
     const post = this._box(0.12, 1.2, 0.12, MAT.darkPlastic, 0, 0.6, 0);
     gate.add(bar, post);
     gate.position.set(2.6, 0, 11.6);
@@ -655,21 +727,38 @@ export class Warehouse {
     return g;
   }
 
-  _worker(x, z, yaw = 0, laneOffender = false) {
-    const g = new THREE.Group();
-    const torso = this._box(0.42, 0.62, 0.24, MAT.hiVis, 0, 1.15, 0);
-    const legs = this._box(0.36, 0.85, 0.22, MAT.darkTrous, 0, 0.42, 0);
-    const head = this._box(0.22, 0.24, 0.22, MAT.darkPlastic, 0, 1.6, 0); // no facial features (documented)
-    g.add(torso, legs, head);
+  /**
+   * Create an articulated animated-movie stylized warehouse character (`createAnimatedCharacter`)
+   * with hardhat, reflective hi-vis vest, blinking, breathing, and hand props.
+   */
+  _worker(x, z, yaw = 0, laneOffender = false, charOpts = {}) {
+    const ctrl = createAnimatedCharacter({
+      id: charOpts.id || `worker-${this._workers.length + 1}`,
+      name: charOpts.name || 'Warehouse Associate',
+      height: charOpts.height || 1.73,
+      skinColor: charOpts.skinColor ?? 0xd99b78,
+      hairColor: charOpts.hairColor ?? 0x2a1d17,
+      hairStyle: 'hardhat',
+      hatColor: charOpts.hatColor ?? 0xffd100,
+      outfit: 'hivis',
+      topColor: charOpts.topColor ?? 0x243b55,
+      bottomColor: charOpts.bottomColor ?? 0x25303b,
+      prop: charOpts.prop || 'none',
+      glasses: Boolean(charOpts.glasses),
+      initialAction: charOpts.initialAction || 'idle',
+    });
+    const g = ctrl.root;
+    g.userData.dynamic = true;
     if (laneOffender) {
-      // arm pushing a trolley out into the aisle (replay context)
-      const arm = this._box(0.1, 0.1, 0.5, MAT.hiVis, 0.26, 1.2, -0.3);
-      g.add(arm);
+      // Trolley being pushed out into the aisle (replay context)
+      const trolley = this._box(0.48, 0.72, 0.62, MAT.steelOrange, 0, 0.42, 0.58);
+      g.add(trolley);
     }
     g.position.set(x, 0, z);
     g.rotation.y = yaw;
     this.scene.add(g);
     this._workers.push(g);
+    this._characterCtrls.push(ctrl);
     return g;
   }
 
@@ -683,7 +772,12 @@ export class Warehouse {
     const roofPost2 = this._box(0.08, 1.1, 0.08, MAT.darkPlastic, 0.45, 1.85, 0.3);
     const roofTop = this._box(1.0, 0.06, 1.0, MAT.darkPlastic, 0, 2.4, 0.2);
     const seat = this._box(0.6, 0.5, 0.5, MAT.rubber, 0, 1.35, 0.45);
-    g.add(body, mast, carriage, counterweight, roofPost1, roofPost2, roofTop, seat);
+    const beacon = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.07, 0.08, 0.12, 12),
+      new THREE.MeshStandardMaterial({ color: 0xff6a13, emissive: 0xff6a13, emissiveIntensity: 1.6, roughness: 0.25 }),
+    );
+    beacon.position.set(0, 2.49, 0.2);
+    g.add(body, mast, carriage, counterweight, roofPost1, roofPost2, roofTop, seat, beacon);
     const wheelMat = MAT.rubber;
     for (const [wx, wz] of [[-0.55, -0.7], [0.55, -0.7], [-0.5, 0.8], [0.5, 0.8]]) {
       const w = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.16, 14), wheelMat);
@@ -693,6 +787,262 @@ export class Warehouse {
       g.add(w);
     }
     return g;
+  }
+
+  /**
+   * Initialize v2.0.0 AmbientLifeManager systems:
+   *  1. Animated-movie character breathing, blinking, and gaze tracking
+   *  2. Volumetric skylight / high-bay LED shafts
+   *  3. Floating warehouse dust motes
+   *  4. Patrolling perimeter utility tug with flashing amber beacon & proximity safety stop
+   *  5. Animated packing-line roller conveyor + moving parcel tote
+   *  6. Glowing 3D floor viewpoint rings at each Warehouse.VIEWS stand point
+   */
+  _initAmbientLife({ reducedMotion = false } = {}) {
+    this.life = new AmbientLifeManager(this.scene, { reducedMotion, seed: 404 });
+    for (const c of this._characterCtrls) {
+      this.life.addCharacter(c);
+    }
+
+    // Volumetric light shafts under high-bay luminaires
+    this.life.addLightShafts({
+      positions: [
+        [-20, 6.2, -14],
+        [0, 6.2, -14],
+        [-20, 6.2, 8],
+        [8, 6.2, 8],
+        [24, 6.2, 14],
+      ],
+      rotation: [0, 0, -0.16],
+      radiusTop: 0.45,
+      radiusBottom: 1.85,
+      height: 5.2,
+      color: 0xe8f1f5,
+      opacity: 0.085,
+    });
+
+    // Floating warehouse dust motes
+    this.life.addParticleVolume({
+      name: 'warehouse-dust-motes',
+      center: [0, 2.8, 0],
+      extents: [54, 4.8, 36],
+      count: 220,
+      color: 0xe8f1f5,
+      size: 0.058,
+      opacity: 0.42,
+      drift: [0.07, 0.025, 0.05],
+    });
+
+    // Patrolling background utility cart on a safe perimeter loop (yields when camera is within 4 m)
+    const { cart, wheels, beaconMesh } = this._buildPatrolCart();
+    this.patrolCart = cart;
+    this.scene.add(cart);
+    this.life.addSplineMover(
+      cart,
+      [
+        [-26, 0, -15.5],
+        [9, 0, -15.5],
+        [9, 0, -6.2],
+        [-26, 0, -6.2],
+      ],
+      {
+        closed: true,
+        speed: 1.65,
+        startU: 0.15,
+        stopRadius: 4.0,
+        wheels,
+        beaconMesh,
+      },
+    );
+
+    // Animated roller conveyor and reciprocating tote beside the packing bench
+    this._buildConveyor();
+
+    // Glowing floor rings at each of the 7 zone viewpoints
+    this._buildViewpointRings();
+  }
+
+  _buildPatrolCart() {
+    const cart = new THREE.Group();
+    cart.name = 'ambient-patrol-cart';
+    cart.userData.dynamic = true;
+
+    const chassis = this._box(0.95, 0.36, 1.55, MAT.steelOrange, 0, 0.32, 0);
+    const mast = this._box(0.75, 0.85, 0.12, MAT.darkPlastic, 0, 0.88, 0.62);
+    const tote = this._box(0.78, 0.48, 0.88, MAT.cardboard, 0, 0.74, -0.18);
+    const beaconMat = new THREE.MeshStandardMaterial({
+      color: 0xffd100,
+      emissive: 0xff6a13,
+      emissiveIntensity: 1.8,
+      roughness: 0.2,
+    });
+    const beaconMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.12, 12), beaconMat);
+    beaconMesh.position.set(0, 1.38, 0.62);
+    cart.add(chassis, mast, tote, beaconMesh);
+
+    const wheels = [];
+    for (const [wx, wz] of [[-0.46, -0.52], [0.46, -0.52], [-0.46, 0.52], [0.46, 0.52]]) {
+      const wheelPivot = new THREE.Group();
+      wheelPivot.position.set(wx, 0.16, wz);
+      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.12, 12), MAT.rubber);
+      w.rotation.z = Math.PI / 2;
+      wheelPivot.add(w);
+      cart.add(wheelPivot);
+      wheels.push(wheelPivot);
+    }
+    groundProp(cart, { contactShadow: !this.headless });
+    return { cart, wheels, beaconMesh };
+  }
+
+  _buildConveyor() {
+    const conv = new THREE.Group();
+    conv.name = 'ambient-packing-conveyor';
+    conv.userData.dynamic = true;
+    conv.position.set(26, 0, 16.1);
+
+    // Side rails + legs
+    conv.add(
+      this._box(4.4, 0.1, 0.08, MAT.steelBlue, 0, 0.78, -0.38),
+      this._box(4.4, 0.1, 0.08, MAT.steelBlue, 0, 0.78, 0.38),
+      this._box(0.1, 0.78, 0.76, MAT.darkPlastic, -2.0, 0.39, 0),
+      this._box(0.1, 0.78, 0.76, MAT.darkPlastic, 2.0, 0.39, 0),
+    );
+
+    const rollerMat = new THREE.MeshStandardMaterial({ color: 0xb8c2cc, roughness: 0.32, metalness: 0.75 });
+    for (let i = -8; i <= 8; i++) {
+      const r = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.68, 10), rollerMat);
+      r.rotation.x = Math.PI / 2;
+      r.position.set(i * 0.24, 0.80, 0);
+      conv.add(r);
+      this.life.addOscillator(r, { axis: 'z', mode: 'spin', amplitude: 2.5 });
+    }
+
+    const tote = this._box(0.56, 0.34, 0.48, MAT.cardboard, 0, 1.01, 0);
+    conv.add(tote);
+    this.life.addOscillator(tote, { axis: 'x', mode: 'bob', amplitude: 1.25, frequency: 0.18 });
+    this.scene.add(conv);
+  }
+
+  _buildViewpointRings() {
+    const ringGroup = new THREE.Group();
+    ringGroup.name = 'viewpoint-floor-rings';
+    ringGroup.userData.dynamic = true;
+    this.scene.add(ringGroup);
+
+    for (const [viewId, v] of Object.entries(Warehouse.VIEWS)) {
+      const [vx, , vz] = v.pos;
+      const g = new THREE.Group();
+      g.position.set(vx, 0.015, vz);
+
+      const outer = new THREE.Mesh(
+        new THREE.RingGeometry(0.32, 0.44, 28),
+        new THREE.MeshBasicMaterial({
+          color: 0xffd100,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.72,
+          depthWrite: false,
+        }),
+      );
+      outer.rotation.x = -Math.PI / 2;
+      g.add(outer);
+
+      const beacon = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.08, 0),
+        new THREE.MeshStandardMaterial({
+          color: 0xffd100,
+          emissive: 0xff6a13,
+          emissiveIntensity: 0.75,
+          roughness: 0.25,
+        }),
+      );
+      beacon.position.y = 0.26;
+      g.add(beacon);
+
+      const proxy = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.45, 12), MAT.hit);
+      proxy.position.set(vx, 0.22, vz);
+      proxy.userData.viewId = viewId;
+      proxy.userData.viewLabel = v.label;
+      this.scene.add(proxy);
+      proxy.updateMatrixWorld(true);
+      this.viewpointProxies.push(proxy);
+
+      ringGroup.add(g);
+      this.viewpointRings.push({ viewId, group: g, outer, beacon, phase: this.viewpointRings.length * 0.9 });
+    }
+  }
+
+  /**
+   * Asynchronously load and place the 8 curated Poly Haven CC0 models into the warehouse
+   * without blocking startup or altering the synchronous inspectable hit proxies.
+   */
+  async _loadPolyHavenModels() {
+    this.models = new ModelLibrary();
+    this.modelGroup = new THREE.Group();
+    this.modelGroup.name = 'polyhaven-cc0-props';
+    this.modelGroup.userData.dynamic = true;
+    this.scene.add(this.modelGroup);
+
+    const placements = [
+      // WetFloorSign_01 staged at the north dock safety post & south staging post (away from the unguarded spill)
+      { id: 'WetFloorSign_01', position: [-11.5, 0, -19.5], rotationY: 0.35, targetHeight: 0.68 },
+      { id: 'WetFloorSign_01', position: [-6.5, 0, 19.2], rotationY: -0.4, targetHeight: 0.68 },
+      // cardboard_box_01 on staging pallets and beside the packing bench
+      { id: 'cardboard_box_01', position: [1.8, 0.15, -17.8], rotationY: 0.2, targetHeight: 0.46, contactShadow: false },
+      { id: 'cardboard_box_01', position: [23.2, 0, 14.9], rotationY: -0.5, targetHeight: 0.48 },
+      // Barrel_01 in the receiving supply bay
+      { id: 'Barrel_01', position: [-18.5, 0, -19.2], rotationY: 0.1, targetHeight: 0.88 },
+      { id: 'Barrel_01', position: [-17.4, 0, -18.9], rotationY: 1.2, targetHeight: 0.88 },
+      // wooden_crate_01 along the heavy freight bay
+      { id: 'wooden_crate_01', position: [-24.5, 0, -16.5], rotationY: 0.08, targetHeight: 0.82 },
+      { id: 'wooden_crate_01', position: [12.2, 0, -18.6], rotationY: -0.15, targetHeight: 0.82 },
+      // korean_fire_extinguisher_01 by dock safety pillar and charging station
+      { id: 'korean_fire_extinguisher_01', position: [12.6, 0, -21.2], rotationY: 0, targetHeight: 0.62 },
+      { id: 'korean_fire_extinguisher_01', position: [-29.6, 0, 7.8], rotationY: Math.PI / 2, targetHeight: 0.62 },
+      // hanging_industrial_lamp along the high-bay ceiling truss
+      { id: 'hanging_industrial_lamp', position: [-12, 7.65, -8], rotationY: 0, targetHeight: 0.85, contactShadow: false },
+      { id: 'hanging_industrial_lamp', position: [6, 7.65, -8], rotationY: 0, targetHeight: 0.85, contactShadow: false },
+      { id: 'hanging_industrial_lamp', position: [20, 7.65, 0], rotationY: 0, targetHeight: 0.85, contactShadow: false },
+      // tool_cart beside the charging/maintenance station
+      { id: 'tool_cart', position: [-29.2, 0, 12.1], rotationY: 0.45, targetHeight: 0.92 },
+      // ladder_sectioned_01 stored safely along the west maintenance wall
+      { id: 'ladder_sectioned_01', position: [-31.1, 0, -2.0], rotationY: Math.PI / 2, targetHeight: 2.15 },
+    ];
+
+    await Promise.all(
+      placements.map((p) =>
+        this.models.place(this.modelGroup, p.id, {
+          position: p.position,
+          rotationY: p.rotationY,
+          targetHeight: p.targetHeight,
+          castShadow: false,
+          receiveShadow: true,
+          contactShadow: p.contactShadow !== false,
+        }),
+      ),
+    );
+  }
+
+  setCalmMode(active) {
+    this.life?.setCalmMode(active);
+  }
+
+  setReducedMotion(reduced) {
+    this.life?.setReducedMotion(reduced);
+  }
+
+  /** Advance all ambient life systems and floor ring animations. */
+  update(dt = 0.016, camera = null) {
+    this.life?.update(dt, camera);
+    if (this.life && !this.life.reducedMotion) {
+      const t = this.life.elapsed;
+      for (const r of this.viewpointRings) {
+        const s = 1 + Math.sin(t * 2.5 + r.phase) * 0.08;
+        r.outer.scale.setScalar(s);
+        r.beacon.position.y = 0.26 + Math.sin(t * 2.5 + r.phase) * 0.035;
+        r.beacon.rotation.y = t * 1.3 + r.phase;
+      }
+    }
   }
 
   /**
