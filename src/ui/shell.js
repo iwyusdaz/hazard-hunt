@@ -14,7 +14,7 @@ export class Shell {
     this.root = document.getElementById('ui');
     this.root.innerHTML = `
       <header class="app-header">
-        <p class="app-title">${title}</p>
+        <h1 class="app-title">${title}</h1>
         <nav aria-label="Main">
           <button type="button" data-action="menu">Menu</button>
           <button type="button" data-action="settings">Settings</button>

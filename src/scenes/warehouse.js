@@ -297,6 +297,29 @@ export class Warehouse {
     return mesh;
   }
 
+  /**
+   * Register a non-hunt interactive object (review I2-2: the supervisor character in
+   * Module 5) so the app can hover-highlight it, tooltip it and glide the camera to it
+   * exactly like an inspectable. Called after construction (app.js), so it never
+   * participates in `_mergeStatic` or the headless unit-test fixtures.
+   */
+  registerInteractive(id, object, label) {
+    if (!object) return null;
+    this.scene.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(object);
+    box.expandByScalar(0.2);
+    const s = box.getSize(new THREE.Vector3());
+    const proxy = new THREE.Mesh(new THREE.BoxGeometry(s.x, s.y, s.z), MAT.hit);
+    proxy.position.copy(box.getCenter(new THREE.Vector3()));
+    proxy.userData.inspectable = id;
+    this.scene.add(proxy);
+    proxy.updateMatrixWorld(true);
+    const focus = box.getCenter(new THREE.Vector3());
+    this.inspectables.set(id, { mesh: object, label, box, proxy, focus });
+    this.proxies.push(proxy);
+    return id;
+  }
+
   _box(w, h, d, mat, x, y, z) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     m.position.set(x, y, z);
@@ -420,12 +443,14 @@ export class Warehouse {
     hose.rotation.y = 0.5;
     this._add(hose, { inspectable: 'hazard-trip-hose', label: 'Hose stretched across the walkway (main floor)' });
 
-    // Blocked fire exit (assessed zone): boxes in front of the east-side exit
-    this._palletStack(29.6, -2, 2, false, true);
+    // Blocked fire exit (assessed zone): a real exit door on the east wall with an
+    // illuminated EXIT sign housing (review V2-1: the sign was a floating sliver and
+    // no door read beneath it), blocked by stacked goods. Placed at z = 10 so the
+    // re-aimed aisleSouth view frames door, sign and the kinked upright together.
+    this.scene.add(this._exitDoor(10));
+    this._palletStack(29.6, 10, 2, false, true);
     const blocked = this.scene.children[this.scene.children.length - 1];
     this._add(blocked, { inspectable: 'hazard-blocked-exit', label: 'Boxes in front of the east fire exit' });
-    const exitSignE = this._box(1.4, 0.4, 0.08, MAT.exitGreen, 31.7, 3.4, -2);
-    this._add(exitSignE);
 
     // Damaged upright (assessed zone): stays blue like every other upright; it reads by
     // SHAPE — a kink at mid-height bulging into the aisle — with a small bare-metal
@@ -607,6 +632,48 @@ export class Warehouse {
     this._add(signal, { inspectable: 'hazard-unchocked-trailer', label: 'Open dock door with a trailer and a red dock signal' });
   }
 
+  /**
+   * East fire exit (review V2-1): grey frame, green door leaf with a push bar, and an
+   * illuminated EXIT sign housing (2.4 x 0.7 m with white lettering) sized and lit to
+   * read from the aisleSouth viewpoint about 23 m away. Headless builds get the plain
+   * green panel (no canvas), like the striped gate.
+   */
+  _exitDoor(z) {
+    const g = new THREE.Group();
+    g.add(this._box(0.25, 3.4, 0.35, MAT.doorGrey, 31.8, 1.7, z - 1.4));
+    g.add(this._box(0.25, 3.4, 0.35, MAT.doorGrey, 31.8, 1.7, z + 1.4));
+    g.add(this._box(0.25, 0.35, 3.15, MAT.doorGrey, 31.8, 3.25, z));
+    g.add(this._box(0.14, 3.0, 2.55, MAT.exitGreen, 31.78, 1.5, z)); // door leaf
+    g.add(this._box(0.1, 0.09, 1.9, MAT.steelOrange, 31.62, 1.15, z)); // push bar
+    let signMats = MAT.exitGreen;
+    if (!this.headless) {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 72;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#14663a';
+      ctx.fillRect(0, 0, 256, 72);
+      ctx.fillStyle = '#f2f7f2';
+      ctx.font = '700 58px "Barlow", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('EXIT', 128, 40);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 4;
+      const face = new THREE.MeshStandardMaterial({
+        map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.5, roughness: 0.6,
+      });
+      // Box face order: +x, -x, +y, -y, +z, -z. The lettered face points west (-x),
+      // into the warehouse toward the aisleSouth viewpoint.
+      signMats = [MAT.exitGreen, face, MAT.exitGreen, MAT.exitGreen, MAT.exitGreen, MAT.exitGreen];
+    }
+    const housing = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.7, 2.4), signMats);
+    housing.position.set(31.8, 4.05, z);
+    housing.castShadow = true;
+    g.add(housing);
+    return g;
+  }
+
   /** Transfer zone: outbound staging lane on the south side (no hints). */
   _buildTransferZone() {
     // Walkway through the lane: two yellow lines running toward the south wall.
@@ -617,8 +684,13 @@ export class Warehouse {
     this._add(lineB, { inspectable: 't-neutral-clear-line', label: 'Walkway through the staging lane' });
 
     // A second reach truck, loaded too high to see over, parked across the walkway line.
+    // The load is grounded on the carriage (review V2-3): pallet resting on the fork
+    // carriage, boxes on the pallet, and load chains from the mast top down to the
+    // carriage sides, so it reads as a carried load, not a floating one.
     const truck2 = this._buildTruck();
-    for (let i = 0; i < 3; i++) truck2.add(this._box(1.0, 0.75, 1.0, MAT.cardboard, 0, 1.3 + i * 0.78, -1.75));
+    truck2.add(this._pallet(0, 1.32, -1.55));
+    for (let i = 0; i < 3; i++) truck2.add(this._box(1.0, 0.75, 1.0, MAT.cardboard, 0, 1.77 + i * 0.78, -1.55));
+    for (const cx of [-0.42, 0.42]) truck2.add(this._box(0.05, 1.55, 0.05, MAT.darkPlastic, cx, 2.2, -1.26));
     truck2.position.set(5.2, 0, 18);
     truck2.rotation.y = Math.PI * 0.55;
     this.scene.add(truck2);
@@ -919,7 +991,9 @@ export class Warehouse {
 
     const tote = this._box(0.56, 0.34, 0.48, MAT.cardboard, 0, 1.01, 0);
     conv.add(tote);
-    this.life.addOscillator(tote, { axis: 'x', mode: 'bob', amplitude: 1.25, frequency: 0.18 });
+    // Small amplitude so the tote reads as a gentle jiggle on the belt, not a slide
+    // across the packing station (motion review M3-1).
+    this.life.addOscillator(tote, { axis: 'x', mode: 'bob', amplitude: 0.12, frequency: 0.8 });
     this.scene.add(conv);
   }
 
@@ -1007,6 +1081,12 @@ export class Warehouse {
       { id: 'tool_cart', position: [-29.2, 0, 12.1], rotationY: 0.45, targetHeight: 0.92 },
       // ladder_sectioned_01 stored safely along the west maintenance wall
       { id: 'ladder_sectioned_01', position: [-31.1, 0, -2.0], rotationY: Math.PI / 2, targetHeight: 2.15 },
+      // Transfer-zone dressing (review V2-4): grounded props flanking the staging lane,
+      // clear of the walkway lines, striped gate, loaded truck and battery-cage proxies.
+      { id: 'cardboard_box_01', position: [0.7, 0, 14.4], rotationY: 0.5, targetHeight: 0.48 },
+      { id: 'cardboard_box_01', position: [1.2, 0, 15.5], rotationY: -0.9, targetHeight: 0.44 },
+      { id: 'Barrel_01', position: [-1.1, 0, 17.4], rotationY: 0.3, targetHeight: 0.88 },
+      { id: 'wooden_crate_01', position: [7.9, 0, 14.9], rotationY: -0.25, targetHeight: 0.82 },
     ];
 
     await Promise.all(
@@ -1057,7 +1137,10 @@ export class Warehouse {
       charging: { pos: [-20, 1.7, 15], yaw: 0.8, pitch: -0.3, label: 'Charging area' },
       packing: { pos: [22, 1.7, 18], yaw: -Math.PI * 0.25, pitch: -0.1, label: 'Packing station' },
       aisleNorth: { pos: [21, 1.7, -5], yaw: 2.72, pitch: 0.08, label: 'Aisle, north end' },
-      aisleSouth: { pos: [17, 1.7, 1], yaw: -Math.PI / 2, pitch: -0.1, label: 'Aisle, west entrance looking east' },
+      // Re-framed for review V2-1/V2-2: from the south approach the view now frames the
+      // east fire exit (door, illuminated sign, blocking goods) near centre and keeps
+      // the kinked upright in the open frame clear of the POI panel (ndc x ≈ 0.15).
+      aisleSouth: { pos: [10, 1.7, 4], yaw: -Math.PI / 2 - 0.14, pitch: -0.1, label: 'Aisle, south approach looking east' },
       transfer: { pos: [2, 1.7, 7], yaw: Math.PI, pitch: -0.12, label: 'Transfer zone (staging lane)' },
     };
   }

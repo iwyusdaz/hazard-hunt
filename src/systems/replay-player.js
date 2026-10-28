@@ -50,7 +50,9 @@ export class ReplayPlayer {
         <button type="button" data-replay="exit">Exit replay</button>
         <span class="replay-seg" aria-live="polite"></span>
       </div>
-      <p class="replay-story" tabindex="0"></p>
+      <section class="replay-story-region" aria-label="Incident story">
+        <p class="replay-story" tabindex="0"></p>
+      </section>
       <div class="replay-decision"></div>
       <div class="replay-causes"></div>
     `;

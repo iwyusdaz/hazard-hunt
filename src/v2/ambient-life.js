@@ -251,8 +251,11 @@ export class AmbientLifeManager {
    * @param {THREE.Camera} [camera]
    */
   update(dt = 0.016, camera = null) {
+    // Time-based convergence (motion review M3-2): frame-rate independent exponential
+    // approach with a ~0.35 s time constant, replacing the per-frame lerp(0.08) that
+    // converged slower at low frame rates.
     const targetCalm = this.reducedMotion ? 0.0 : this.calm ? 0.30 : 1.0;
-    this.calmFactor = THREE.MathUtils.lerp(this.calmFactor, targetCalm, 0.08);
+    this.calmFactor += (targetCalm - this.calmFactor) * (1 - Math.exp(-dt / 0.35));
     const effDt = dt * this.calmFactor;
     this.elapsed += effDt;
 

@@ -98,6 +98,9 @@ export class App {
       skyRadius: 400,
     });
     this.warehouse = new Warehouse(this.engine.scene, { reducedMotion: this.motion?.reduced });
+    // In-world speak-up target (review I2-2): the supervisor character is a registered
+    // interactive with its own hit proxy, highlight, tooltip and camera glide.
+    this.warehouse.registerInteractive('char-supervisor-sam', this.warehouse.supervisorSam, 'Supervisor Sam');
     this.motion.onChange((reduced) => this.warehouse?.setReducedMotion(reduced));
     // Presets drive real-time shadows and resolution (standards 4.4).
     this.warehouse.applyPreset(this.engine.renderer, this.engine.quality.presetDef);
@@ -244,8 +247,147 @@ export class App {
     return { id, viewId, active };
   }
 
+  /**
+   * In-world equivalents for the panel-only activities (interaction review I2-1/I2-2).
+   * Module 4: the three hazards that have a controls task open their control card in
+   * 3D. Module 5: clicking Supervisor Sam opens the speak-up scenario. Both keep the
+   * text-panel versions as the keyboard/AT equivalent (owner decision 7).
+   */
+  _controlTaskByItem = {
+    'hazard-overhang': 'controls-overhang',
+    'hazard-frayed-cable': 'controls-frayed-cable',
+    'hazard-misaligned-mirror': 'controls-mirror',
+  };
+
+  /** The in-world action for an object id in the current module, or null. */
+  _actionFor(id) {
+    if (this.moduleIndex === 3) {
+      const task = this.controlsData?.tasks.find((t) => t.id === this._controlTaskByItem[id]);
+      if (task) return { kind: 'controls', task };
+    }
+    if (this.moduleIndex === 4 && id === 'char-supervisor-sam') return { kind: 'speakup' };
+    return null;
+  }
+
+  /** Open the in-world equivalent of a panel activity: glide to the object, then show
+   * its control card or the speak-up dialogue in the shared task dialog. */
+  _runAction(id, action) {
+    const dlg = document.getElementById('task-dialog');
+    if (dlg.open) return;
+    this._glideToObject(id);
+    this.warehouse?.setCalmMode(true);
+    dlg.addEventListener('close', () => this.warehouse?.setCalmMode(false), { once: true });
+    if (action.kind === 'controls') {
+      dlg.innerHTML = `<h2 id="task-h">${action.task.hazard}</h2><p>Rank these controls for the hazard you are looking at, most → least effective. The same ranking is in the text panel.</p>`;
+      const host = document.createElement('div');
+      dlg.appendChild(host);
+      const activity = new ControlsActivity({
+        data: { ...this.controlsData, tasks: [action.task] },
+        container: host,
+        onComplete: (results) => {
+          this._mergeControls(results);
+          this.record.log('completed', { id: `controls-${action.task.id}`, name: action.task.hazard }, { response: results.map((r) => r.taskId + ':' + (r.perfect ? 'perfect' : 'revised')).join(',') });
+          const close = document.createElement('button');
+          close.type = 'button';
+          close.textContent = 'Close';
+          close.addEventListener('click', () => closeDialog(dlg));
+          host.appendChild(close);
+          close.focus();
+        },
+      });
+      activity.next();
+      openDialog(dlg);
+      return;
+    }
+    dlg.innerHTML = `<h2 id="task-h">Speak up: report the blocked exit</h2><p>Structured model: <strong>Situation → Hazard → Impact → Ask</strong>. You choose; the scenario responds. (Fictional scenario, constructed for teaching.)</p>`;
+    const host = document.createElement('div');
+    host.className = 'dialogue-host';
+    dlg.appendChild(host);
+    const speakPlayer = new DialoguePlayer({
+      data: this.speakupData,
+      container: host,
+      onOutcome: (outcome, line) => {
+        this.results.speakup = outcome;
+        this.record.log('completed', { id: 'speakup', name: 'Speak-up scenario' }, { response: outcome });
+        const fb = document.createElement('div');
+        fb.className = 'feedback';
+        fb.innerHTML = `<p>${line}</p>`;
+        const again = document.createElement('button');
+        again.type = 'button';
+        again.textContent = 'Try a different approach';
+        again.addEventListener('click', () => speakPlayer.start());
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.textContent = 'Close';
+        close.addEventListener('click', () => closeDialog(dlg));
+        host.append(fb, again, close);
+        close.focus();
+      },
+    });
+    speakPlayer.start();
+    openDialog(dlg);
+  }
+
+  /** Glide the camera to a spot facing a registered interactive or inspectable.
+   * Reduced motion places the camera instantly (same rule as viewpoint glides). */
+  _glideToObject(id) {
+    if (!this.engine) return;
+    const focus = this.warehouse.inspectables.get(id)?.focus;
+    if (!focus) return;
+    const from = this.engine.camera.position.clone();
+    const dir = from.clone().sub(focus);
+    dir.y = 0;
+    if (dir.lengthSq() < 0.01) dir.set(0, 0, 1);
+    dir.normalize();
+    const toPos = focus.clone().addScaledVector(dir, focus.y > 2 ? 4.5 : 3.2);
+    toPos.y = 1.7;
+    toPos.x = THREE.MathUtils.clamp(toPos.x, -30, 30);
+    toPos.z = THREE.MathUtils.clamp(toPos.z, -20, 20);
+    const aim = this.warehouse.aimAt(id, toPos);
+    if (this.motion?.reduced) {
+      this._cameraGlide = null;
+      this.engine.camera.position.copy(toPos);
+      this.look.yaw = aim.yaw;
+      this.look.pitch = Math.max(this.look.minPitch, Math.min(this.look.maxPitch, aim.pitch));
+      this.look.apply();
+      return;
+    }
+    this._cameraGlide = {
+      fromPos: from,
+      toPos,
+      fromYaw: this.look.yaw,
+      toYaw: aim.yaw,
+      fromPitch: this.look.pitch,
+      toPitch: Math.max(this.look.minPitch, Math.min(this.look.maxPitch, aim.pitch)),
+      elapsed: 0,
+      duration: 0.78,
+    };
+  }
+
+  /** Merge one run's control-ranking results, replacing earlier results per task. */
+  _mergeControls(results) {
+    for (const r of results) {
+      this.results.controls = this.results.controls.filter((x) => x.taskId !== r.taskId);
+      this.results.controls.push(r);
+    }
+  }
+
   _hover(x, y) {
     const { id, viewId, active } = this._pickAt(x, y);
+    const action = id ? this._actionFor(id) : null;
+    if (action) {
+      this.warehouse.highlight(id);
+      this.engine.canvas.style.cursor = 'pointer';
+      if (this.tooltip) {
+        this.tooltip.hidden = false;
+        this.tooltip.textContent = action.kind === 'controls'
+          ? `${action.task.hazard} — Click to rank controls`
+          : `${this.warehouse.inspectables.get(id)?.label ?? 'Supervisor Sam'} — Click to speak up`;
+        this.tooltip.style.left = `${Math.min(window.innerWidth - 240, Math.max(16, x + 14))}px`;
+        this.tooltip.style.top = `${Math.max(16, y - 36)}px`;
+      }
+      return;
+    }
     const ok = id && active.has(id);
     this.warehouse.highlight(ok ? id : null);
     if (ok) {
@@ -278,8 +420,14 @@ export class App {
   _click(x, y) {
     const { id, viewId, active } = this._pickAt(x, y);
     if (id) {
+      const action = this._actionFor(id);
+      if (action) { this._runAction(id, action); return; }
       if (active.has(id)) { this._flag(id); return; }
-      if (active.size) announce('That object belongs to a different zone. It is not part of this hunt.');
+      if (active.size) {
+        announce(id.startsWith('char-')
+          ? 'That is Supervisor Sam. The speak-up conversation is part of Module 5.'
+          : 'That object belongs to a different zone. It is not part of this hunt.');
+      }
       return;
     }
     if (viewId) {
@@ -795,6 +943,9 @@ export class App {
 
   _module4(body, api) {
     body.appendChild(this._el(`<p>For three hazards from this course, rank the candidate controls. The hierarchy of controls (source: NIOSH, the US National Institute for Occupational Safety and Health): Elimination → Substitution → Engineering → Administrative → PPE.</p>`));
+    if (this.engine) {
+      body.appendChild(this._el(`<p>In the 3D view you can also click the hazard where it happened — the overhanging pallet, the frayed charging cable, or the misaligned mirror — to rank its controls on the spot.</p>`));
+    }
     const host = document.createElement('div');
     body.appendChild(host);
     const showIsIt = () => {
@@ -805,27 +956,37 @@ export class App {
         body.appendChild(this._el(`<p>Some causes are system or layout problems that training alone will not fix — that judgment is part of the job. (See the portfolio's "should-this-be-a-course" thread for the full analysis method.)</p>`));
     };
     const start = () => {
+      // Tasks already ranked (here or on the hazard in 3D) keep their result; only the
+      // remaining ones are served (interaction review I2-1: one result per task, both ways).
+      const remaining = this.controlsData.tasks.filter((t) => !this.results.controls.some((r) => r.taskId === t.id));
+      if (!remaining.length) { showIsIt(); return; }
       const activity = new ControlsActivity({
-        data: this.controlsData,
+        data: { ...this.controlsData, tasks: remaining },
         container: host,
         onComplete: (results) => {
-          this.results.controls = results;
-          this.record.log('completed', { id: 'controls-activity', name: 'Hierarchy of controls ranking' }, { 'response': results.map((r) => r.taskId + ':' + (r.perfect ? 'perfect' : 'revised')).join(',') });
+          this._mergeControls(results);
+          this.record.log('completed', { id: 'controls-activity', name: 'Hierarchy of controls ranking' }, { 'response': this.results.controls.map((r) => r.taskId + ':' + (r.perfect ? 'perfect' : 'revised')).join(',') });
           showIsIt();
           this.record.log('experienced', { id: 'is-it-training', name: 'Is it training reflection' });
         },
       });
       activity.next();
     };
-    // A finished ranking stays finished when the learner comes back (review N5).
+    // Finished rankings stay finished when the learner comes back (review N5); partial
+    // rankings (e.g. one hazard ranked in 3D) continue where they left off.
     if (this.results.controls.length) {
       host.appendChild(this._el(`<h3>Your rankings</h3>`));
       host.appendChild(dataTable(['Hazard', 'Result'], this.results.controls.map((r) => [
         this.controlsData.tasks.find((t) => t.id === r.taskId)?.hazard ?? r.taskId,
         r.perfect ? 'Follows the hierarchy' : `${r.inversions} pair(s) out of hierarchy order`,
       ]), 'Hierarchy of controls ranking, completed'));
+      if (this.results.controls.length < this.controlsData.tasks.length) {
+        const cont = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Continue ranking' });
+        cont.addEventListener('click', () => { host.innerHTML = ''; start(); host.querySelector('button')?.focus(); });
+        host.appendChild(cont);
+      }
       const again = Object.assign(document.createElement('button'), { type: 'button', textContent: 'Rank the controls again' });
-      again.addEventListener('click', () => { host.innerHTML = ''; start(); host.querySelector('button')?.focus(); });
+      again.addEventListener('click', () => { this.results.controls = []; host.innerHTML = ''; start(); host.querySelector('button')?.focus(); });
       host.appendChild(again);
       showIsIt();
     } else start();
@@ -834,6 +995,19 @@ export class App {
   _module5(body, api) {
     body.appendChild(this._el(`<h3>Speak up: report the blocked exit</h3>`));
     body.appendChild(this._el(`<p>Structured model: <strong>Situation → Hazard → Impact → Ask</strong>. You choose; the scenario responds. (Fictional scenario, constructed for teaching.)</p>`));
+    if (this.engine) {
+      // In-world equivalent (review I2-1/I2-2): the conversation also opens by clicking
+      // Supervisor Sam in the 3D scene; this button is its keyboard/pointer equivalent.
+      const sam = document.createElement('button');
+      sam.type = 'button';
+      sam.textContent = 'Open the conversation with Supervisor Sam in 3D';
+      sam.addEventListener('click', () => {
+        this._show3D();
+        this._glideToObject('char-supervisor-sam');
+        this._runAction('char-supervisor-sam', { kind: 'speakup' });
+      });
+      body.appendChild(sam);
+    }
     const dlgHost = document.createElement('div');
     dlgHost.className = 'dialogue-host';
     body.appendChild(dlgHost);

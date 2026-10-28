@@ -22,6 +22,7 @@ export class TextMode {
     if (!fn) { this.root.innerHTML = '<p>Text mode for this section is not available.</p>'; return; }
     const h = document.createElement('h2');
     h.className = 'textmode-title';
+    h.textContent = moduleId; // filled; renderers can override via api.setTitle (a11y review A2-1)
     this.root.appendChild(h);
     const body = document.createElement('div');
     body.className = 'textmode-body';
