@@ -1,12 +1,12 @@
-> **Evaluation status:** Automated functional, accessibility and performance testing plus agent-based design reviews are complete. No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
+> **Evaluation status:** Automated functional, accessibility and performance testing plus agent-based design reviews are complete for v1.0.0; the v2.0.0 visual revamp has re-passed the automated suites (31 unit tests, 9 functional + accessibility browser tests, sub-path test) and its dedicated agent review pass is in progress. No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
 
 # Hazard Hunt + Incident Replay
 
 A 45-minute workplace safety mini course for new warehouse staff: spot hazards in a realistic 3D distribution center, replay a near-miss with pause-and-decide moments, rank controls with the hierarchy of controls, and practice reporting a hazard to a busy supervisor.
 
-**[Play now](https://immersive-learning-showcase.vercel.app/play/hazard-hunt/)** (live once v1.0.0 is pinned in the showcase) · **[Design documents](design/)** · Role: Sole designer
+**[Play now](https://immersive-learning-showcase.vercel.app/play/hazard-hunt/)** (live once v2.0.0 is pinned in the showcase) · **[Design documents](design/)** · Role: Sole designer
 
-![A warehouse aisle with blue racking, a worker in a hi-vis vest stepping out beside a red reach truck](public/poster-1.0.0.webp)
+![A receiving dock in a night-shift warehouse: a dark spill sheen on the concrete floor in the foreground, blue pallet racking loaded with stock on both sides, an orange pallet jack, red steel drums and a dock door with its red-green traffic signal beyond](public/poster-2.0.0.webp)
 
 The company in this course, Northwind Logistics, is **fictional**, and so are its staff and the incident. All of them were constructed for teaching purposes. **This course does not replace training required by law or by your employer.**
 
@@ -27,7 +27,7 @@ Analysis → design → build → evaluate.
 
 1. **Analysis:** a hazard catalog with visual cues and risk ratings, and an "is it training?" check. The misaligned mirror, for example, is a maintenance-system problem more than a training one.
 2. **Design:** five measurable objectives mapped to activity, feedback and assessment ([alignment matrix](design/alignment-matrix.md)), a realism matrix, a shot list and a text-mode design for parity.
-3. **Build:** three.js, procedural warehouse kit with CC0 PBR materials and image-based lighting, plus content in JSON so a designer can edit it without touching code.
+3. **Build:** three.js — a procedural warehouse kit with CC0 PBR materials and image-based lighting, upgraded in v2.0.0 to a full-bleed, living scene: stylized animated workers, ambient life (dust, light shafts, a patrolling utility cart, a moving conveyor) with a Calm Mode during tasks, Poly Haven CC0 dressing models, camera glide between viewpoints and WASD walking — plus content in JSON so a designer can edit it without touching code.
 4. **Evaluate:** unit tests on the rating, ranking and dialogue logic, scripted playthroughs, axe accessibility scans, a sub-path deployment test and agent-based reviews. See [Evidence and evaluation](#evidence-and-evaluation).
 
 ## The five modules
@@ -50,24 +50,24 @@ The 3D hunt spans 12 hazards and 4 "safe but looks risky" distractors across a p
 | Distractors ("looks risky, is controlled") | Hazards only | Trains discrimination and cuts over-reporting |
 | Learner-paced replay with pause points and a scrubber | Passive video | The causal chain is the content, so learners need to stop and inspect it |
 | Hierarchy of controls plus "is it training?" | Behavior-only fixes | Mirrors real safety practice and shows performance-consulting judgment |
-| Workers as distant, faceless hi-vis silhouettes | Close-up realistic people | Position matters, faces don't; avoids uncanny figures (see DECISIONS.md: MakeHuman not used) |
+| Workers as stylized animated-movie characters (hardhats, hi-vis, breathing/blink/gaze idle life) | Photoreal people | Expressive but not uncanny; position and posture carry the learning cue, faces don't (see DECISIONS.md 19; v1 used deliberately faceless silhouettes) |
 | Every decision lives in the shared text flow; 3D adds the visual hunt and replay on top | Separate 3D and text versions | Text mode has the same objectives and assessment decisions by construction |
 
 All decisions, with dates: [DECISIONS.md](DECISIONS.md).
 
 ## Realism and cinematics: design rationale
 
-Realism is used where noticing the detail *is* the skill: spill sheen against a matte floor, a bent upright, an overhanging pallet, a missing guard. Everything else is simplified. Workers are distant, faceless silhouettes; there are no sparks, smoke or alarms; the HDRI lights the scene but isn't shown as a backdrop. That follows research showing realistic detail helps when it is task-relevant and harms when it competes for attention ([PMC study](https://pmc.ncbi.nlm.nih.gov/articles/PMC11269326/)), and the finding that seductive details tend to hurt learning ([2025 meta-analysis](https://link.springer.com/content/pdf/10.1007/s10648-025-10099-z.pdf)).
+Realism is used where noticing the detail *is* the skill: spill sheen against a matte floor, a bent upright, an overhanging pallet, a missing guard. Everything else is simplified. Workers are stylized animated-movie figures, not photoreal people. Since v2.0.0 the bay lives between decisions — dust in the light, light shafts, a patrolling utility cart, a moving conveyor — and during a rating or replay decision everything calms down (slower and dimmer) so the evidence stays the most salient thing on screen; reduced motion stops the ambient life entirely. The HDRI lights the scene but isn't shown as a backdrop. That follows research showing realistic detail helps when it is task-relevant and harms when it competes for attention ([PMC study](https://pmc.ncbi.nlm.nih.gov/articles/PMC11269326/)), and the finding that seductive details tend to hurt learning ([2025 meta-analysis](https://link.springer.com/content/pdf/10.1007/s10648-025-10099-z.pdf)).
 
 Cinematic budget: one 14-second intro (S1) plus four replay segments of 14–18 seconds each, 77 seconds in total, inside the 90-second budget. Every shot is captioned, skippable from the first frame (Skip button or Esc) and has a reduced-motion version. The intro plays only when the learner asks for it, and nothing plays during an assessment. See [design/realism-matrix.md](design/realism-matrix.md) and [design/shot-list.md](design/shot-list.md).
 
 ## Evidence and evaluation
 
 **What was measured** (details in [evaluation/METHODS.md](evaluation/METHODS.md)):
-- 11 unit tests: risk-rating bands, including the rule that a rare but fatal hazard is High; the answer key matches the content; controls-ranking scoring; speak-up graph validity (no dead ends, every node and all three outcomes reachable); content counts (12 hazards, 4 distractors, 2 deliberately subtle hazards); every hunt item exists as a selectable 3D object.
-- 9 browser tests: module navigation by keyboard, pre-check feedback, practice-zone rating, a hinted practice zone plus an assessed zone without hints, every speak-up outcome reached, replay decisions and causes chart, intro captioned and skippable, an axe scan of every overlay state (zero critical or serious issues) and the sub-path test at `/play/hazard-hunt/` (no failed requests, no console errors).
-- Headed performance on an Apple M1: 60 fps on every preset, 122 draw calls on Medium (budget 300), menu interactive in 0.3 s, 3.8 MB downloaded before the first interaction.
-- **Pending:** agent-based design reviews (heuristics, cognitive walkthrough, multimedia principles, realism and cinematics, game accessibility, plus "workplace safety trainer" and "corporate L&D lead" persona reviews) by a reviewer that didn't build the course, to be labeled "Agent review" in [evaluation/reviews/](evaluation/reviews/).
+- 31 unit tests: risk-rating bands, including the rule that a rare but fatal hazard is High; the answer key matches the content; controls-ranking scoring; speak-up graph validity (no dead ends, every node and all three outcomes reachable); content counts (12 hazards, 4 distractors, 2 deliberately subtle hazards); every hunt item exists as a selectable 3D object; every zone item is framed by one of its zone's viewpoints at 16:10 and 4:3; v2 living-world integration (ambient systems, patrol motion, calm mode, viewpoint rings).
+- 9 browser tests: module navigation by keyboard, pre-check feedback, practice-zone rating, a hinted practice zone plus an assessed zone without hints, every speak-up outcome reached, replay decisions and causes chart, intro captioned and skippable, an axe scan of every overlay state (zero critical or serious issues), plus the sub-path test at `/play/hazard-hunt/` (no failed requests, no console errors).
+- Headed performance on an Apple M1 (v1.0.0 scene): 60 fps on every preset, 122 draw calls on Medium (budget 300), menu interactive in 0.3 s, 3.8 MB downloaded before the first interaction. The v2.0.0 scene is re-measured at the release gate.
+- **Pending:** the v2.0.0 agent review pass (visual realism, motion load, cue salience, acceptance checklist) by a reviewer that didn't build the revamp, to be labeled "Agent review" in [evaluation/reviews/](evaluation/reviews/).
 
 **What it can show:** the course works end to end by keyboard and in text mode, every branch and outcome is reachable, the overlay passes automated WCAG 2.1 AA checks, and the build works under the shared showcase path.
 
@@ -78,8 +78,8 @@ Cinematic budget: one 14-second intro (S1) plus four replay segments of 14–18 
 ## Play it your way
 
 - **Text mode:** every module, rating, decision and ranking is available as structured text with data tables. In the assessed zone the list covers *every* inspectable area (hazards, distractors and neutral items), so the list itself doesn't give answers away. Rating forms are headed by the area name only; the hazard's name appears only in the feedback.
-- **Keyboard:** Tab through everything; arrow keys or the on-screen look buttons turn the camera; the points-of-interest list jumps to any inspectable area.
-- **Reduced motion:** follows your system setting, with an in-app toggle. Cinematics become still frames with the same captions.
+- **Keyboard:** Tab through everything; WASD or the arrow keys walk and turn the camera (drag, arrow keys or the look buttons to look around); glowing floor rings can be clicked to glide to a viewpoint, and the points-of-interest list jumps to any inspectable area.
+- **Reduced motion:** follows your system setting, with an in-app toggle. Cinematics become still frames with the same captions; ambient life stops and camera moves place you instantly instead of gliding.
 - **Quality presets:** Low, Medium, High and Ultra, picked automatically from a short warm-up and overridable in Settings.
 - Also in Settings: text size, high contrast and field of view. The course has no audio, so there are no volume controls; all text is on screen.
 
@@ -91,7 +91,7 @@ Tested with axe-core (WCAG 2.1 A/AA rules) on every overlay state, keyboard-only
 
 - A current Chrome, Edge, Firefox or Safari with WebGL2. Without WebGL2, the course runs fully in text mode.
 - Best on a desktop or laptop. Phones use the Low preset; mobile was checked with device emulation only.
-- Workers are simple silhouettes, not realistic people (deliberate, documented).
+- Workers are stylized animated-movie characters, not realistic people (deliberate, documented).
 - The risk ratings, incident and company are constructed for teaching and are not drawn from real incident data.
 
 ## Related portfolio work
@@ -101,7 +101,7 @@ Tested with axe-core (WCAG 2.1 A/AA rules) on every overlay state, keyboard-only
 
 ## Tools used
 
-three.js 0.186.1, Vite 8.3.5, Vitest, Playwright with axe-core, Poly Haven CC0 HDRI and textures. AI assistance: an AI coding agent drafted the code, content and documents under my direction. Facts about regulations were checked against the sources in [research/sources.md](research/sources.md), and design reviews were done by a separate agent and are labeled as such.
+three.js 0.186.1, Vite 8.3.5, Vitest, Playwright with axe-core, Poly Haven CC0 HDRI, textures and 3D models. AI assistance: an AI coding agent drafted the code, content and documents under my direction. Facts about regulations were checked against the sources in [research/sources.md](research/sources.md), and design reviews were done by a separate agent and are labeled as such.
 
 ## License and attribution
 

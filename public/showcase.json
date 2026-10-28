@@ -1,6 +1,6 @@
 {
   "slug": "hazard-hunt",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "title": "Hazard Hunt",
   "format": "Mini course",
   "niche": "Workplace safety",
@@ -11,9 +11,9 @@
   "contentNotes": ["Includes a replay of a fictional warehouse near-miss. Nobody is hurt and no injuries are shown."],
   "permissions": [],
   "poster": {
-    "webp": "poster-1.0.0.webp",
-    "jpg": "poster-1.0.0.jpg",
-    "alt": "A warehouse aisle with blue racking, a worker in a hi-vis vest stepping out beside a red reach truck"
+    "webp": "poster-2.0.0.webp",
+    "jpg": "poster-2.0.0.jpg",
+    "alt": "A receiving dock in a night-shift warehouse: a dark spill sheen on the concrete floor in the foreground, blue pallet racking loaded with stock on both sides, an orange pallet jack, red steel drums and a dock door with its red-green traffic signal beyond"
   },
   "repoUrl": "https://github.com/iwyusdaz/hazard-hunt",
   "license": { "content": "CC BY 4.0", "code": "MIT" }

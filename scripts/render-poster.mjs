@@ -10,7 +10,7 @@
  */
 import { execSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { existsSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync, mkdirSync } from 'node:fs';
 import { extname, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
@@ -77,6 +77,13 @@ if (preview) {
     const { buf, q } = await encode(type);
     writeFileSync(join(root, 'public', `poster-${version}.${ext}`), buf);
     console.log(`poster-${version}.${ext}: ${(buf.length / 1024).toFixed(1)} KB (quality ${q}, view ${viewId})`);
+  }
+  // Remove posters from earlier releases so public/ only ships the current pair.
+  for (const f of readdirSync(join(root, 'public'))) {
+    if (/^poster-\d+\.\d+\.\d+\.(webp|jpg)$/.test(f) && !f.startsWith(`poster-${version}.`)) {
+      unlinkSync(join(root, 'public', f));
+      console.log(`removed stale poster: ${f}`);
+    }
   }
 }
 
