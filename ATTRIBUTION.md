@@ -33,5 +33,5 @@ Poly Haven license: https://polyhaven.com/license (CC0, no attribution required;
 | Hazard and distractor variants (spill sheen, frayed cable, bent upright, overhang, blocked exit, missing guard, leaning stack, misaligned mirror, cable ramp, wrapped stack, guarded machine) | Procedural geometry and materials | Code MIT |
 | Animated-movie stylized worker & supervisor characters (`src/v2/stylized-character.js`) | Procedural articulated three.js hierarchy with hardhats, hi-vis vests, blinking, breathing, gaze tracking, and clipboard/tablet props | Code MIT |
 | Ambient life, cinematic colour grade, and in-world interaction controllers (`src/v2/`) | Volumetric light shafts, warehouse dust motes, spline patrol mover with proximity safety stop, Calm Mode, smooth camera glide | Code MIT |
-| Poster images (`poster-2.0.0.webp`, `.jpg`) | Rendered from the real v2.0.0 scene by `scripts/render-poster.mjs` | CC BY 4.0 |
+| Poster images (`poster-2.0.1.webp`, `.jpg`) | Rendered from the real v2.0.0 scene by `scripts/render-poster.mjs` | CC BY 4.0 |
 | All course text, hazard catalog, replay story, controls, speak-up scenario, items | Fictional company and incident, constructed for teaching purposes | CC BY 4.0 |

@@ -1,12 +1,12 @@
-> **Evaluation status:** Automated functional, accessibility and performance testing plus agent-based design reviews are complete for v1.0.0; the v2.0.0 visual revamp has re-passed the automated suites (31 unit tests, 9 functional + accessibility browser tests, sub-path test) and its dedicated agent review pass is in progress. No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
+> **Evaluation status:** Automated functional, accessibility and performance testing plus agent-based design reviews are complete for v1.0.0 and for the v2 visual revamp (four v2 agent reviews, revisions R32–R39; 31 unit tests, 9 functional + accessibility browser tests, sub-path test). No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
 
 # Hazard Hunt + Incident Replay
 
 A 45-minute workplace safety mini course for new warehouse staff: spot hazards in a realistic 3D distribution center, replay a near-miss with pause-and-decide moments, rank controls with the hierarchy of controls, and practice reporting a hazard to a busy supervisor.
 
-**[Play now](https://immersive-learning-showcase.vercel.app/play/hazard-hunt/)** (live once v2.0.0 is pinned in the showcase) · **[Design documents](design/)** · Role: Sole designer
+**[Play now](https://immersive-learning-showcase.vercel.app/play/hazard-hunt/)** · **[Design documents](design/)** · Role: Sole designer
 
-![A receiving dock in a night-shift warehouse: a dark spill sheen on the concrete floor in the foreground, blue pallet racking loaded with stock on both sides, an orange pallet jack, red steel drums and a dock door with its red-green traffic signal beyond](public/poster-2.0.0.webp)
+![A receiving dock in a night-shift warehouse: a dark spill sheen on the concrete floor in the foreground, blue pallet racking loaded with stock on both sides, an orange pallet jack, red steel drums and a dock door with its red-green traffic signal beyond](public/poster-2.0.1.webp)
 
 The company in this course, Northwind Logistics, is **fictional**, and so are its staff and the incident. All of them were constructed for teaching purposes. **This course does not replace training required by law or by your employer.**
 
@@ -66,8 +66,8 @@ Cinematic budget: one 14-second intro (S1) plus four replay segments of 14–18 
 **What was measured** (details in [evaluation/METHODS.md](evaluation/METHODS.md)):
 - 31 unit tests: risk-rating bands, including the rule that a rare but fatal hazard is High; the answer key matches the content; controls-ranking scoring; speak-up graph validity (no dead ends, every node and all three outcomes reachable); content counts (12 hazards, 4 distractors, 2 deliberately subtle hazards); every hunt item exists as a selectable 3D object; every zone item is framed by one of its zone's viewpoints at 16:10 and 4:3; v2 living-world integration (ambient systems, patrol motion, calm mode, viewpoint rings).
 - 9 browser tests: module navigation by keyboard, pre-check feedback, practice-zone rating, a hinted practice zone plus an assessed zone without hints, every speak-up outcome reached, replay decisions and causes chart, intro captioned and skippable, an axe scan of every overlay state (zero critical or serious issues), plus the sub-path test at `/play/hazard-hunt/` (no failed requests, no console errors).
-- Headed performance on an Apple M1 (v1.0.0 scene): 60 fps on every preset, 122 draw calls on Medium (budget 300), menu interactive in 0.3 s, 3.8 MB downloaded before the first interaction. The v2.0.0 scene is re-measured at the release gate.
-- **Pending:** the v2.0.0 agent review pass (visual realism, motion load, cue salience, acceptance checklist) by a reviewer that didn't build the revamp, to be labeled "Agent review" in [evaluation/reviews/](evaluation/reviews/).
+- Headed performance on an Apple M1 (v2 scene, 2026-10-28): 60 fps on Medium, 199 draw calls (budget 300), menu interactive in 0.21 s, 8.5 MB downloaded before the first interaction (budget 15 MB). See `evaluation/results/perf-2026-10-28.json`.
+- v2 agent reviews (visual realism, interaction, motion load, honesty and accessibility) by a reviewer that didn't build the revamp, labeled "Agent review" in [evaluation/reviews/](evaluation/reviews/); revisions R32–R39 are in DECISIONS.md.
 
 **What it can show:** the course works end to end by keyboard and in text mode, every branch and outcome is reachable, the overlay passes automated WCAG 2.1 AA checks, and the build works under the shared showcase path.
 

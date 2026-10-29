@@ -13,11 +13,12 @@ Last updated: 2026-10-28
 | Hotspot glide + WASD/arrow walking, viewpoint floor rings, reduced-motion instant placement | done — `src/app.js` `_update3D/_gotoView`, `Warehouse.pickViewpoint`; `views.test.js` and the Playwright suites still pass |
 | Case grade + sky | done — `applyCaseGrade` in `src/app.js`; grade/sky modules unit-tested |
 | Tests green after the revamp | done — 31 unit tests, 9 functional+a11y Playwright tests, run 2026-10-28 |
-| Posters re-rendered from the v2 scene; stale posters removed | done — `poster-2.0.0.webp` 33.3 KB / `.jpg` 68.4 KB (dock view); `render-poster.mjs` cleanup |
-| Release docs: CHANGELOG 2.0.0 entry, DECISIONS 17–23, showcase.json 2.0.0, package.json 2.0.0 | done |
-| v2 agent reviews + ≥ 5 revisions; "is it alive" capture; cue-salience on Low/Medium | pending — the dedicated v2 review pass gates the release |
-| Headed GPU performance re-measure for v2 (budgets: ≤ 300 draw calls, ≤ 15 MB before first interaction) | pending — happens at the orchestrator's headed GPU gate; v1.0.0 numbers below stand for the v1 scene |
-| Tag v2.0.0 + GitHub release + showcase re-pin | pending — orchestrator tags after the headed GPU check |
+| Posters re-rendered from the v2 scene; stale posters removed | done — dock view; renamed to `poster-2.0.1.webp` / `.jpg` for the 2.0.1 patch (same image) |
+| Release docs: CHANGELOG 2.0.0 + 2.0.1 entries, DECISIONS 17–23, showcase.json, package.json | done |
+| v2 agent reviews + ≥ 5 revisions; "is it alive" capture; cue-salience on Low/Medium | done — four reports in `evaluation/reviews/agent-review-v2-*.md`; revisions R32–R39 in DECISIONS.md |
+| Headed GPU performance re-measure for v2 | done — Apple M1, headed, 2026-10-28: Medium 60 fps, 199 draw calls, 163k triangles, menu interactive 0.21 s, 8.5 MB before first interaction (`evaluation/results/perf-2026-10-28.json`) |
+| Tag v2.0.0 + GitHub release + showcase re-pin | done — v2.0.0 released 2026-10-28 and pinned (showcase PR #4) |
+| v2.0.1 patch: restore the V2-5 slate HUD after a shared-core sync overwrote it; shared-core fixes | done — see CHANGELOG 2.0.1; 31 unit + 10 browser tests pass (2026-10-29) |
 
 ## Final Quality Checklist (plan 04 §14)
 

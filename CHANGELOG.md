@@ -1,5 +1,12 @@
 # Changelog — hazard-hunt
 
+## 2.0.1 (2026-10-29) — patch
+
+- **Regression fix:** the V2-5 HUD palette (slate drawer, POI panel, look pad, replay bar; review revision R37) had been lost when the shared v2 core was re-synced into `src/v2/hud-shell.css`. Restored and moved to the repo-owned `src/styles/case-hud.css`, so future core syncs can't overwrite it. The sync tool now refuses to overwrite a file that has repo-only lines.
+- **Shared v2 core fixes:** hover tooltips are suppressed while a tool or dialog owns the pointer; the collapsed HUD drawer is `inert` and `aria-hidden`, so Tab can't reach hidden controls; the reduced-motion character gaze snaps instead of drifting; the hotspot ring and disc are one mesh.
+- Posters renamed to `poster-2.0.1.*` (same image). No content, scoring or learning-flow changes.
+- Tests: 31 unit and 10 browser tests (functional, a11y, sub-path) pass.
+
 ## 2.0.0 (2026-10-28) — visual and interaction revamp
 
 Living world, full-bleed 3D and in-world navigation (plan 09 §4.4), on top of the unchanged v1 learning content, scoring and text-mode parity.

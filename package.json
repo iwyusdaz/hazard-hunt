@@ -1,7 +1,7 @@
 {
   "name": "hazard-hunt",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "description": "A three.js workplace safety mini course: spot warehouse hazards in realistic 3D, replay a near-miss, and practice speaking up",
   "engines": {
@@ -11,7 +11,7 @@
     "dev": "vite",
     "build": "node scripts/sync-content.mjs && node scripts/build-attribution.mjs && vite build",
     "poster": "node scripts/render-poster.mjs dock",
-    "validate:showcase": "node scripts/validate-showcase.mjs 2.0.0",
+    "validate:showcase": "node scripts/validate-showcase.mjs 2.0.1",
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
