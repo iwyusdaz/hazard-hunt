@@ -18,6 +18,7 @@
  * @module v2/ambient-life
  */
 import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 function mulberry32(seed = 42) {
   let a = seed >>> 0;
@@ -30,6 +31,7 @@ function mulberry32(seed = 42) {
 }
 
 let _softParticleTex = null;
+const _sharedVec = new THREE.Vector3();
 function getSoftParticleTexture() {
   if (_softParticleTex) return _softParticleTex;
   if (typeof document === 'undefined') return null;
@@ -178,11 +180,33 @@ export class AmbientLifeManager {
       blending: THREE.AdditiveBlending,
     });
 
-    for (const [x, y, z] of positions) {
-      const beam = new THREE.Mesh(geo, mat);
-      beam.position.set(x, y, z);
-      beam.rotation.set(rx, ry, rz);
-      group.add(beam);
+    // All beams share one geometry + material and never move individually (the
+    // shimmer pulse animates the material), so they bake into ONE mesh
+    // (perf revision: N → 1 draw calls per shaft group).
+    const beamM = new THREE.Matrix4().compose(
+      new THREE.Vector3(),
+      new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)),
+      new THREE.Vector3(1, 1, 1),
+    );
+    const beamGeos = positions.map(([x, y, z]) => {
+      const g = geo.clone();
+      g.applyMatrix4(beamM.clone().setPosition(x, y, z));
+      return g;
+    });
+    let mergedShaft = null;
+    if (beamGeos.length > 1) {
+      try { mergedShaft = BufferGeometryUtils.mergeGeometries(beamGeos, false); } catch { mergedShaft = null; }
+    }
+    if (mergedShaft) {
+      group.add(new THREE.Mesh(mergedShaft, mat));
+    } else {
+      // Fallback (merge unavailable): original per-beam meshes.
+      beamGeos.forEach((g, i) => {
+        const beam = new THREE.Mesh(g, mat);
+        beam.position.set(...positions[i]);
+        beam.rotation.set(rx, ry, rz);
+        group.add(beam);
+      });
     }
 
     this.host.add(group);
@@ -217,6 +241,10 @@ export class AmbientLifeManager {
       stopRadius: opts.stopRadius ?? 2.4,
       yOffset: opts.yOffset ?? 0,
     };
+    // Place the mover on its path immediately so reduced-motion (which pauses
+    // updates) never leaves it standing at the world origin.
+    mover.curve.getPointAt(mover.u, _sharedVec);
+    object3d.position.set(_sharedVec.x, _sharedVec.y + mover.yOffset, _sharedVec.z);
     this.splineMovers.push(mover);
     return mover;
   }
@@ -252,7 +280,8 @@ export class AmbientLifeManager {
    */
   update(dt = 0.016, camera = null) {
     const targetCalm = this.reducedMotion ? 0.0 : this.calm ? 0.30 : 1.0;
-    this.calmFactor = THREE.MathUtils.lerp(this.calmFactor, targetCalm, 0.08);
+    // Time-based convergence (frame-rate independent): settles in ~0.35 s.
+    this.calmFactor += (targetCalm - this.calmFactor) * (1 - Math.exp(-dt / 0.35));
     const effDt = dt * this.calmFactor;
     this.elapsed += effDt;
 
@@ -262,7 +291,7 @@ export class AmbientLifeManager {
       if (camera && c.state && !c.state.lookTarget && c.state.action === 'idle') {
         c.lookAtWorld(camera.position);
       }
-      c.update(dt, this.elapsed, Math.max(0.25, this.calmFactor));
+      c.update(dt, this.elapsed, this.calmFactor);
     }
 
     if (this.reducedMotion) return;

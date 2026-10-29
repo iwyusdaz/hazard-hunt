@@ -13,6 +13,14 @@
  * @module v2/in-world-interaction
  */
 import * as THREE from 'three';
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
+// Floating height of the hotspot diamond beacon. Raised from 0.36 m (arrival-english
+// V-3): the default cameras sit at y ~1.6 with a 55 deg FOV, so a floor-level beacon
+// was below the frustum edge until you dragged to look down. At ~0.9 m the glow is
+// inside the default view for every hotspot ring, while the floor ring still marks
+// the exact glide target.
+const BEACON_Y = 0.9;
 
 function easeInOutCubic(x) {
   return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
@@ -44,6 +52,8 @@ export class InWorldInteractionManager {
     this.pickables = [];
     this.hotspotRings = [];
     this.hovered = null;
+    this.calmFactor = 1; // set via setCalmMode to quiet ring pulses during focused tasks
+    this.enabled = true; // set via setEnabled while inspection tools own the camera
 
     // Camera navigation state (look target + spherical/free walk)
     this.target = new THREE.Vector3(0, 1.3, 0);
@@ -88,6 +98,7 @@ export class InWorldInteractionManager {
 
     this.canvas.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
+      if (!this.enabled) return;
       if (document.querySelector('dialog[open]')) return;
       this._dragging = true;
       this._downPos = { x: e.clientX, y: e.clientY };
@@ -120,6 +131,7 @@ export class InWorldInteractionManager {
     });
 
     window.addEventListener('keydown', (e) => {
+      if (!this.enabled) return;
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (document.querySelector('dialog[open]')) return;
@@ -145,6 +157,13 @@ export class InWorldInteractionManager {
       this.camera.position.z + dz * dist,
     );
     this.camera.lookAt(this.target);
+  }
+
+  /**
+   * Quiet the hotspot-ring pulse during focused tasks (0.3) or restore it (1).
+   */
+  setCalmMode(active) {
+    this.calmFactor = active ? 0.3 : 1;
   }
 
   /**
@@ -181,6 +200,24 @@ export class InWorldInteractionManager {
     return entry;
   }
 
+  /**
+   * Enable/disable all in-world interaction (pointer, keys, glide, walk).
+   * While disabled the camera and pointer belong to another system (inspection
+   * tools, cinematics, text mode); hover is cleared so no tooltip lingers.
+   */
+  setEnabled(on) {
+    this.enabled = Boolean(on);
+    if (!this.enabled) {
+      this.keys.clear();
+      this.glide = null;
+      this._dragging = false;
+      this._setHovered(null);
+    } else {
+      // Another system moved the camera while we were off; resume from where it is.
+      this._syncAnglesFromCamera();
+    }
+  }
+
   clearInteractives() {
     this._setHovered(null);
     this.items.clear();
@@ -200,33 +237,39 @@ export class InWorldInteractionManager {
     group.position.set(x, y, z);
 
     const color = opts.color ?? 0x38bdf8;
+    // Outer ring + inner disc as ONE mesh (one draw call instead of two). They
+    // share a hue but not an opacity, so alpha is baked per vertex in an RGBA
+    // colour attribute (three.js reads vertex alpha when itemSize is 4).
+    const tint = new THREE.Color(color);
+    const withAlpha = (geo, alpha, yPos) => {
+      const g = geo.toNonIndexed();
+      g.rotateX(-Math.PI / 2);
+      g.translate(0, yPos, 0);
+      const count = g.attributes.position.count;
+      const rgba = new Float32Array(count * 4);
+      for (let i = 0; i < count; i++) {
+        rgba[i * 4] = tint.r;
+        rgba[i * 4 + 1] = tint.g;
+        rgba[i * 4 + 2] = tint.b;
+        rgba[i * 4 + 3] = alpha;
+      }
+      g.setAttribute('color', new THREE.BufferAttribute(rgba, 4));
+      return g;
+    };
     const outer = new THREE.Mesh(
-      new THREE.RingGeometry(0.28, 0.38, 32),
+      BufferGeometryUtils.mergeGeometries([
+        withAlpha(new THREE.RingGeometry(0.28, 0.38, 32), 0.85, 0.02),
+        withAlpha(new THREE.CircleGeometry(0.26, 28), 0.22, 0.015),
+      ], false),
       new THREE.MeshBasicMaterial({
-        color,
+        color: 0xffffff,
+        vertexColors: true,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.85,
         depthWrite: false,
       }),
     );
-    outer.rotation.x = -Math.PI / 2;
-    outer.position.y = 0.02;
     group.add(outer);
-
-    const disc = new THREE.Mesh(
-      new THREE.CircleGeometry(0.26, 28),
-      new THREE.MeshBasicMaterial({
-        color,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.22,
-        depthWrite: false,
-      }),
-    );
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.y = 0.015;
-    group.add(disc);
 
     // Floating diamond beacon above the ring
     const diamond = new THREE.Mesh(
@@ -238,7 +281,7 @@ export class InWorldInteractionManager {
         roughness: 0.2,
       }),
     );
-    diamond.position.y = 0.36;
+    diamond.position.y = BEACON_Y;
     group.add(diamond);
 
     (opts.parent || this.scene).add(group);
@@ -369,6 +412,12 @@ export class InWorldInteractionManager {
   }
 
   _onHoverMove(e) {
+    // While another tool owns the pointer (crater counter, magnifier), no hover
+    // tooltip may promise a click that won't happen.
+    if (!this.enabled) {
+      this._setHovered(null);
+      return;
+    }
     if (!this.canvas || e.target !== this.canvas || this.canvas.style.visibility === 'hidden') {
       this._setHovered(null);
       return;
@@ -403,8 +452,11 @@ export class InWorldInteractionManager {
    * Update camera glides, WASD movement, hotspot ring pulses, and projected bubbles.
    */
   update(dt = 0.016, elapsed = 0) {
-    // 1. Camera glide
-    if (this.glide) {
+    // 1. Camera glide. While disabled another camera mode owns the camera, so
+    // glide/walk stop — but rings and bubbles below still animate and project.
+    if (!this.enabled) {
+      // no camera movement
+    } else if (this.glide) {
       this.glide.elapsed += dt;
       const u = Math.min(1, this.glide.elapsed / this.glide.duration);
       const k = easeInOutCubic(u);
@@ -448,17 +500,19 @@ export class InWorldInteractionManager {
       }
     }
 
-    // 3. Animate hotspot rings
+    // 3. Animate hotspot rings (scaled by the calm factor so focused tasks stay quiet)
     if (!this.reducedMotion) {
+      const pulseScale = this.calmFactor ?? 1;
       for (const r of this.hotspotRings) {
-        const s = 1 + Math.sin(elapsed * 2.6 + r.phase) * 0.08;
+        const s = 1 + Math.sin(elapsed * 2.6 + r.phase) * 0.08 * pulseScale;
         r.outer.scale.setScalar(s);
-        r.diamond.position.y = 0.36 + Math.sin(elapsed * 2.6 + r.phase) * 0.04;
-        r.diamond.rotation.y = elapsed * 1.4 + r.phase;
+        r.diamond.position.y = BEACON_Y + Math.sin(elapsed * 2.6 + r.phase) * 0.04 * pulseScale;
+        r.diamond.rotation.y = elapsed * 1.4 * Math.max(0.3, pulseScale) + r.phase;
       }
     }
 
-    // 4. Project persistent 3D speech bubbles / callouts
+    // 4. Project persistent 3D speech bubbles / callouts (clamped to the canvas
+    // so high anchors never overlap the app header).
     if (this.bubbles?.size && this.canvas) {
       const rect = this.canvas.getBoundingClientRect();
       const _v = new THREE.Vector3();
@@ -475,8 +529,8 @@ export class InWorldInteractionManager {
           continue;
         }
         rec.el.hidden = false;
-        const x = ((_v.x * 0.5 + 0.5) * rect.width) + rect.left;
-        const y = ((-_v.y * 0.5 + 0.5) * rect.height) + rect.top;
+        const x = THREE.MathUtils.clamp(((_v.x * 0.5 + 0.5) * rect.width) + rect.left, rect.left + 130, rect.right - 130);
+        const y = Math.max(rect.top + 92, ((-_v.y * 0.5 + 0.5) * rect.height) + rect.top);
         rec.el.style.transform = `translate(-50%, -100%) translate(${Math.round(x)}px, ${Math.round(y)}px)`;
       }
     }

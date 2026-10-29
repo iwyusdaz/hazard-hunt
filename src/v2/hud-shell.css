@@ -61,7 +61,8 @@ html[data-drawer-collapsed="true"] .dlg-panel {
   box-shadow: 0 14px 38px rgba(0, 0, 0, 0.36);
 }
 
-/* Projected 3D Hover Tooltip (always dark slate with white text -> 14.8:1 contrast) */
+/* Projected 3D Hover Tooltip (always dark slate with white text -> 14.8:1 contrast).
+   Body face per the plan's readability rule: tooltips carry instructions. */
 .v2-world-tooltip {
   position: fixed;
   z-index: 45;
@@ -71,6 +72,7 @@ html[data-drawer-collapsed="true"] .dlg-panel {
   border: 1.5px solid var(--v2-accent);
   border-radius: 999px;
   padding: 0.32rem 0.78rem;
+  font-family: var(--font-body, system-ui, sans-serif);
   font-size: 0.86rem;
   font-weight: 600;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
