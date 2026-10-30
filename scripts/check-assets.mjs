@@ -40,7 +40,7 @@ const COMPOSED = {
   't-hazard-charging-block': 'battery bay door, cage and eyewash station together',
 };
 const seen = new Set();
-const counts = { task: 0, explore: 0, honesty: {}, scenes: {} };
+const counts = { task: 0, explore: 0, honesty: {}, scenes: {}, scale: { model: 0, decal: 0, composed: 0, procedural: 0 } };
 for (const [i, o] of objects.entries()) {
   const at = `objects.json ${o.id || `#${i}`}`;
   if (!/^[a-z0-9][a-z0-9-]*$/.test(o.id || '')) err(`${at}: id must be kebab-case`);
@@ -61,9 +61,10 @@ for (const [i, o] of objects.entries()) {
   if (o.role === 'task' && !zoneIds.has(o.id)) err(`${at}: task object id is not in content/zones.json`);
   // asset + scale
   const a = o.asset || '';
-  if (a === 'procedural') { /* built by the app */ }
+  if (a === 'procedural') counts.scale.procedural++; // built by the app; checked by ui-audit in the scene
   else if (a.startsWith('decal:')) {
     const d = manifest[a];
+    counts.scale.decal++;
     if (!d) err(`${at}: asset ${a} not in the manifest`);
     else if (Array.isArray(o.realSize)) {
       const real = [...o.realSize].filter((x) => x > 0).sort((x, y) => y - x);
@@ -72,9 +73,10 @@ for (const [i, o] of objects.entries()) {
       if (e > 0.15) err(`${at}: realSize off decal size by ${(e * 100).toFixed(0)}%`);
     }
   } else if (!manifest[a]) err(`${at}: asset "${a}" not in public/assets/v3/manifest.json`);
-  else if (COMPOSED[o.id]) notes.push(`${o.id}: scale checked in the scene, not here (${COMPOSED[o.id]})`);
+  else if (COMPOSED[o.id]) counts.scale.composed++, notes.push(`${o.id}: scale checked in the scene, not here (${COMPOSED[o.id]})`);
   else {
     const s = manifest[a].sizeM;
+    counts.scale.model++;
     let e;
     if (typeof o.realSize === 'number') e = Math.abs(Math.max(...s) - o.realSize) / o.realSize;
     else {
@@ -145,6 +147,7 @@ for (const [k, v] of Object.entries(manifest)) {
 // ---------- report ----------
 const mb = (b) => (b / 1048576).toFixed(2);
 console.log(`catalog: ${objects.length} objects (task ${counts.task}, explore ${counts.explore}); scenes ${JSON.stringify(counts.scenes)}; honesty ${JSON.stringify(counts.honesty)}`);
+console.log(`scale: realSize checked against ${counts.scale.model} model bounds and ${counts.scale.decal} decal size; ${counts.scale.composed} composed and ${counts.scale.procedural} procedural objects are left to the scene gate`);
 console.log(`files: ${listed.size} in public/assets/v3, ${mb(v3bytes)} MB; largest file under public/: ${largest[0]} (${mb(largest[1])} MB)`);
 console.log(`licences: ${Object.keys(manifest).length} manifest entries, ${need.length} third-party sources attributed in ATTRIBUTION.md and attribution.json`);
 for (const n of notes) console.log(`note: ${n}`);
