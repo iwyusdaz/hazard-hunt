@@ -4,21 +4,21 @@
     "author": "Sergej Majboroda",
     "source": "https://polyhaven.com/a/empty_warehouse_01",
     "license": "CC0 1.0",
-    "changes": "None. Used for image-based lighting and reflections only (not shown as a background). File renamed with a content hash."
+    "changes": "None. Used for image-based lighting and reflections only (not shown as a background). File renamed with a content hash. Licence re-checked for v3 on 2026-10-30."
   },
   {
     "asset": "Concrete Floor Worn 001 (1k JPG: color, normal GL, roughness)",
     "author": "Dimitrios Savva, Rico Cilliers",
     "source": "https://polyhaven.com/a/concrete_floor_worn_001",
     "license": "CC0 1.0",
-    "changes": "None to pixels. Tiled across the floor; files renamed with content hashes."
+    "changes": "None to pixels. Tiled across the floor; files renamed with content hashes. v3 (2026-10-30): 2k colour and ARM maps and a 1k normal map re-encoded to KTX2 in `public/assets/v3/tex/`."
   },
   {
     "asset": "Blue Metal Plate (1k JPG: normal GL, roughness)",
     "author": "Rob Tuytel",
     "source": "https://polyhaven.com/a/blue_metal_plate",
     "license": "CC0 1.0",
-    "changes": "Only the normal and roughness maps are used, on the painted rack uprights; the color map was not kept. Files renamed with content hashes."
+    "changes": "Only the normal and roughness maps are used, on the painted rack uprights; the color map was not kept. Files renamed with content hashes. v3 (2026-10-30): normal and ARM maps re-encoded to KTX2 in `public/assets/v3/tex/`, and embedded at 256 px in the own-work props as the painted-steel surface."
   },
   {
     "asset": "Wood Planks Grey (1k JPG: color, normal GL, roughness)",
@@ -32,56 +32,56 @@
     "author": "Fran Calvente",
     "source": "https://polyhaven.com/a/WetFloorSign_01",
     "license": "CC0 1.0",
-    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing. v3 (2026-10-30): re-processed from the same Poly Haven source into `public/assets/v3/models/` (meshopt + quantization, KTX2 textures) by `scripts/process-assets.mjs`."
   },
   {
     "asset": "Cardboard Box 01 (`cardboard_box_01-34708497.glb`)",
     "author": "Rahul Chaudhary",
     "source": "https://polyhaven.com/a/cardboard_box_01",
     "license": "CC0 1.0",
-    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing. v3 (2026-10-30): re-processed from the same Poly Haven source into `public/assets/v3/models/` (meshopt + quantization, KTX2 textures) by `scripts/process-assets.mjs`."
   },
   {
     "asset": "Barrel 01 (`Barrel_01-9611019b.glb`)",
     "author": "Jorge Camacho",
     "source": "https://polyhaven.com/a/Barrel_01",
     "license": "CC0 1.0",
-    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing. v3 (2026-10-30): re-processed from the same Poly Haven source into `public/assets/v3/models/` (meshopt + quantization, KTX2 textures) by `scripts/process-assets.mjs`."
   },
   {
     "asset": "Wooden Crate 01 (`wooden_crate_01-1d3c029f.glb`)",
     "author": "James Ray Cock",
     "source": "https://polyhaven.com/a/wooden_crate_01",
     "license": "CC0 1.0",
-    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing. v3 (2026-10-30): re-processed from the same Poly Haven source into `public/assets/v3/models/` (meshopt + quantization, KTX2 textures) by `scripts/process-assets.mjs`."
   },
   {
     "asset": "Korean Fire Extinguisher 01 (`korean_fire_extinguisher_01-79e1e9ff.glb`)",
     "author": "UM JOORIN",
     "source": "https://polyhaven.com/a/korean_fire_extinguisher_01",
     "license": "CC0 1.0",
-    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing. v3 (2026-10-30): re-processed from the same Poly Haven source into `public/assets/v3/models/` (meshopt + quantization, KTX2 textures) by `scripts/process-assets.mjs`."
   },
   {
     "asset": "Hanging Industrial Lamp (`hanging_industrial_lamp-c4f36443.glb`)",
     "author": "Kuutti Siitonen",
     "source": "https://polyhaven.com/a/hanging_industrial_lamp",
     "license": "CC0 1.0",
-    "changes": "Converted to self-contained GLB with resized JPEG textures for high-bay overhead lighting."
+    "changes": "Converted to self-contained GLB with resized JPEG textures for high-bay overhead lighting. v3 (2026-10-30): re-processed from the same Poly Haven source into `public/assets/v3/models/` (meshopt + quantization, KTX2 textures) by `scripts/process-assets.mjs`."
   },
   {
     "asset": "Tool Cart (`tool_cart-4bc2c4e8.glb`)",
     "author": "Savva Zakharov",
     "source": "https://polyhaven.com/a/tool_cart",
     "license": "CC0 1.0",
-    "changes": "Converted to self-contained GLB with resized JPEG textures for maintenance bay dressing."
+    "changes": "Converted to self-contained GLB with resized JPEG textures for maintenance bay dressing. v3 (2026-10-30): re-processed from the same Poly Haven source into `public/assets/v3/models/` (meshopt + quantization, KTX2 textures) by `scripts/process-assets.mjs`."
   },
   {
     "asset": "Ladder Sectioned 01 (`ladder_sectioned_01-87f86eeb.glb`)",
     "author": "MP",
     "source": "https://polyhaven.com/a/ladder_sectioned_01",
     "license": "CC0 1.0",
-    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing."
+    "changes": "Converted to self-contained GLB with resized JPEG textures for warehouse environment dressing. v3 (2026-10-30): re-processed from the same Poly Haven source into `public/assets/v3/models/` (meshopt + quantization, KTX2 textures) by `scripts/process-assets.mjs`."
   },
   {
     "asset": "Big Shoulders Stencil Display (Latin 700 WOFF2, via `@fontsource/big-shoulders-stencil-display`)",
@@ -103,6 +103,174 @@
     "source": "https://fonts.google.com/specimen/Share+Tech+Mono",
     "license": "SIL OFL 1.1",
     "changes": "Self-hosted Latin WOFF2 subset for in-world telemetry, tags, and tooltips."
+  },
+  {
+    "asset": "Medical Box (`assets/v3/models/medical_box-*.glb`)",
+    "author": "Ulan Cabanilla",
+    "source": "https://polyhaven.com/a/medical_box",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). First-aid kit on the safety wall. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Hand Truck (`hand_truck-*.glb`)",
+    "author": "Mutanzom3D",
+    "source": "https://polyhaven.com/a/hand_truck",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Receiving-area dressing. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Plastic Crate 03 (`plastic_crate_03-*.glb`)",
+    "author": "Pacific Penguin",
+    "source": "https://polyhaven.com/a/plastic_crate_03",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Tote crates on the conveyor and packing bench. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Wall Clock (`wall_clock-*.glb`)",
+    "author": "PierreB3D",
+    "source": "https://polyhaven.com/a/wall_clock",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Clock over the supervisor desk. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Power Box 01 (`power_box_01-*.glb`)",
+    "author": "Rico Cilliers, Yann Kervran",
+    "source": "https://polyhaven.com/a/power_box_01",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Isolator box beside the battery charger. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Utility Box 01 (`utility_box_01-*.glb`)",
+    "author": "James Ray Cock",
+    "source": "https://polyhaven.com/a/utility_box_01",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Electrical cabinet in the charging area. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Metal Office Desk (`metal_office_desk-*.glb`)",
+    "author": "Ulan Cabanilla",
+    "source": "https://polyhaven.com/a/metal_office_desk",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Shift supervisor desk. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Metal Stool 01 (`metal_stool_01-*.glb`)",
+    "author": "Ulan Cabanilla",
+    "source": "https://polyhaven.com/a/metal_stool_01",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Stool at the packing bench. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Security Light (`security_light-*.glb`)",
+    "author": "Maximilian Schuster",
+    "source": "https://polyhaven.com/a/security_light",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Floodlight over the dock apron. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Industrial Wall Lamp (`industrial_wall_lamp-*.glb`)",
+    "author": "Kuutti Siitonen",
+    "source": "https://polyhaven.com/a/industrial_wall_lamp",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Perimeter wall lights. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Mounted Fluorescent Lights (`mounted_fluorescent_lights-*.glb`)",
+    "author": "Ulan Cabanilla",
+    "source": "https://polyhaven.com/a/mounted_fluorescent_lights",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Ceiling light over the supervisor desk. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Metal Toolbox (`metal_toolbox-*.glb`)",
+    "author": "Mateusz Sadek",
+    "source": "https://polyhaven.com/a/metal_toolbox",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Maintenance dressing. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Worn Metal Rack (`worn_metal_rack-*.glb`)",
+    "author": "Luca B",
+    "source": "https://polyhaven.com/a/worn_metal_rack",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Shelving at the PPE station. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Plastic Bottle Gallon (`plastic_bottle_gallon-*.glb`)",
+    "author": "Rahul Chaudhary",
+    "source": "https://polyhaven.com/a/plastic_bottle_gallon",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Spill-kit and eyewash refill dressing. 1k glTF from Poly Haven converted by `scripts/process-assets.mjs` (meshopt + quantization, textures resized to 512 px and encoded to KTX2); file renamed with a content hash."
+  },
+  {
+    "asset": "Concrete Block Wall (1k: colour, normal GL, ARM)",
+    "author": "Charlotte Baglioni",
+    "source": "https://polyhaven.com/a/concrete_block_wall",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Lower perimeter walls; normal map also used faintly on the PPE board. Encoded to KTX2 (normal maps at 512 px) in `public/assets/v3/tex/`; resized copies are embedded in the own-work props that use them."
+  },
+  {
+    "asset": "Corrugated Iron 02 (1k: colour, normal GL, ARM)",
+    "author": "Jenelle van Heerden, Sergej Majboroda",
+    "source": "https://polyhaven.com/a/corrugated_iron_02",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Upper wall cladding. Encoded to KTX2 (normal maps at 512 px) in `public/assets/v3/tex/`; resized copies are embedded in the own-work props that use them."
+  },
+  {
+    "asset": "Box Profile Metal Sheet (1k: colour, normal GL, ARM)",
+    "author": "Amal Kumar",
+    "source": "https://polyhaven.com/a/box_profile_metal_sheet",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Roof sheeting. Encoded to KTX2 (normal maps at 512 px) in `public/assets/v3/tex/`; resized copies are embedded in the own-work props that use them."
+  },
+  {
+    "asset": "Metal Plate (1k: colour, normal GL, ARM)",
+    "author": "Rob Tuytel",
+    "source": "https://polyhaven.com/a/metal_plate",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Tread plate on the dock leveller, forklift floor plate and reach-truck step; normal map on bare steel. Encoded to KTX2 (normal maps at 512 px) in `public/assets/v3/tex/`; resized copies are embedded in the own-work props that use them."
+  },
+  {
+    "asset": "Raw Plank Wall (1k: colour, normal GL, ARM)",
+    "author": "Dimitrios Savva",
+    "source": "https://polyhaven.com/a/raw_plank_wall",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Pallet boards, packing-bench top and trailer floor. Encoded to KTX2 (normal maps at 512 px) in `public/assets/v3/tex/`; resized copies are embedded in the own-work props that use them."
+  },
+  {
+    "asset": "Painted Metal Shutter (1k: normal GL, ARM; colour map also shipped)",
+    "author": "Dario Barresi, Rico Cilliers, Charlotte Baglioni",
+    "source": "https://polyhaven.com/a/painted_metal_shutter",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Trailer body panels. Encoded to KTX2 (normal maps at 512 px) in `public/assets/v3/tex/`; resized copies are embedded in the own-work props that use them."
+  },
+  {
+    "asset": "MakeHuman system assets (skins, eyes, eyebrows, eyelashes, hair, clothes, shoes; the exact list is in `scripts/assets/third-party.json`)",
+    "author": "MakeHuman Community (makehuman_system asset repo)",
+    "source": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Fitted to the five characters in `public/assets/v3/characters/` with MPFB in Blender; textures resized to 1024 px or less and encoded to KTX2. Each used asset's CC0 status was checked in the pack metadata and in the file header by `scripts/fetch-assets.mjs`."
+  },
+  {
+    "asset": "MPFB 2.0.18 bundled assets (base mesh, macro targets, `game_engine` rig)",
+    "author": "MakeHuman Community",
+    "source": "https://github.com/makehumancommunity/mpfb2/blob/master/LICENSE.md",
+    "license": "CC0 1.0",
+    "changes": "v3 (S4). Body shapes for the five characters. The MPFB add-on code (GPL-3.0-or-later, https://extensions.blender.org/add-ons/mpfb/) is a build tool only; nothing from it ships, and its licence states that MPFB output is not covered by the code licence."
+  },
+  {
+    "asset": "Barlow Condensed Bold (TTF, baked into sign and label textures)",
+    "author": "Jeremy Tribby",
+    "source": "https://github.com/google/fonts/tree/main/ofl/barlowcondensed",
+    "license": "SIL OFL 1.1",
+    "changes": "v3 (S4). Rendered into the PNG/KTX2 sign textures by `scripts/make-decals.mjs`; the font file itself is not shipped."
+  },
+  {
+    "asset": "Inter (variable TTF, baked into sign and label textures)",
+    "author": "Rasmus Andersson",
+    "source": "https://github.com/google/fonts/tree/main/ofl/inter",
+    "license": "SIL OFL 1.1",
+    "changes": "v3 (S4). Small print on signs and carton labels, rendered by `scripts/make-decals.mjs`; the font file itself is not shipped."
   },
   {
     "asset": "three.js 0.186.1",

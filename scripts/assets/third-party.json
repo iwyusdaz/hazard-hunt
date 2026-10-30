@@ -1,0 +1,210 @@
+{
+  "about": "Third-party inputs for the v3 asset set (plan 10 S4). scripts/fetch-assets.mjs downloads them into data/raw/ (not committed) and refuses any item whose licence is not on the allowed list. Every item also needs a row in ATTRIBUTION.md (scripts/check-assets.mjs checks this).",
+  "allowedLicences": {
+    "assets": [
+      "CC0-1.0",
+      "PD",
+      "CC-BY-4.0"
+    ],
+    "fonts": [
+      "OFL-1.1"
+    ]
+  },
+  "polyhavenModels": [
+    {
+      "id": "medical_box",
+      "use": "First-aid kit on the safety wall"
+    },
+    {
+      "id": "hand_truck",
+      "use": "Dressing in the receiving area"
+    },
+    {
+      "id": "plastic_crate_03",
+      "use": "Tote crates on the conveyor and packing bench"
+    },
+    {
+      "id": "wall_clock",
+      "use": "Wall clock over the supervisor desk (moving hands)"
+    },
+    {
+      "id": "power_box_01",
+      "use": "Isolator switch box beside the battery charger"
+    },
+    {
+      "id": "utility_box_01",
+      "use": "Electrical cabinet on the charging-area wall"
+    },
+    {
+      "id": "metal_office_desk",
+      "use": "Shift supervisor desk"
+    },
+    {
+      "id": "metal_stool_01",
+      "use": "Stool at the packing bench"
+    },
+    {
+      "id": "security_light",
+      "use": "Floodlight over the dock apron outside"
+    },
+    {
+      "id": "industrial_wall_lamp",
+      "use": "Wall lights along the perimeter"
+    },
+    {
+      "id": "mounted_fluorescent_lights",
+      "use": "Ceiling light over the supervisor desk"
+    },
+    {
+      "id": "metal_toolbox",
+      "use": "Maintenance dressing"
+    },
+    {
+      "id": "worn_metal_rack",
+      "use": "Shelving unit of the PPE station"
+    },
+    {
+      "id": "plastic_bottle_gallon",
+      "use": "Eyewash refill bottle and spill-kit dressing"
+    },
+    {
+      "id": "korean_fire_extinguisher_01",
+      "use": "Fire extinguishers (v2 asset, re-processed for v3)"
+    },
+    {
+      "id": "WetFloorSign_01",
+      "use": "Wet-floor sign (v2 asset, re-processed for v3)"
+    },
+    {
+      "id": "cardboard_box_01",
+      "use": "Cartons (v2 asset, re-processed for v3)"
+    },
+    {
+      "id": "Barrel_01",
+      "use": "Drums in the receiving bay (v2 asset, re-processed for v3)"
+    },
+    {
+      "id": "wooden_crate_01",
+      "use": "Heavy freight crates (v2 asset, re-processed for v3)"
+    },
+    {
+      "id": "hanging_industrial_lamp",
+      "use": "Lamp housing reference for the high-bay lights (v2 asset, re-processed for v3)"
+    },
+    {
+      "id": "tool_cart",
+      "use": "Maintenance cart (v2 asset, re-processed for v3)"
+    },
+    {
+      "id": "ladder_sectioned_01",
+      "use": "Ladder in maintenance storage (v2 asset, re-processed for v3)"
+    }
+  ],
+  "polyhavenTextures": [
+    {
+      "id": "concrete_floor_worn_001",
+      "res": "2k",
+      "use": "Bay floor slab"
+    },
+    {
+      "id": "concrete_block_wall",
+      "res": "1k",
+      "use": "Lower perimeter walls (block work)"
+    },
+    {
+      "id": "corrugated_iron_02",
+      "res": "1k",
+      "use": "Upper wall cladding"
+    },
+    {
+      "id": "box_profile_metal_sheet",
+      "res": "1k",
+      "use": "Roof sheeting"
+    },
+    {
+      "id": "metal_plate",
+      "res": "1k",
+      "use": "Dock leveller tread plate"
+    },
+    {
+      "id": "blue_metal_plate",
+      "res": "1k",
+      "use": "Painted steel (rack frames, forklift body), normal and roughness only"
+    },
+    {
+      "id": "raw_plank_wall",
+      "res": "1k",
+      "use": "Rough-sawn pallet boards"
+    },
+    {
+      "id": "painted_metal_shutter",
+      "res": "1k",
+      "use": "Trailer body panels"
+    }
+  ],
+  "polyhavenHdris": [
+    {
+      "id": "empty_warehouse_01",
+      "res": "1k",
+      "use": "Image-based lighting (v2 asset, kept)"
+    }
+  ],
+  "makehuman": {
+    "pack": "makehuman_system_assets",
+    "url": "https://files2.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip",
+    "page": "https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html",
+    "author": "MakeHuman Community (makehuman_system asset repo)",
+    "licence": "CC0-1.0",
+    "used": [
+      "skins/middleage_african_female",
+      "skins/young_asian_male",
+      "skins/young_caucasian_female",
+      "skins/middleage_caucasian_male",
+      "skins/young_african_male",
+      "eyes/brown",
+      "eyes/brownlight",
+      "eyes/blue",
+      "eyebrows/eyebrow001",
+      "eyebrows/eyebrow006",
+      "eyebrows/eyebrow010",
+      "eyelashes/eyelashes01",
+      "hair/short02",
+      "hair/ponytail01",
+      "hair/short04",
+      "hair/short01",
+      "clothes/male_worksuit01",
+      "clothes/shoes02",
+      "clothes/shoes06",
+      "eyes/low-poly",
+      "hair/braid01",
+      "clothes/male_casualsuit01",
+      "clothes/male_casualsuit03"
+    ],
+    "tool": {
+      "name": "MPFB 2.0.18 (Blender extension)",
+      "url": "https://extensions.blender.org/add-ons/mpfb/",
+      "licence": "GPL-3.0-or-later",
+      "note": "Tool only: GPL covers the add-on code, not the characters it generates. Its bundled base mesh and targets are CC0."
+    }
+  },
+  "fonts": [
+    {
+      "id": "barlow-condensed-700",
+      "family": "Barlow Condensed",
+      "url": "https://github.com/google/fonts/raw/main/ofl/barlowcondensed/BarlowCondensed-Bold.ttf",
+      "licenceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/OFL.txt",
+      "author": "Jeremy Tribby",
+      "licence": "OFL-1.1",
+      "use": "Baked into sign and label textures (owner font pair A display face)"
+    },
+    {
+      "id": "inter-600",
+      "family": "Inter",
+      "url": "https://github.com/google/fonts/raw/main/ofl/inter/Inter%5Bopsz,wght%5D.ttf",
+      "licenceUrl": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/OFL.txt",
+      "author": "Rasmus Andersson",
+      "licence": "OFL-1.1",
+      "use": "Small print on carton labels and sign sub-lines"
+    }
+  ]
+}
