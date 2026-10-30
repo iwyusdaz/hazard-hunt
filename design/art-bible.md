@@ -102,3 +102,34 @@ References inform lighting, wear, and colour balance only; only license-verified
 - **Glowing Floor Viewpoint Rings:** Pulsing safety-yellow floor rings with floating octahedron beacons mark all 7 `Warehouse.VIEWS` stand points; clicking a ring smoothly glides the camera to that viewpoint.
 - **Smooth Camera Glide + Free WASD/Arrow Walk:** Selecting a viewpoint button, POI item, or floor ring smoothly glides the camera (`glideTo`, cubic ease-in-out; instant cut when reduced motion is enabled or in unit tests). Learners can also look freely by dragging or using arrow keys/look-pad, and walk with `W/A/S/D` inside the bay bounds.
 - **Hover Outlines & Projected Tooltips:** Hovering any active inspectable shows the high-contrast yellow 3D bounding box (`Warehouse.highlight`) plus a floating `--font-accent` tooltip naming the area.
+
+## v3 owner direction (S0), recorded 2026-10-30
+
+The owner made these choices for plan 10 (v3.0.0) on 2026-10-30, after reviewing the
+S0 direction pack. The choices are the owner's; an agent prepared the pack.
+
+| Item | Choice |
+|---|---|
+| Font pair | **Pair A: Barlow Condensed (display, 700) + Inter (body).** SIL OFL 1.1, self-hosted WOFF2. Specimen: `repos/immersive/_direction/hazard-hunt/specimen.html` |
+| Layout | Scene-first mock `repos/immersive/_direction/hazard-hunt/layout.svg` approved, with the label change below |
+| Reference board | Approved as drafted: `repos/immersive/_direction/hazard-hunt/index.html#refs` |
+| Object list | Approved as drafted: `repos/immersive/_direction/hazard-hunt/objects.draft.json` (35 objects in the main scene). S4 turns it into `content/objects.json` and resolves each object's `_check` note |
+
+### Object name labels are hidden by default (owner change, all seven repos)
+
+The mock shows a name label on every object. The owner wants no labels at rest:
+
+- Mouse: hovering an object shows its outline and its name label, with a fade in and out of about 150 ms. With reduced motion on, the label appears and disappears instantly.
+- Keyboard: when an object takes focus (Tab or the "Objects in view" list), its label shows the same way.
+- Touch (no hover): a tap opens the object's info card directly, and the label shows with it.
+- Off by default: a "Show all labels" menu setting, saved in localStorage; holding a key (Alt or L) shows all labels while held, and the controls cheat sheet lists that key.
+- Task cues (for example a numbered survey flag or a glint) are not name labels and stay visible. Their text labels follow the same hover rule. The plan §4.2 task/explore distinction applies, except for the shared inspectable style below (DECISIONS #24).
+- Gate: a ui-audit check and a browser test prove that no object labels are visible at rest, that hover, focus and tap each show the correct label, and that "Show all labels" shows them all.
+
+This is built once in the S3 template (`_templates/immersive-core`) and synced into the repo.
+
+### Open question: highlighting
+
+Approved. Hazards, controlled conditions and neutral items share one "inspectable"
+style, so the style never reveals which items are hazards. Only explore objects stay
+subtle. This is a deliberate exception to plan §4.2, recorded as DECISIONS #24.
