@@ -1,0 +1,49 @@
+/**
+ * hazard-v3.css — repo styles inside the v3 shell: the replay controls in the
+ * Now card, and the v2 activities that open in a drawer or in text mode (the
+ * rating form, the areas list, the causes chart, the controls ranking, the
+ * speak-up conversation, the reflection). Type sizes use the v3 tokens only
+ * (no text under 14 px); z-index only through the layer registry (none here).
+ */
+.hh-replay-tool { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1 1 100%; }
+.hh-clock { font-variant-numeric: tabular-nums; color: var(--v3-muted); min-width: 8ch; }
+.hh-areas { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
+.hh-areas .v3-list-btn { width: 100%; }
+.hh-causes { display: grid; gap: 10px; margin: 8px 0 12px; }
+.hh-cause { display: grid; gap: 4px; }
+.hh-cause label { font-weight: 600; }
+
+/* v2 activities reused in the drawer and text mode */
+.v3-drawer-body button:not(.v3-btn):not(.v3-list-btn), .v3-tm button:not(.v3-btn):not(.v3-list-btn) {
+  font: inherit; font-size: var(--type-body); color: var(--v3-text);
+  background: rgba(255, 255, 255, 0.07); border: 1px solid var(--v3-border); border-radius: 10px;
+  min-height: 44px; padding: 6px 14px; cursor: pointer; margin: 4px 6px 4px 0;
+}
+.v3-drawer-body button:not(.v3-btn):hover, .v3-tm button:not(.v3-btn):hover { border-color: var(--v3-accent); }
+.v3-drawer-body button:disabled, .v3-tm button:disabled { opacity: 0.55; cursor: not-allowed; }
+.v3 .choice-btn { display: block; width: 100%; text-align: left; }
+.v3 .choice-btn.correct { border-color: var(--v3-ok); }
+.v3 .choice-btn.incorrect { border-color: var(--v3-err); }
+.v3 .feedback { margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--v3-accent); background: rgba(255, 209, 0, 0.08); }
+.v3 .your-answer { font-weight: 600; }
+.v3 .band-rule, .v3 .hierarchy-note, .v3 .rating-step .hint { color: var(--v3-muted); }
+.v3 .rating-step { border: 1px solid var(--v3-border); border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.v3 .rating-step fieldset { border: 0; padding: 0; margin: 6px 0; }
+.v3 fieldset { border: 1px solid var(--v3-border); border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.v3 legend { font-weight: 600; padding: 0 4px; }
+.v3 label.choice { display: flex; gap: 8px; align-items: center; min-height: 44px; }
+.v3 .error:not(.visually-hidden) { color: var(--v3-err); }
+.v3 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.v3 .rank-list { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; }
+.v3 .rank-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; border-bottom: 1px solid var(--v3-border); padding: 4px 0; }
+.v3 .rank-list li span { flex: 1 1 14rem; }
+.v3 .dlg-speaker { font-weight: 700; margin: 8px 0 2px; color: var(--v3-accent); }
+.v3 .dlg-line { margin: 0 0 8px; }
+.v3 .disclaimer { color: var(--v3-muted); }
+.v3 textarea { width: 100%; font: inherit; color: var(--v3-text); background: rgba(255, 255, 255, 0.06); border: 1px solid var(--v3-border); border-radius: 8px; padding: 8px; }
+.v3 select { font: inherit; min-height: 44px; color: var(--v3-text); background: var(--v3-surface-solid); border: 1px solid var(--v3-border); border-radius: 8px; padding: 0 8px; max-width: 100%; }
+.v3 caption { text-align: left; color: var(--v3-muted); padding-bottom: 4px; }
+.v3 .assessment-item h3, .v3 .assessment-item h4 { font-size: var(--type-body); }
+/* Text mode keeps the grid (it scrolls sideways when narrow); drawer tables stack (template shell.css). */
+.v3-tm table { border-collapse: collapse; width: 100%; margin: 8px 0; display: block; overflow-x: auto; }
+.v3-tm th, .v3-tm td { border-bottom: 1px solid var(--v3-border); padding: 6px 8px; text-align: left; vertical-align: top; }

@@ -116,15 +116,17 @@ describe('speak-up dialogue graph', () => {
 });
 
 describe('3D scene covers the hunt content', () => {
-  it('every inspectable in zones.json is a selectable object in the warehouse, and vice versa', () => {
-    const src = readFileSync(new URL('../../src/scenes/warehouse.js', import.meta.url), 'utf8');
-    const in3d = new Set([...src.matchAll(/inspectable: '([a-z0-9-]+)'/g)].map((m) => m[1]));
+  it('every inspectable in zones.json is registered in Bay 4 (v3 scene) and is in the catalog', () => {
+    const src = readFileSync(new URL('../../src/hazard/bay.js', import.meta.url), 'utf8');
+    const in3d = new Set([...src.matchAll(/this\.register\('([a-z0-9-]+)'/g)].map((m) => m[1]));
+    const catalog = JSON.parse(readFileSync(new URL('../../content/objects.json', import.meta.url), 'utf8')).objects.map((o) => o.id);
     const content = zones.zones.flatMap((z) => z.inspectables.map((i) => i.id));
     expect(content.filter((id) => !in3d.has(id))).toEqual([]);
-    expect([...in3d].filter((id) => !content.includes(id))).toEqual([]);
+    expect(content.filter((id) => !catalog.includes(id))).toEqual([]);
+    // Every catalog object has a scene object.
+    expect(catalog.filter((id) => !in3d.has(id))).toEqual([]);
   });
 });
-
 describe('zone content integrity', () => {
   it('has hazard catalog data with cues, ratings and why for every inspectable', () => {
     for (const zone of zones.zones) {

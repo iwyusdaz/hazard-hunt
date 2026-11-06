@@ -1,60 +1,32 @@
 /**
- * Self-hosted case typography for hazard-hunt (v2.0.0).
- * Roles:
- *   --font-display : headings, titles, hero banners (Big Shoulders Stencil Display)
- *   --font-body    : body copy, instructions, controls (Barlow)
- *   --font-accent  : in-world signage, tags, telemetry, notes (Share Tech Mono)
- * Accessibility:
- *   html[data-plain-font="on"] switches all three roles to clean system/hyperlegible sans.
+ * Case typography and colours for hazard-hunt v3 (S0 owner choice, pair A,
+ * design/art-bible.md): Barlow Condensed 700 for the title screen, chapter
+ * cards and in-world labels; Inter 400/600 (template, src/v3/fonts) for all
+ * body and UI text. Self-hosted WOFF2, SIL OFL 1.1 (ATTRIBUTION.md). Plain
+ * font (menu) swaps the display face for the body face (src/v3/type.css).
  */
 @font-face {
-  font-family: 'Big Shoulders Stencil Display';
+  font-family: 'Barlow Condensed';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('./fonts/big-shoulders-stencil-display-latin-700-normal.woff2') format('woff2');
+  src: url('./fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
 }
-
-@font-face {
-  font-family: 'Barlow';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/barlow-latin-400-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Barlow';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('./fonts/barlow-latin-600-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Barlow';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('./fonts/barlow-latin-700-normal.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Share Tech Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/share-tech-mono-latin-400-normal.woff2') format('woff2');
-}
-
 :root {
-  --font-display: 'Big Shoulders Stencil Display', Impact, sans-serif;
-  --font-body: 'Barlow', system-ui, sans-serif;
-  --font-accent: 'Share Tech Mono', ui-monospace, monospace;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Barlow Condensed', 'Inter', system-ui, sans-serif;
+  /* Art bible palette: HUD slate surface, LED-white text, safety-yellow accent. */
+  --v3-bg: #0b0f14;
+  --v3-surface: rgba(18, 24, 31, 0.92);
+  --v3-surface-solid: #12181f;
+  --v3-text: #f3f6f8;
+  --v3-muted: #c3ccd4;
+  --v3-accent: #ffd100;
+  --v3-accent-ink: #1a1400;
+  --v3-border: rgba(243, 246, 248, 0.22);
+  --v3-focus: #ffd100;
 }
-
-html[data-plain-font="on"] {
-  --font-display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+:root[data-plain-font="on"] {
   --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-accent: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-display: var(--font-body);
 }

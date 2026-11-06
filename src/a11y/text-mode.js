@@ -43,7 +43,8 @@ export function dataTable(headers, rows, caption) {
   const tbody = document.createElement('tbody');
   for (const row of rows) {
     const tr = document.createElement('tr');
-    for (const cell of row) { const td = document.createElement('td'); td.textContent = String(cell); tr.appendChild(td); }
+    // data-label: stacked rows in narrow drawers (template T-15).
+    row.forEach((cell, c) => { const td = document.createElement('td'); td.textContent = String(cell); if (headers[c] != null) td.dataset.label = headers[c]; tr.appendChild(td); });
     tbody.appendChild(tr);
   }
   table.appendChild(tbody);

@@ -66,7 +66,7 @@
           "id": "distractor-secured-stack",
           "area": "Receiving dock, tall pallet stack",
           "kind": "distractor",
-          "cue": "A pallet stack about three meters tall of cartons, fully wrapped in clear shrink wrap and squared on the pallet.",
+          "cue": "A pallet stack taller than a person (about 1.8 metres) of cartons, fully wrapped in clear film and squared on the pallet.",
           "label": "Wrapped tall pallet stack",
           "why": "Height looks alarming, but the load is shrink-wrapped to the pallet and squared, so cartons cannot slide. Controlled condition — this is how tall stacks are supposed to look."
         },
@@ -92,7 +92,7 @@
       "inspectables": [
         {
           "id": "hazard-overhang",
-          "area": "Aisle, east rack row, second beam level",
+          "area": "Aisle, north rack row, first beam level",
           "kind": "hazard",
           "cue": "One pallet juts past the front edge of the beam, rotated slightly, overhanging the aisle by roughly half a meter.",
           "label": "Pallet overhanging the beam",
@@ -105,7 +105,7 @@
           "id": "hazard-damaged-upright",
           "area": "Aisle, south rack row, first upright",
           "kind": "hazard",
-          "cue": "One blue rack upright is bent inward at mid-height and the paint has scuffed to bare orange metal at the impact point.",
+          "cue": "The front column of this blue rack upright is bent near the floor, and the paint is scraped to bare metal where a truck hit it.",
           "label": "Bent rack upright",
           "likelihood": 2,
           "severity": 5,
@@ -125,7 +125,7 @@
         },
         {
           "id": "hazard-misaligned-mirror",
-          "area": "Aisle, north end, pole-mounted convex mirror",
+          "area": "Aisle, west end, pole-mounted convex mirror",
           "kind": "hazard",
           "cue": "The convex mirror at the blind corner is aimed at the ceiling structure, not the cross-aisle it should reflect.",
           "label": "Misaligned convex mirror",
@@ -138,7 +138,7 @@
           "id": "hazard-missing-guard",
           "area": "Packing bench, cutting machine, near side",
           "kind": "hazard",
-          "cue": "The cutting machine's orange guard rail is missing on the operator side; the far side still has its guard.",
+          "cue": "The cutting machine's yellow guard is missing on the operator side, so the blade is exposed; the far side still has its guard.",
           "label": "Missing machine guard",
           "likelihood": 3,
           "severity": 5,
@@ -160,7 +160,7 @@
           "id": "distractor-guarded-machine",
           "area": "Packing bench, cutting machine, far side",
           "kind": "distractor",
-          "cue": "The far side of the same machine has its orange guard rail fitted and closed.",
+          "cue": "The far side of the same machine has its yellow guard fitted and closed over the blade.",
           "label": "Guarded side of the machine",
           "why": "The exposed-looking blade area on this side is behind a fixed guard. A machine that looks dangerous but is guarded is a controlled condition — the inspection question is whether every side is guarded."
         },
@@ -184,9 +184,9 @@
       "inspectables": [
         {
           "id": "t-hazard-straddle-load",
-          "area": "Staging lane, over the walkway",
+          "area": "Staging lane, across the walkway",
           "kind": "hazard",
-          "cue": "A pallet in the staging lane is stacked so high the driver cannot see over it, and it is parked straddling the yellow walkway line.",
+          "cue": "A forklift carrying a load so tall the driver cannot see over it is parked across the yellow walkway line.",
           "label": "Loaded truck straddling the walkway",
           "likelihood": 4,
           "severity": 4,
@@ -196,7 +196,7 @@
           "id": "t-hazard-charging-block",
           "area": "Staging lane, battery bay door",
           "kind": "hazard",
-          "cue": "The battery-change bay door is blocked by a wheeled cage, and the eyewash station beside it has an empty wash bottle on top.",
+          "cue": "A wheeled cart stands in front of the battery-change bay door, and the eyewash station beside it has one bottle missing.",
           "label": "Blocked battery bay and neglected eyewash",
           "likelihood": 2,
           "severity": 5,
@@ -206,15 +206,15 @@
           "id": "t-distractor-striped-gate",
           "area": "Staging lane entrance",
           "kind": "distractor",
-          "cue": "A black-and-yellow striped swing gate partially closes the lane entrance.",
+          "cue": "A black-and-yellow striped swing gate stands where the walkway meets the staging lane.",
           "label": "Striped swing gate at the lane entrance",
           "why": "Stripes read as 'danger', but a self-closing gate at a vehicle route is a control, not a hazard — it separates pedestrians from trucks."
         },
         {
           "id": "t-neutral-clear-line",
-          "area": "Staging lane, walkway",
+          "area": "Staging lane, walkway along the south wall",
           "kind": "neutral",
-          "cue": "The yellow walkway through the staging lane is clear and unbroken except at the gate.",
+          "cue": "The yellow walkway along the south wall of the staging lane is clear and unbroken.",
           "label": "Clear walkway",
           "why": "A correct condition: no action needed."
         }

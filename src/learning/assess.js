@@ -47,7 +47,8 @@ export function mcItem({ item, container, onAnswered, showFeedback = true, previ
   h.textContent = item.prompt;
   wrap.appendChild(h);
   const options = document.createElement('div');
-  options.setAttribute('role', 'radiogroup');
+  // A group of answer buttons, not a radiogroup (v1 review A8: buttons have no radio semantics).
+  options.setAttribute('role', 'group');
   options.setAttribute('aria-label', item.prompt);
   const buttons = [];
   const showResult = (opt, b) => {

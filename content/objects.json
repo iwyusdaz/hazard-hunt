@@ -7,7 +7,11 @@
       "short": "A dark, shiny patch about two metres across on the concrete between the dock doors and the racks. The floor around it is matte.",
       "more": "This is a fluid spill on a walking route, a classic cause of slips and same-level falls. US rules say walking surfaces are kept free of hazards such as leaks and spills, and UK guidance says spills should be cleaned up at once. Immediate control: cordon it off and clean it up. Better: find and fix the leaking truck or container, because the hierarchy of controls ranks removing the source above warning signs.",
       "whyItMatters": "Practice zone hazard: slips on walking routes.",
-      "realSize": [2.0, 0, 1.5],
+      "realSize": [
+        2.0,
+        0,
+        1.5
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.22",
       "role": "task",
@@ -20,7 +24,11 @@
       "short": "A box trailer is backed up to an open dock door. The signal light beside the door is red.",
       "more": "The trailer is not secured to the dock. A trailer can creep away as a forklift drives onto it and drop the truck into the gap. US rules require the trailer's brakes set and wheel chocks placed before a forklift boards it. Better controls are a vehicle restraint interlocked with the door and keys kept away from the driver until loading ends. Red here means stop: nobody drives on.",
       "whyItMatters": "Practice zone hazard: trailer creep at the dock.",
-      "realSize": [2.78, 4.12, 16.18],
+      "realSize": [
+        2.78,
+        4.12,
+        16.18
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "task",
@@ -33,7 +41,11 @@
       "short": "A dark hose runs low across the yellow-lined pedestrian walkway on the main floor.",
       "more": "People walking in a warehouse keep their eyes up to watch for trucks, so low obstacles trip them. US rules say walking surfaces are kept free of protruding objects and storage areas free of tripping hazards. Route the hose overhead or through a cable ramp outside the walkway (engineering) rather than relying on 'watch your step' signs.",
       "whyItMatters": "Practice zone hazard: trips on the walkway.",
-      "realSize": [6.04, 0.052, 0.445],
+      "realSize": [
+        6.04,
+        0.052,
+        0.445
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.22",
       "role": "task",
@@ -46,7 +58,11 @@
       "short": "The charger's supply cable where it meets its plug, in the charging area on the west wall.",
       "more": "The insulation is split and copper strands poke out. Damaged insulation on a mains cable risks electric shock, and the charging area is busy at shift change. Battery charging belongs in a designated area with ventilation and electrolyte flushing nearby. Isolate the charger and tag it out until a qualified person repairs the cable.",
       "whyItMatters": "Practice zone hazard: electric shock in the charging area.",
-      "realSize": [0.41, 0.06, 0.08],
+      "realSize": [
+        0.41,
+        0.06,
+        0.08
+      ],
       "honesty": "fictional",
       "source": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.178",
       "role": "task",
@@ -59,7 +75,11 @@
       "short": "A cable crosses the floor beside the charger, under a yellow and black rubber cover.",
       "more": "It looks like a trip risk, but the cable runs through a proper cable ramp and sits outside the marked walkway. This is a controlled condition: the surface stays free of protruding objects. No action is needed beyond keeping it that way.",
       "whyItMatters": "Practice zone: controlled condition, not a hazard.",
-      "realSize": [1.0, 0.052, 0.296],
+      "realSize": [
+        1.0,
+        0.052,
+        0.296
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.22",
       "role": "task",
@@ -72,7 +92,11 @@
       "short": "A tall stack of cartons on a pallet, wrapped in clear film and squared off.",
       "more": "Its height looks alarming, but the film holds the cartons to the pallet so they cannot slide. UK guidance says stretch wrapping gives greater security, and taller loads are acceptable when their stability has been checked. This is how a tall load is supposed to look: a controlled condition.",
       "whyItMatters": "Practice zone: controlled condition, not a hazard.",
-      "realSize": [1.233, 1.79, 1.018],
+      "realSize": [
+        1.233,
+        1.79,
+        1.018
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "task",
@@ -85,7 +109,11 @@
       "short": "A blue reach truck stands beside the charging area with its forks down and a red tag on the cab.",
       "more": "A parked truck with its forks fully lowered, controls neutral, power off and keys controlled is how US rules say an unattended truck should be left. It is not a hazard to flag on this walk-through. How trucks move matters later, in the incident replay.",
       "whyItMatters": "Practice zone: neutral, nothing to report.",
-      "realSize": [1.27, 2.486, 2.33],
+      "realSize": [
+        1.27,
+        2.486,
+        2.33
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "task",
@@ -94,11 +122,15 @@
     },
     {
       "id": "hazard-overhang",
-      "name": "Pallet on the second beam, east row",
-      "short": "A wrapped pallet on the second beam level of the east rack row, at a driver's head height.",
+      "name": "Pallet on the first beam, north row",
+      "short": "A wrapped pallet on the lowest beam level of the north rack row, at a driver's head height.",
       "more": "The pallet juts about half a metre past the beam into the aisle. The next truck through the aisle can strike it or knock it down. Stored material must be stable and secure against sliding or collapse. Control: re-seat the pallet. Deeper fix: put-away checks. The incident replay starts from exactly this situation.",
       "whyItMatters": "Assessed zone hazard; leads into the replay.",
-      "realSize": [1.233, 1.39, 1.018],
+      "realSize": [
+        1.233,
+        1.39,
+        1.018
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "task",
@@ -108,10 +140,14 @@
     {
       "id": "hazard-damaged-upright",
       "name": "First upright of the south rack row",
-      "short": "The blue upright frame at the end of the south rack row, where trucks turn into the aisle.",
+      "short": "The blue upright frame at the west end of the south rack row, where trucks turn into the aisle.",
       "more": "The front column is bent near the floor and the paint is scraped to bare metal where a truck hit it. Any damage reduces a rack's load capacity, and racking can fail under load with no warning. UK guidance says to report damage at once, offload the bay and have a competent person inspect and repair it. Engineering control: upright protectors in a conspicuous colour at aisle ends.",
       "whyItMatters": "Assessed zone hazard: rack collapse.",
-      "realSize": [0.15, 6.0, 1.124],
+      "realSize": [
+        0.15,
+        6.0,
+        1.124
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "task",
@@ -124,7 +160,11 @@
       "short": "The east-wall fire-exit door with its green sign, and two pallets of cartons on the floor in front of it.",
       "more": "The exit is blocked. US OSHA's exit-route rule says exit routes must be free and unobstructed, and no materials may be placed in them, even for a short time. In a fire, a blocked exit costs the seconds people need. Move the pallets now, then find out why the staging space ran out.",
       "whyItMatters": "Assessed zone hazard: blocked escape route.",
-      "realSize": [1.12, 2.15, 0.17],
+      "realSize": [
+        1.12,
+        2.15,
+        0.17
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.37",
       "role": "task",
@@ -134,10 +174,14 @@
     {
       "id": "hazard-misaligned-mirror",
       "name": "Convex mirror at the blind corner",
-      "short": "A round convex mirror on a pole at the north end of the racking aisle, where the cross-aisle meets it.",
+      "short": "A round convex mirror on a pole at the west end of the racking aisle, where the cross-aisle meets it.",
       "more": "The mirror points at the roof, not at the cross-aisle. A mirror aimed wrongly gives false confidence: drivers believe they have checked the corner when they have not. US rules tell drivers to slow down and sound the horn where vision is blocked, and UK guidance recommends well-placed mirrors at blind corners. Re-aim it and add mirror checks to routine inspections.",
       "whyItMatters": "Assessed zone hazard: blind corner.",
-      "realSize": [0.61, 0.61, 0.37],
+      "realSize": [
+        0.61,
+        0.61,
+        0.37
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "task",
@@ -150,7 +194,11 @@
       "short": "The operator side of the carton-cutting machine on the packing bench, where the blade meets the table.",
       "more": "The guard is missing on this side, so the blade is exposed. An unguarded cutting edge at a busy bench risks deep cuts and amputations. US rules require guarding against point-of-operation hazards. Interim control: tag the machine out. Better: an interlocked guard, so the machine cannot run without it (engineering).",
       "whyItMatters": "Assessed zone hazard: cuts and amputations.",
-      "realSize": [0.6, 0.33, 0.705],
+      "realSize": [
+        0.6,
+        0.33,
+        0.705
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.212",
       "role": "task",
@@ -163,7 +211,11 @@
       "short": "Loose cartons on a pallet on the top beam level of the south rack row.",
       "more": "The top layer leans toward the aisle and nothing holds it. Unwrapped cartons on a high beam can fall into the aisle or onto a truck. Material stored in tiers must be stacked and limited in height so it is stable. Restack and band the cartons; the deeper fix is the put-away check that let them through.",
       "whyItMatters": "Assessed zone hazard: falling objects.",
-      "realSize": [1.221, 0.983, 1.018],
+      "realSize": [
+        1.221,
+        0.983,
+        1.018
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "task",
@@ -176,7 +228,11 @@
       "short": "The far side of the same carton-cutting machine, where the blade sits under a yellow cover.",
       "more": "The blade on this side is behind a fixed guard. A machine that looks dangerous but is properly guarded is a controlled condition. Checking both sides of a machine is part of a good inspection.",
       "whyItMatters": "Assessed zone: controlled condition, not a hazard.",
-      "realSize": [0.6, 0.33, 0.705],
+      "realSize": [
+        0.6,
+        0.33,
+        0.705
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.212",
       "role": "task",
@@ -189,7 +245,11 @@
       "short": "The concrete floor of the racking aisle between the two rack rows.",
       "more": "The aisle is clear: nothing is stored or spilled on it. US rules say aisles are kept clear and in good repair. Not everything in a busy warehouse is wrong, and knowing what is acceptable keeps your reports credible.",
       "whyItMatters": "Assessed zone: neutral, nothing to report.",
-      "realSize": [3.5, 0, 6.0],
+      "realSize": [
+        3.5,
+        0,
+        6.0
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "task",
@@ -202,7 +262,11 @@
       "short": "A forklift with a tall load stands in the outbound staging lane over the yellow walkway line.",
       "more": "This is two hazards at once. The truck blocks the walkway, and its load is so tall the driver cannot see over it. People must squeeze past a machine whose driver cannot see them. US rules say a driver who cannot see past the load travels with the load trailing. Park trucks clear of walkways and build loads the driver can see over.",
       "whyItMatters": "Transfer zone hazard (no hints).",
-      "realSize": [1.315, 2.339, 3.32],
+      "realSize": [
+        1.315,
+        2.339,
+        3.32
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "task",
@@ -212,10 +276,14 @@
     {
       "id": "t-hazard-charging-block",
       "name": "Battery bay door and eyewash station",
-      "short": "The battery-change bay door in the staging lane, with a wheeled cage in front and an eyewash station beside it.",
-      "more": "The cage blocks the door, and the eyewash station has one bottle missing and the other nearly empty. Emergency equipment that is unreachable or unmaintained fails when it is needed. Where corrosive splashes are possible, US rules require quick-flushing facilities ready for immediate use. Clear the door and restock the station, then add both to the daily checks.",
+      "short": "The battery-change bay door on the west wall of the staging lane, with a wheeled cart in front and an eyewash station beside it.",
+      "more": "The cart blocks the door, and the eyewash station has one bottle missing and the other nearly empty. Emergency equipment that is unreachable or unmaintained fails when it is needed. Where corrosive splashes are possible, US rules require quick-flushing facilities ready for immediate use. Clear the door and restock the station, then add both to the daily checks.",
       "whyItMatters": "Transfer zone hazard (no hints).",
-      "realSize": [1.5, 2.0, 1.0],
+      "realSize": [
+        1.5,
+        2.0,
+        1.0
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.151",
       "role": "task",
@@ -228,7 +296,11 @@
       "short": "A yellow and black striped swing gate where the walkway meets the staging lane.",
       "more": "Stripes say 'danger', but this self-closing gate is a control, not a hazard. It keeps people and trucks apart where the walkway meets a vehicle route, which UK guidance recommends through barriers and crossing points.",
       "whyItMatters": "Transfer zone: controlled condition, not a hazard.",
-      "realSize": [1.14, 1.15, 0.18],
+      "realSize": [
+        1.14,
+        1.15,
+        0.18
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "task",
@@ -238,10 +310,14 @@
     {
       "id": "t-neutral-clear-line",
       "name": "Walkway through the staging lane",
-      "short": "The yellow-lined walkway that runs through the outbound staging lane.",
-      "more": "The walkway is clear and unbroken except at the gate. That is a correct condition: no action is needed.",
+      "short": "The yellow-lined walkway along the south wall of the outbound staging lane.",
+      "more": "The walkway is clear and unbroken from the west wall to the entrance walkway. That is a correct condition: no action is needed.",
       "whyItMatters": "Transfer zone: neutral, nothing to report.",
-      "realSize": [1.2, 0, 10.0],
+      "realSize": [
+        1.2,
+        0,
+        10.0
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "task",
@@ -254,7 +330,11 @@
       "short": "A red extinguisher on a wall bracket, with a sign above it. The space in front of it must stay clear.",
       "more": "Fire equipment only helps if people can reach it fast. US rules say extinguishers are mounted, located and marked so they are easy to reach, and the rule for powered trucks says fire equipment must be kept clear. The label on this model is in Korean: it reads 'fire extinguisher'.",
       "whyItMatters": "",
-      "realSize": [0.28, 0.659, 0.367],
+      "realSize": [
+        0.28,
+        0.659,
+        0.367
+      ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.157",
       "role": "explore",
@@ -267,7 +347,11 @@
       "short": "A green wall board near the battery charger holding two sealed bottles of eyewash fluid.",
       "more": "Where people can be splashed with corrosive liquids, US rules require quick-flushing facilities in the work area. Battery electrolyte is corrosive, so charging areas need eyewash close by. Both bottles here are full and sealed.",
       "whyItMatters": "Compare it with the eyewash in the staging lane.",
-      "realSize": [0.45, 0.6, 0.15],
+      "realSize": [
+        0.45,
+        0.6,
+        0.15
+      ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.151",
       "role": "explore",
@@ -280,7 +364,11 @@
       "short": "A green first-aid case with a white cross, mounted on the safety wall under a first-aid sign.",
       "more": "US rules say adequate first-aid supplies must be readily available, and where no clinic is close by, someone on site must be trained in first aid. Kits only help if people know where they are and someone keeps them stocked.",
       "whyItMatters": "",
-      "realSize": [0.525, 0.098, 0.35],
+      "realSize": [
+        0.525,
+        0.098,
+        0.35
+      ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.151",
       "role": "explore",
@@ -293,7 +381,11 @@
       "short": "A lit EXIT sign with an arrow, over the push-bar fire door on the east wall.",
       "more": "US rules say every exit must be clearly visible and marked by a sign reading 'Exit'. The door opens from the inside with a push bar, without keys or special knowledge. The route to it must stay clear at all times.",
       "whyItMatters": "",
-      "realSize": [0.38, 0.2, 0.061],
+      "realSize": [
+        0.38,
+        0.2,
+        0.061
+      ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.37",
       "role": "explore",
@@ -306,7 +398,11 @@
       "short": "A board at the bay entrance with hi-vis vests, hard hats, gloves, safety glasses and ear defenders.",
       "more": "Personal protective equipment must be provided, used and kept in good condition wherever hazards make it necessary. In the hierarchy of controls it is the last line of defence: useful, but only after hazards have been removed or engineered out.",
       "whyItMatters": "Hierarchy of controls, lowest level.",
-      "realSize": [1.34, 2.0, 0.406],
+      "realSize": [
+        1.34,
+        2.0,
+        0.406
+      ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.132",
       "role": "explore",
@@ -319,7 +415,11 @@
       "short": "A white sign at the end of each rack row giving the maximum load per level and per bay.",
       "more": "Racking is designed for a set load, and UK guidance says each installation should carry a clear notice of its maximum load. Overloading a level can bend beams and uprights. The figures on this sign are fictional.",
       "whyItMatters": "",
-      "realSize": [0.4, 0.3, 0],
+      "realSize": [
+        0.4,
+        0.3,
+        0
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -332,7 +432,11 @@
       "short": "Yellow lines mark the pedestrian walkway; white arrows mark the truck route; hatched areas must stay clear.",
       "more": "Painted lines show people and drivers where each belongs. US rules say permanent aisles are marked, and UK guidance says pedestrians and vehicles should be kept apart. Paint alone is an administrative control; barriers and gates make it an engineering one. The layout here is fictional.",
       "whyItMatters": "Walkway hazards are judged against these lines.",
-      "realSize": [1.2, 0, 30.0],
+      "realSize": [
+        1.2,
+        0,
+        30.0
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "explore",
@@ -345,7 +449,11 @@
       "short": "A yellow forklift driving its route with an amber beacon and a blue spot projected on the floor ahead.",
       "more": "The blue spot warns people around a corner that a truck is coming, even when they cannot hear it; EU-OSHA lists it as good practice in noisy places. Operators must examine their truck before each shift. The route and timing here are fictional, and the beacon and spot are the only warnings: this course has no sound.",
       "whyItMatters": "Truck movement matters in the incident replay.",
-      "realSize": [1.315, 2.339, 3.32],
+      "realSize": [
+        1.315,
+        2.339,
+        3.32
+      ],
       "honesty": "fictional",
       "source": "https://eguides.osha.europa.eu/vehicle-safety/good-practices/blue-safety-spotlight",
       "role": "explore",
@@ -358,7 +466,11 @@
       "short": "The steering wheel with its spinner knob, and the lift, tilt and auxiliary levers beside it.",
       "more": "Operator training covers where each control is, what it does and how it works, as well as the truck's stability and pedestrian traffic. The control layout here is a simplified model, not any real truck's.",
       "whyItMatters": "",
-      "realSize": [0.55, 0.45, 0.4],
+      "realSize": [
+        0.55,
+        0.45,
+        0.4
+      ],
       "honesty": "reconstructed",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "explore",
@@ -369,9 +481,13 @@
       "id": "conveyor",
       "name": "Roller conveyor",
       "short": "A powered roller conveyor carrying tote crates and cartons from the packing bench toward the dock.",
-      "more": "Conveyors can draw in fingers and clothing where rollers meet each other or a fixed part. UK guidance asks for guards over these drawing-in points, and US rules require guarding against ingoing nip points. The emergency stop on the frame stops the line at once.",
+      "more": "Conveyors can draw in fingers and clothing where rollers meet each other or a fixed part. UK guidance asks for guards over these drawing-in points, and US rules require guarding against ingoing nip points. The emergency stop on the frame stops the line at once. The parcel flow here is illustrative: the same parcels loop along the line.",
       "whyItMatters": "",
-      "realSize": [0.96, 0.96, 12.0],
+      "realSize": [
+        0.96,
+        0.96,
+        12.0
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -384,7 +500,11 @@
       "short": "A red mushroom-head button on a yellow box on the conveyor frame. Press it to stop the line at once.",
       "more": "Emergency stops are big, red and easy to hit without looking. After a stop, the switch must be reset before the conveyor can start again, so nobody restarts it by accident. (That reset rule comes from a US construction standard, quoted here as background.)",
       "whyItMatters": "",
-      "realSize": [0.12, 0.165, 0.119],
+      "realSize": [
+        0.12,
+        0.165,
+        0.119
+      ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1926.555",
       "role": "explore",
@@ -394,10 +514,14 @@
     {
       "id": "dock-door",
       "name": "Dock roller door",
-      "short": "A steel roller door at each dock. It rolls up into the box above when a trailer is ready to load.",
-      "more": "Dock doors open only when a trailer is backed in and secured; an open door with no trailer leaves a drop of over a metre to the yard. The striped bottom bar makes the door edge easy to see.",
+      "short": "A steel roller door at each dock. It rolls up into the box above when a trailer is backed in and held.",
+      "more": "Dock doors open only when a trailer is backed in and secured; an open door with no trailer leaves a drop of over a metre to the yard. The striped bottom bar makes the door edge easy to see. Door 3 closes between pallet runs to keep the heat in; its timing here is illustrative.",
       "whyItMatters": "",
-      "realSize": [3.04, 3.55, 0.45],
+      "realSize": [
+        3.04,
+        3.55,
+        0.45
+      ],
       "honesty": "fictional",
       "source": "",
       "role": "explore",
@@ -410,7 +534,11 @@
       "short": "A red and green light beside each dock door, facing into the bay.",
       "more": "The light tells drivers inside whether the trailer is held to the dock: green means it is safe to drive on, red means stop. UK guidance lists vehicle restraints, interlocks, key custody and traffic lights as ways to stop trailers moving during loading. This signal system is fictional.",
       "whyItMatters": "Links to the trailer at dock door 2.",
-      "realSize": [0.16, 0.34, 0.155],
+      "realSize": [
+        0.16,
+        0.34,
+        0.155
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -423,7 +551,11 @@
       "short": "A yellow box low on the dock wall with a red hook that rises to catch the trailer's rear bar.",
       "more": "A vehicle restraint holds the trailer against the dock so it cannot creep away during loading. Linked to the signal light, it is an engineering control, stronger than relying on drivers to remember chocks.",
       "whyItMatters": "Links to the trailer at dock door 2.",
-      "realSize": [0.5, 0.45, 0.48],
+      "realSize": [
+        0.5,
+        0.45,
+        0.48
+      ],
       "honesty": "real",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -436,7 +568,11 @@
       "short": "Yellow wedge-shaped chocks hanging on the wall by the dock doors.",
       "more": "Chocks go under a trailer's rear wheels so it cannot roll while forklifts drive in and out. US rules require the brakes set and chocks placed before a powered truck boards a highway trailer.",
       "whyItMatters": "Links to the trailer at dock door 2.",
-      "realSize": [0.22, 0.215, 0.32],
+      "realSize": [
+        0.22,
+        0.215,
+        0.32
+      ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "explore",
@@ -449,7 +585,11 @@
       "short": "A steel tread plate in the floor at each dock door, with a hinged lip that rests on the trailer bed.",
       "more": "The leveller bridges the gap and the height difference between the dock and the trailer. It must be strong enough for the loaded truck and stay in a safe position, with edges that stop trucks running off. When not in use it is stored level with the floor.",
       "whyItMatters": "",
-      "realSize": [2.59, 0.601, 2.895],
+      "realSize": [
+        2.59,
+        0.601,
+        2.895
+      ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.26",
       "role": "explore",
@@ -460,9 +600,13 @@
       "id": "high-bay-light",
       "name": "High-bay light",
       "short": "A round LED lamp high in the roof. Its light cone shows dust drifting in the air.",
-      "more": "Good lighting lets people see hazards on the floor and read labels. One light in the far aisle is failing and flickers slowly; that is worth reporting, even though it is not one of the scored hazards. The flicker is gentle and slow, well below flash-safety limits.",
+      "more": "Good lighting lets people see hazards on the floor and read labels. One light over the far end of the racking aisle is failing and flickers slowly; that is worth reporting, even though it is not one of the scored hazards. The flicker is illustrative: slow and gentle, well below flash-safety limits. The dust in the light cones is illustrative too, denser than a clean bay so you can see the beams.",
       "whyItMatters": "",
-      "realSize": [0.44, 0.291, 0.439],
+      "realSize": [
+        0.44,
+        0.291,
+        0.439
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -540,7 +684,11 @@
       "short": "Pallets of cartons held tight with clear stretch film, waiting in the staging lane.",
       "more": "Stretch film stops cartons from sliding while the pallet is moved and stored. UK guidance says loads should follow a stable pattern, and that wrapping usually makes them more secure.",
       "whyItMatters": "",
-      "realSize": [1.233, 1.39, 1.018],
+      "realSize": [
+        1.233,
+        1.39,
+        1.018
+      ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -553,7 +701,11 @@
       "short": "Cartons with shipping labels, this-way-up arrows and weight marks.",
       "more": "The arrows show which way up a carton goes, and the label says where it is going and what it weighs. The company, addresses and barcodes are fictional.",
       "whyItMatters": "",
-      "realSize": [0.6, 0.4, 0.4],
+      "realSize": [
+        0.6,
+        0.4,
+        0.4
+      ],
       "honesty": "fictional",
       "source": "",
       "role": "explore",
@@ -566,7 +718,11 @@
       "short": "A grey wall-mounted charger for the trucks' batteries, in the marked charging area.",
       "more": "Battery charging must happen in a designated area with ventilation and facilities for flushing and neutralising spilled electrolyte. Smoking is not allowed there. The green light shows a battery charging; the amber light would show a fault.",
       "whyItMatters": "Charging-area hazards.",
-      "realSize": [0.61, 1.457, 0.5],
+      "realSize": [
+        0.61,
+        1.457,
+        0.5
+      ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "explore",
@@ -579,7 +735,11 @@
       "short": "An empty wooden pallet, 1,219 by 1,016 millimetres, the common North American size.",
       "more": "This is the GMA pallet size, 48 by 40 by 6 inches. Fork notches in the side boards let pallet jacks and forklifts lift it from all four sides. Broken boards are a reason to take a pallet out of use.",
       "whyItMatters": "",
-      "realSize": [1.219, 0.152, 1.016],
+      "realSize": [
+        1.219,
+        0.152,
+        1.016
+      ],
       "honesty": "real",
       "source": "https://en.wikipedia.org/wiki/Pallet",
       "role": "explore",
@@ -592,7 +752,11 @@
       "short": "A red hand pallet jack: pump the handle to lift a pallet a few centimetres, then pull it.",
       "more": "Pallet jacks move loads short distances without a forklift. UK guidance says equipment like this should still have a safety inspection at least every 12 months.",
       "whyItMatters": "",
-      "realSize": [0.54, 1.656, 1.571],
+      "realSize": [
+        0.54,
+        1.656,
+        1.571
+      ],
       "honesty": "real",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -605,7 +769,11 @@
       "short": "A yellow steel post with black bands, set in the floor where the walkway meets the truck route.",
       "more": "Bollards and barriers keep trucks out of places meant for people, such as walkway ends and doorways. UK guidance recommends physical barriers where people and vehicles share space.",
       "whyItMatters": "",
-      "realSize": [0.2, 1.198, 0.2],
+      "realSize": [
+        0.2,
+        1.198,
+        0.2
+      ],
       "honesty": "real",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -618,7 +786,11 @@
       "short": "A yellow steel guard bolted to the floor around the foot of a rack upright.",
       "more": "Most rack damage happens at the lower levels, where trucks turn. UK guidance says to protect uprights likely to be struck, with guards in a conspicuous colour at the ends of runs.",
       "whyItMatters": "Compare it with the bent upright in the south row.",
-      "realSize": [0.22, 0.4, 0.22],
+      "realSize": [
+        0.22,
+        0.4,
+        0.22
+      ],
       "honesty": "real",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
@@ -631,12 +803,84 @@
       "short": "A grey steel desk by the dock, with a wall clock on the wall above it.",
       "more": "This is where Grace plans the night shift and takes reports. Her desk, her shift and the paperwork are fictional.",
       "whyItMatters": "",
-      "realSize": [2.0, 0.787, 0.947],
+      "realSize": [
+        2.0,
+        0.787,
+        0.947
+      ],
       "honesty": "fictional",
       "source": "",
       "role": "explore",
       "scene": "bay-4",
       "asset": "metal_office_desk"
+    },
+    {
+      "id": "pallet-racking",
+      "name": "Pallet racking",
+      "short": "Blue upright frames and orange beams, two beam levels high, with wrapped pallets stored on the beams and the floor.",
+      "more": "Adjustable pallet racking holds loads at height. Its strength depends on the uprights staying straight and the beams staying locked in, so damage must be reported and the load limit kept. UK guidance asks for regular inspection by a competent person. The layout of these racks is fictional.",
+      "whyItMatters": "Rack hazards are judged in the assessed zone.",
+      "realSize": [
+        16.2,
+        4.9,
+        1.233
+      ],
+      "honesty": "fictional",
+      "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
+      "role": "explore",
+      "scene": "bay-4",
+      "asset": "rack-frame"
+    },
+    {
+      "id": "roof-lights",
+      "name": "Roof lights",
+      "short": "Clear panels in the roof. At night they show the dark sky, with cloud drifting over the bay.",
+      "more": "Roof lights let daylight into a deep building and save energy by day. The cloud you see moving here is illustrative: a simple drifting pattern, not a weather model.",
+      "whyItMatters": "",
+      "realSize": [
+        3.0,
+        0,
+        14.0
+      ],
+      "honesty": "fictional",
+      "source": "",
+      "role": "explore",
+      "scene": "bay-4",
+      "asset": "procedural"
+    },
+    {
+      "id": "bay-entrance",
+      "name": "Bay entrance door",
+      "short": "The personnel door into Bay 4 on the south wall, at the end of the yellow walkway, beside the PPE station.",
+      "more": "People enter the bay on foot here, away from the truck routes, and pick up their PPE on the way in. The walkway from this door keeps them inside the yellow lines.",
+      "whyItMatters": "",
+      "realSize": [
+        1.12,
+        2.15,
+        0.17
+      ],
+      "honesty": "fictional",
+      "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
+      "role": "explore",
+      "scene": "bay-4",
+      "asset": "fire-exit-door"
+    },
+    {
+      "id": "replay-truck",
+      "name": "Reach truck in the replay",
+      "short": "The reach truck that drives into the racking aisle in the near-miss replay.",
+      "more": "In the replay the driver glances at the convex mirror, which shows only the roof, and drives into the aisle as a picker steps out. The truck, the driver and the timing are fictional; no one is hurt.",
+      "whyItMatters": "Module 3: incident replay.",
+      "realSize": [
+        1.27,
+        2.486,
+        2.33
+      ],
+      "honesty": "fictional",
+      "source": "",
+      "role": "explore",
+      "scene": "replay",
+      "asset": "reach-truck"
     }
   ]
 }
