@@ -668,14 +668,14 @@
     {
       "id": "picker-replay",
       "name": "Order picker",
-      "short": "A picker on foot with a scanner, the pedestrian in the incident replay.",
+      "short": "A picker on foot with a scanner, picking orders in the racking aisle. He is the pedestrian in the incident replay.",
       "more": "In the replay he steps out of the aisle outside the marked lane, trolley first, just as a truck comes round the blind corner. He is a fictional character in a fictional near-miss; no one is hurt.",
       "whyItMatters": "Module 3: incident replay.",
       "realSize": 1.78,
       "honesty": "fictional",
       "source": "",
       "role": "explore",
-      "scene": "replay",
+      "scene": "bay-4",
       "asset": "picker-replay"
     },
     {

@@ -16,7 +16,7 @@ import * as THREE from 'three';
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { BAY, RACK, AISLE, RACK_NORTH_WALL, DOCK_DOORS, YARD_Y, WALKWAY_MAIN, WALKWAY_SOUTH, WALKWAY_STAGING, TRUCK_LANE_N, TRUCK_LANE_S, CROSS_AISLE_X, CROSSINGS, SPOTS, LIGHTS, ROOF_LIGHTS, VIEWS, BOUNDS, look } from './layout.js';
-import { initLoaders, model, instanced, batchPlacements, loadTiling, loadDecal, MANIFEST, BASE } from './assets.js';
+import { initLoaders, model, instanced, batchPlacements, loadTiling, loadDecal, loadGLB, MANIFEST, BASE } from './assets.js';
 import { floorLightMap, lightCones, dustInBeams, roofSkyMaterial, spillMesh, contactShadow } from './materials.js';
 import { Forklift, Walker, Idler } from './actors.js';
 import { createSun } from '../v3/render-chain.js';
@@ -304,8 +304,8 @@ export class Bay {
     const [frameG, beamG, loadG, tallG, palG] = await Promise.all([
       instanced('rack-frame', frames, { shadows: true }),
       instanced('rack-beam', beams, { shadows: true }),
-      instanced('pallet-wrapped', loads, { shadows: false }),
-      instanced('pallet-wrapped-tall', talls, { shadows: false }),
+      instanced('pallet-wrapped', loads, { shadows: false, simplify: 0.3 }),
+      instanced('pallet-wrapped-tall', talls, { shadows: false, simplify: 0.3 }),
       instanced('pallet', pallets, { shadows: false }),
     ]);
     // Fit the instanced models: their origin is the model's own; ground them.
@@ -384,6 +384,8 @@ export class Bay {
   }
 
   async _props() {
+    // Fetch every prop model at once (the sections below then place them as they decode).
+    for (const [k, a] of Object.entries(MANIFEST)) if (a.file && a.kind !== 'mpfb-character' && !/^(rack-|high-bay)/.test(k)) loadGLB(k).catch(() => {});
     this._hdri();
     const P = await Promise.allSettled([
       this._dock(), this._receiving(), this._charging(), this._rackHazards(), this._exit(),
@@ -802,6 +804,9 @@ export class Bay {
     fl.add(ctrls);
     this.group.add(root);
     this.forklift = new Forklift({ root, model: fl, bay: this });
+    // The truck's size for the scale check, from its own geometry before the driver boards.
+    const fs = new THREE.Box3().setFromObject(fl).getSize(new THREE.Vector3());
+    root.userData.restSize = [fs.x, fs.y, fs.z].map((v) => +v.toFixed(3));
     this.register('forklift', root, { frame: { duration: 0.6 } });
     this.register('forklift-controls', ctrls, { frame: { duration: 0.6 } });
   }
@@ -890,7 +895,7 @@ export class Bay {
     const stg = await add('associate-staging', -16, -3.9, Math.PI / 2);
     this.actors.staging = new Walker(stg, { x0: -16, x1: -0.8, z: -3.9, speed: 1.15 });
     this.register('associate-staging', stg.root);
-    const grace = await add('grace-supervisor', SPOTS.grace[0], SPOTS.grace[2], -0.5);
+    const grace = await add('grace-supervisor', SPOTS.grace[0], SPOTS.grace[2], 0.9);
     this.actors.grace = new Idler(grace, ['idle', 'talk', 'idle']);
     this.register('grace-supervisor', grace.root, { frame: { view: VIEWS.grace } });
     const drv = await character('forklift-driver');
@@ -898,13 +903,14 @@ export class Bay {
     this.forklift?.seat(drv);
     this.actors.driver = drv;
     this.register('forklift-driver', drv.root, { frame: { duration: 0.6 } });
-    // The replay's picker (shown only during the replay).
+    // The order picker works the racking aisle (and is the pedestrian in the replay,
+    // which takes him over while it is open).
     const pk = await character('picker-replay');
     pk.root.userData.restSize = MANIFEST['picker-replay'].sizeM;
-    pk.root.visible = false;
     pk.root.add(contactShadow(0.8, 0.8, 0.5));
     this.group.add(pk.root);
     this.actors.picker = pk;
+    this.pickerWalk = new Walker(pk, { x0: 6.2, x1: 17.6, z: (AISLE.z0 + AISLE.z1) / 2, speed: 0.9 });
     this.register('picker-replay', pk.root);
     // Remaining dressing: drums, a wet-floor sign, a ladder, tools, crates, a stool.
     const dress = [
@@ -983,6 +989,7 @@ export class Bay {
     M.add({ id: 'forklift-lights', layer: 'objects', label: 'accurate', objects: ['forklift'], holdWithCard: false, description: 'The forklift\'s amber beacon flashes and its blue spot shines on the floor ahead.', update: (dt, t) => this.forklift?.lights(t) });
     M.add({ id: 'walker', layer: 'agents', label: 'accurate', objects: ['associate-staging'], description: 'A staging associate walks the yellow-lined walkway.', update: (dt) => this.actors.staging?.update(dt) });
     M.add({ id: 'scanner', layer: 'agents', label: 'accurate', objects: ['associate-receiving'], description: 'A receiving associate scans inbound cartons.', update: (dt) => this.actors.receiving?.update(dt) });
+    M.add({ id: 'picker', layer: 'agents', label: 'accurate', objects: ['picker-replay'], description: 'An order picker walks the racking aisle at walking pace and scans at each end.', update: (dt) => { if (!this.replayActive) this.pickerWalk?.update(dt); } });
     M.add({ id: 'grace', layer: 'agents', label: 'accurate', objects: ['grace-supervisor'], description: 'Grace, the shift supervisor, works at her desk.', update: (dt) => this.actors.grace?.update(dt) });
     M.add({ id: 'driver', layer: 'agents', label: 'accurate', objects: ['forklift-driver'], description: 'The forklift driver steers and checks the route.', update: (dt) => this.actors.driver?.mixer.update(dt) });
     M.add({ id: 'conveyor', layer: 'objects', label: 'illustrative', objects: ['conveyor'], description: 'Parcels ride the roller conveyor from the packing bench.', update: (dt) => this._conveyor(dt) });
@@ -1040,7 +1047,7 @@ export class Bay {
     for (const c of this.group.children) {
       if (keep.has(c) || c.isLight || !c.visible) continue;
       const id = idOf(c);
-      if (id && tasks.has(id)) continue;
+      if (id && (tasks.has(id) || NO_LOD.has(id))) continue;
       new THREE.Box3().setFromObject(c).getBoundingSphere(sphere);
       if (!Number.isFinite(sphere.radius) || sphere.radius >= 1.0 || sphere.radius === 0) continue;
       this.lod.push({ obj: c, id, centre: sphere.center.clone(), r: sphere.radius });
@@ -1074,6 +1081,8 @@ export class Bay {
 }
 
 const CULL_M = 24;
+// Lit things read from across the bay (a glowing lamp or sign is never a few dim pixels).
+const NO_LOD = new Set(['high-bay-light', 'exit-sign', 'dock-signal']);
 const idOf = (o) => { let id = null; o.traverse((c) => { id ||= c.userData?.objectId || null; }); return id; };
 
 /** Slow failing-light pattern: mostly on, short dips to 35%, never more than two a second. */

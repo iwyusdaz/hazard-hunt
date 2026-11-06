@@ -181,6 +181,15 @@ export async function model(key, o = {}) {
     new THREE.Box3().setFromObject(n).getCenter(a.position).applyMatrix4(inv);
     root.add(a);
   }
+  // Far copies (racked loads): fewer triangles, same silhouette (meshoptimizer edge collapse).
+  if (o.simplify) {
+    const { SimplifyModifier } = await import('three/addons/modifiers/SimplifyModifier.js');
+    const sm = new SimplifyModifier();
+    for (const m of root.children) if (m.isMesh && m.geometry.index && m.geometry.index.count > 600) {
+      const n = m.geometry.attributes.position.count;
+      m.geometry = await sm.modify(m.geometry, Math.floor(n * (1 - o.simplify)));
+    }
+  }
   const cast = o.shadows !== false, receive = o.receive !== false;
   root.traverse((m) => { if (m.isMesh) { m.castShadow = cast; m.receiveShadow = receive; } });
   return root;

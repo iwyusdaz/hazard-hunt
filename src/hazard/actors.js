@@ -131,6 +131,15 @@ export class Walker {
     this.root.position.set(x0, 0, z);
     this.root.rotation.y = Math.PI / 2;
   }
+  /** Back to walking from wherever another system left the figure (the replay). */
+  resume() {
+    this.c.mixer.stopAllAction();
+    this.root.position.z = this.z;
+    this.root.position.x = Math.min(this.x1, Math.max(this.x0, this.root.position.x));
+    this.dir = 1; this.pause = 0;
+    this.root.rotation.y = Math.PI / 2;
+    this.walk.reset().play();
+  }
   update(dt) {
     if (this.pause > 0) {
       this.pause -= dt;

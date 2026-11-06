@@ -22,7 +22,7 @@ import cinematic from '../content/cinematics.json';
 import { Lessons } from './hazard/lessons.js';
 import { Bay } from './hazard/bay.js';
 import { Replay } from './hazard/replay.js';
-import { VIEWS } from './hazard/layout.js';
+import { VIEWS, look } from './hazard/layout.js';
 
 const SLUG = window.__SLUG__ || 'hazard-hunt';
 window.__SLUG__ = SLUG;
@@ -52,11 +52,13 @@ const app = await createSceneApp({
     // Props and people stream after the learner's first interaction (plan §7 download gate).
     const first = () => {
       bay.loadProps().then(() => bay.loadPeople()).then(() => bay.ensureReplayActors()).then(() => { bay.buildLod(); a.shell.root.dataset.bayReady = 'ready'; lessons.refresh(); });
-      for (const ev of ['pointerdown', 'keydown']) window.removeEventListener(ev, first, true);
+      for (const ev of FIRST) window.removeEventListener(ev, first, true);
     };
-    for (const ev of ['pointerdown', 'keydown']) window.addEventListener(ev, first, true);
+    // click too: a screen reader's activation can send a click with no key or pointer event.
+    const FIRST = ['pointerdown', 'keydown', 'click'];
+    for (const ev of FIRST) window.addEventListener(ev, first, true);
     return { ...shell, legend: lessons.legend(), update: (dt) => { bay.update(dt); rp.update(dt); } };
   },
 });
-if (__TEST_HOOKS__ && window.__TEST__) Object.assign(window.__TEST__, { lessons, bay: app.bay });
+if (__TEST_HOOKS__ && window.__TEST__) Object.assign(window.__TEST__, { lessons, bay: app.bay, views: VIEWS, look });
 window.__app = app;

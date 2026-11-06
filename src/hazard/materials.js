@@ -87,7 +87,8 @@ export function lightCones() {
   }
   const geo = mergeSimple(geos);
   const mat = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    // Front faces only: one layer of additive overdraw per cone (GPU budget).
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.FrontSide,
     uniforms: { uFlicker: { value: 1 }, uStrength: { value: 0.035 } },
     vertexShader: /* glsl */`
       attribute float failing;

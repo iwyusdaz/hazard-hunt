@@ -61,11 +61,14 @@ export class Replay {
   }
 
   close() {
+    if (!this.active) return;
     this.active = false;
     this.playing = false;
     const b = this.bay;
     if (b.replayTruck) b.replayTruck.visible = false;
-    if (b.actors.picker) b.actors.picker.root.visible = false;
+    b.replayActive = false;
+    if (b.actors.picker) b.actors.picker.root.visible = true;
+    b.pickerWalk?.resume();
     for (const c of b.replayCartons || []) c.visible = false;
     if (b.forklift) b.forklift.root.visible = true;
   }
@@ -77,6 +80,7 @@ export class Replay {
     const b = this.bay;
     if (b.replayTruck) b.replayTruck.visible = true;
     if (b.actors.picker) b.actors.picker.root.visible = true;
+    b.replayActive = true;
     for (const c of b.replayCartons || []) c.visible = true;
     // The ambient forklift leaves the floor while the replay runs (one truck story at a time).
     if (b.forklift) b.forklift.root.visible = false;

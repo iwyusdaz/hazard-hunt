@@ -117,8 +117,15 @@ export const VIEWS = {
   assessed: look([-0.5, 4.6, 12.2], [12, 1.2, 4.2]),
   staging: look([-1.2, 3.2, 4.6], [-12.5, 0.8, 12]),
   safetyWall: look([-5.5, 1.9, 8.8], [-5.2, 1.2, 15.6]),
-  grace: look([1.6, 1.9, -8.4], [6.2, 1.1, -14.0]),
+  // Grace at her desk, the working floor and the dock behind her.
+  grace: look([9.4, 1.75, -10.6], [5.0, 1.2, -13.0]),
   replay: look([-1.6, 2.4, 9.4], [8.5, 1.1, 3.6]),
+  // Close views a learner walks to (ui-audit exploration states).
+  dockClose: look([-7.0, 1.7, -10.6], [-8.6, 1.0, -15.4]),
+  chargingClose: look([-19.4, 1.6, 0.9], [-23.4, 0.7, 0.6]),
+  receiving: look([-11.0, 2.0, -7.6], [-15.4, 0.6, -11.6]),
+  benchClose: look([16.0, 1.8, 13.6], [18.4, 0.9, 11.0]),
+  exitClose: look([18.6, 1.8, 6.4], [23.6, 1.3, 4.0]),
 };
 
 export const BOUNDS = [BAY.minX + 1, BAY.maxX - 1, BAY.minZ + 1, BAY.maxZ - 1];
