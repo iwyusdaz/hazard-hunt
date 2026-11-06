@@ -23,8 +23,11 @@ export function visibleLabels(page) {
 export function pointOn(page, id) {
   return page.evaluate((oid) => {
     const T = window.__TEST__;
-    const s = T.inspect._screenBox(T.inspect.items.get(oid));
-    if (!s) return null;
+    const b = T.inspect._screenBox(T.inspect.items.get(oid));
+    if (!b) return null;
+    // Sample only the on-screen part of the box (a racking run seen down the aisle spans far past the screen).
+    const s = { left: Math.max(0, b.left), top: Math.max(0, b.top), right: Math.min(innerWidth, b.right), bottom: Math.min(innerHeight, b.bottom) };
+    if (s.right <= s.left || s.bottom <= s.top) return null;
     for (let gy = 2; gy < 10; gy++) for (let gx = 2; gx < 9; gx++) {
       const x = s.left + ((s.right - s.left) * gx) / 10, y = s.top + ((s.bottom - s.top) * gy) / 10;
       if (document.elementFromPoint(x, y)?.id !== 'app') continue;
