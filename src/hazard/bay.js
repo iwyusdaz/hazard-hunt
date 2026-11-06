@@ -342,7 +342,7 @@ export class Bay {
     const plain = LIGHTS.filter((l) => !l.failing);
     this.fixtureGroup = await instanced('high-bay-light', plain.map((l) => matAt(l.x, l.y, l.z)), { shadows: false });
     this._groundInstances(this.fixtureGroup);
-    this.group.add(this.fixtureGroup);
+    // Added after the failing fixture (below), so the scale and reach checks find that one first.
     this.cardFixtures = [];
     for (const l of LIGHTS) {
       if (!l.failing) continue;
@@ -355,6 +355,7 @@ export class Bay {
         f.traverse((m) => { if (m.isMesh && /diffuser|emitter/i.test(m.name + (m.material?.name || ''))) { m.material = m.material.clone(); this.failingMat = m.material; } });
       }
     }
+    this.group.add(this.fixtureGroup);
     // Every diffuser glows.
     const glow = (m) => { if (m.isMesh && /diffuser|emitter/i.test(m.name + (m.material?.name || ''))) { m.material.emissive?.set(0xfff4e0); if (m.material.emissiveIntensity !== undefined) m.material.emissiveIntensity = Math.max(2.2, m.material.emissiveIntensity); } };
     this.fixtureGroup.traverse(glow);
@@ -371,9 +372,25 @@ export class Bay {
     // One fixture's size for the scale check (the instanced set's box spans the whole grid).
     const one = new THREE.Box3().setFromObject(this.cardFixtures[0]).getSize(new THREE.Vector3());
     this.fixtureGroup.userData.restSize = [one.x, one.y, one.z].map((v) => +v.toFixed(3));
+    for (const f of this.cardFixtures) f.userData.restSize = this.fixtureGroup.userData.restSize;
+    // A lamp 8.6 m up is a small target: an invisible 0.9 m sphere round each one takes the click.
+    const proxyMat = new THREE.MeshBasicMaterial({ visible: false });
+    const proxies = new THREE.InstancedMesh(new THREE.SphereGeometry(0.45, 8, 6), proxyMat, LIGHTS.length - 1);
+    LIGHTS.filter((l) => !l.failing).forEach((l, i) => proxies.setMatrixAt(i, matAt(l.x, l.y + 0.15, l.z)));
+    proxies.computeBoundingSphere();
+    proxies.userData.noOutline = true;
+    this.fixtureGroup.add(proxies);
+    for (const f of this.cardFixtures) {
+      const p = new THREE.Mesh(new THREE.SphereGeometry(0.45, 8, 6), proxyMat);
+      f.updateMatrixWorld(true);
+      new THREE.Box3().setFromObject(f).getCenter(p.position);
+      f.worldToLocal(p.position);
+      p.userData.noOutline = true;
+      f.add(p);
+    }
     const fl = LIGHTS.find((l) => l.failing);
     // Any fixture's card frames the failing one over the far aisle (the card is about it).
-    this.register('high-bay-light', [this.fixtureGroup, ...this.cardFixtures], { frame: { view: { eye: [fl.x - 3.2, 5.6, fl.z + 2.6], center: [fl.x, fl.y - 0.15, fl.z], fov: 24 } } });
+    this.register('high-bay-light', [...this.cardFixtures, this.fixtureGroup], { frame: { view: { eye: [fl.x - 3.2, 5.6, fl.z + 2.6], center: [fl.x, fl.y - 0.15, fl.z], fov: 24 } } });
     this.register('roof-lights', this.roofLights, { frame: { view: look([-11.5, 1.7, 8.5], [-11.5, 10, -3]) } });
   }
 

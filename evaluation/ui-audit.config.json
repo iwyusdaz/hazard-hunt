@@ -1,42 +1,222 @@
 {
-  "_note": "Hazard Hunt v3 (plan 10 §6.4). Module states m1-m5 come from the stepper. Extra states: close views a learner walks to (catalog reach for small objects), the replay playing (the picker and the replay truck exist only then), and the drawers opened from Now-card buttons (judge form, areas list, causes chart, controls ranking, speak-up). Props and people stream after the first interaction (the module click), so the first exploration state waits for them.",
+  "_note": "Hazard Hunt v3 (plan 10 \u00a76.4). Module states m1-m5 come from the stepper. Extra states: close views a learner walks to (catalog reach for small objects), the replay playing (the picker and the replay truck exist only then), and the drawers opened from Now-card buttons (judge form, areas list, causes chart, controls ranking, speak-up). Props and people stream after the first interaction (the module click), so the first exploration state waits for them.",
   "settleMs": 3500,
   "extraStates": [
-    { "name": "walk-receiving", "label": "Walk to the receiving dock", "steps": [
-      { "eval": "document.querySelectorAll('[data-ui=module-step]')[1].click()" }, { "wait": 2500 },
-      { "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.receiving, 0.05)" }, { "wait": 3000 } ] },
-    { "name": "walk-dock", "label": "Walk to dock door 2", "steps": [
-      { "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.dockClose, 0.05)" }, { "wait": 3000 } ] },
-    { "name": "walk-charging", "label": "Walk to the charging area", "steps": [
-      { "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.chargingClose, 0.05)" }, { "wait": 3000 } ] },
-    { "name": "walk-bench", "label": "Walk to the packing bench", "steps": [
-      { "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.benchClose, 0.05)" }, { "wait": 3000 } ] },
-    { "name": "walk-exit", "label": "Walk to the east fire exit", "steps": [
-      { "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.exitClose, 0.05)" }, { "wait": 3000 } ] },
-    { "name": "walk-safety-wall", "label": "Walk to the safety wall by the entrance", "steps": [
-      { "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.safetyWall, 0.05)" }, { "wait": 3000 } ] },
-    { "name": "walk-staging", "label": "Look over the staging lane", "steps": [
-      { "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.staging, 0.05)" }, { "wait": 3000 } ] },
-    { "name": "m2-areas", "label": "Module 2: the areas list drawer", "steps": [
-      { "eval": "document.querySelectorAll('[data-ui=module-step]')[1].click()" }, { "wait": 2500 },
-      { "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'List the areas').click()" }, { "wait": 1500 } ] },
-    { "name": "m2-judge", "label": "Module 2: the judge form for the spill", "steps": [
-      { "eval": "window.__TEST__.shell.closeDrawer(); window.__TEST__.inspect.open('hazard-spill')" }, { "wait": 2000 },
-      { "eval": "[...document.querySelectorAll('[data-ui=info-card] button')].find((b) => b.textContent.trim() === 'Judge this area').click()" }, { "wait": 1500 } ] },
-    { "name": "m3-replay", "label": "Module 3: the replay playing (segment 2)", "steps": [
-      { "eval": "window.__TEST__.shell.closeDrawer(); document.querySelectorAll('[data-ui=module-step]')[2].click()" }, { "wait": 2500 },
-      { "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'Start the replay').click()" }, { "wait": 2000 },
-      { "eval": "window.__TEST__.lessons.replay.load(1); window.__TEST__.lessons.replay.play(); window.__TEST__.lessons.refresh()" }, { "wait": 2500 } ] },
-    { "name": "m3-causes", "label": "Module 3: the causes chart drawer", "steps": [
-      { "eval": "window.__TEST__.lessons.replay.close(); window.__TEST__.lessons.goStep(2, 2)" }, { "wait": 1500 },
-      { "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'Open the causes chart').click()" }, { "wait": 1500 } ] },
-    { "name": "m4-rank", "label": "Module 4: the controls ranking drawer", "steps": [
-      { "eval": "window.__TEST__.shell.closeDrawer(); document.querySelectorAll('[data-ui=module-step]')[3].click()" }, { "wait": 2500 },
-      { "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'Rank the controls').click()" }, { "wait": 1500 } ] },
-    { "name": "m5-speak", "label": "Module 5: talking to Grace", "steps": [
-      { "eval": "window.__TEST__.shell.closeDrawer(); document.querySelectorAll('[data-ui=module-step]')[4].click()" }, { "wait": 2500 },
-      { "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'Talk to Grace').click()" }, { "wait": 1500 } ] },
-    { "name": "m5-transfer", "label": "Module 5: the transfer hunt in the staging lane", "steps": [
-      { "eval": "window.__TEST__.shell.closeDrawer(); window.__TEST__.lessons.goStep(4, 1)" }, { "wait": 3000 } ] }
+    {
+      "name": "walk-receiving",
+      "label": "Walk to the receiving dock",
+      "steps": [
+        {
+          "eval": "document.querySelectorAll('[data-ui=module-step]')[1].click()"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.receiving, 0.05)"
+        },
+        {
+          "wait": 3000
+        }
+      ]
+    },
+    {
+      "name": "walk-dock",
+      "label": "Walk to dock door 2",
+      "steps": [
+        {
+          "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.dockClose, 0.05)"
+        },
+        {
+          "wait": 3000
+        }
+      ]
+    },
+    {
+      "name": "walk-charging",
+      "label": "Walk to the charging area",
+      "steps": [
+        {
+          "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.chargingClose, 0.05)"
+        },
+        {
+          "wait": 3000
+        }
+      ]
+    },
+    {
+      "name": "walk-bench",
+      "label": "Walk to the packing bench",
+      "steps": [
+        {
+          "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.benchClose, 0.05)"
+        },
+        {
+          "wait": 3000
+        }
+      ]
+    },
+    {
+      "name": "walk-exit",
+      "label": "Walk to the east fire exit",
+      "steps": [
+        {
+          "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.exitClose, 0.05)"
+        },
+        {
+          "wait": 3000
+        }
+      ]
+    },
+    {
+      "name": "walk-safety-wall",
+      "label": "Walk to the safety wall by the entrance",
+      "steps": [
+        {
+          "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.safetyWall, 0.05)"
+        },
+        {
+          "wait": 3000
+        }
+      ]
+    },
+    {
+      "name": "walk-staging",
+      "label": "Look over the staging lane",
+      "steps": [
+        {
+          "eval": "window.__TEST__.rig.flyTo(window.__TEST__.views.staging, 0.05)"
+        },
+        {
+          "wait": 3000
+        }
+      ]
+    },
+    {
+      "name": "m2-areas",
+      "label": "Module 2: the areas list drawer",
+      "steps": [
+        {
+          "eval": "document.querySelectorAll('[data-ui=module-step]')[1].click()"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'List the areas').click()"
+        },
+        {
+          "wait": 1500
+        }
+      ]
+    },
+    {
+      "name": "m2-judge",
+      "label": "Module 2: the judge form for the spill",
+      "steps": [
+        {
+          "eval": "window.__TEST__.shell.closeDrawer(); window.__TEST__.inspect.open('hazard-spill')"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "eval": "[...document.querySelectorAll('[data-ui=info-card] button')].find((b) => b.textContent.trim() === 'Judge this area').click()"
+        },
+        {
+          "wait": 1500
+        }
+      ]
+    },
+    {
+      "name": "m3-replay",
+      "label": "Module 3: the replay playing (segment 2)",
+      "steps": [
+        {
+          "eval": "window.__TEST__.shell.closeDrawer(); document.querySelectorAll('[data-ui=module-step]')[2].click()"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'Start the replay').click()"
+        },
+        {
+          "wait": 2000
+        },
+        {
+          "eval": "window.__TEST__.lessons.replay.load(1); window.__TEST__.lessons.replay.play(); window.__TEST__.lessons.refresh()"
+        },
+        {
+          "wait": 2500
+        }
+      ]
+    },
+    {
+      "name": "m3-causes",
+      "label": "Module 3: the causes chart drawer",
+      "steps": [
+        {
+          "eval": "window.__TEST__.lessons.replay.close(); window.__TEST__.lessons.goStep(2, 2)"
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'Open the causes chart').click()"
+        },
+        {
+          "wait": 1500
+        }
+      ]
+    },
+    {
+      "name": "m4-rank",
+      "label": "Module 4: the controls ranking drawer",
+      "steps": [
+        {
+          "eval": "window.__TEST__.shell.closeDrawer(); document.querySelectorAll('[data-ui=module-step]')[3].click()"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'Rank the controls').click()"
+        },
+        {
+          "wait": 1500
+        }
+      ]
+    },
+    {
+      "name": "m5-speak",
+      "label": "Module 5: talking to Grace",
+      "steps": [
+        {
+          "eval": "window.__TEST__.shell.closeDrawer(); document.querySelectorAll('[data-ui=module-step]')[4].click()"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'Talk to Grace').click()"
+        },
+        {
+          "wait": 1500
+        }
+      ]
+    },
+    {
+      "name": "m5-transfer",
+      "label": "Module 5: the transfer hunt in the staging lane",
+      "steps": [
+        {
+          "eval": "window.__TEST__.shell.closeDrawer(); window.__TEST__.lessons.goStep(4, 1)"
+        },
+        {
+          "wait": 3000
+        }
+      ]
+    }
   ]
 }
