@@ -188,7 +188,7 @@ export function roofSkyMaterial() {
   });
 }
 
-/** The glossy spill: an irregular patch, darker and wetter than the floor. */
+/** The glossy spill: an irregular, half-transparent wet film; the floor shows through it (a solid dark patch read as a hole). */
 export function spillMesh(w = 2.0, d = 1.5, seed = 3) {
   let s = seed;
   const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
@@ -208,7 +208,7 @@ export function spillMesh(w = 2.0, d = 1.5, seed = 3) {
   geo.computeBoundingBox();
   const c = geo.boundingBox.getCenter(new THREE.Vector3());
   geo.translate(-c.x, 0, -c.z);
-  const mat = new THREE.MeshPhysicalMaterial({ color: 0x0c0b09, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.04, transparent: true, opacity: 0.88, envMapIntensity: 1.4 });
+  const mat = new THREE.MeshPhysicalMaterial({ color: 0x1c1a16, roughness: 0.05, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.45, envMapIntensity: 1.6 });
   mat.userData.surfaceDetail = true; // a liquid film: glossy by nature, it has no texture
   const m = new THREE.Mesh(geo, mat);
   m.position.y = 0.006;

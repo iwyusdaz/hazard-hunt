@@ -211,7 +211,7 @@ export class Lessons {
           primary: id === 'm2-practice'
             ? { label: 'Go to Part B', disabled: n < all, onClick: () => this.goStep(1, 1) }
             : { label: 'Finish the hunt', disabled: n < all, onClick: () => this.goStep(1, 2) },
-          secondary: { label: 'List the areas', onClick: () => this.openAreas(zone) },
+          secondary: { label: 'List the areas to judge', onClick: () => this.openAreas(zone) },
         };
       }
       case 'm2-done': {
@@ -267,7 +267,7 @@ export class Lessons {
           action: `A new area, no hints. Find the ${all} areas to judge. ${click} one, then press Judge this area.`,
           result: `${n} of ${all} judged.`,
           primary: { label: 'Next step', disabled: n < all, onClick: () => this.goStep(4, 2) },
-          secondary: { label: 'List the areas', onClick: () => this.openAreas(zone) },
+          secondary: { label: 'List the areas to judge', onClick: () => this.openAreas(zone) },
         };
       }
       case 'm5-reflect': return {

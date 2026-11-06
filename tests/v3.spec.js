@@ -107,7 +107,7 @@ test('keyboard only: all five modules to the course summary (reduced motion)', a
   // Module 2: judge every area in both parts from the areas list.
   const judgeAll = async () => {
     for (;;) {
-      await kb(page, nowBtn(page, /^List the areas$/));
+      await kb(page, nowBtn(page, /^List the areas to judge$/));
       const next = drawer(page).locator('[data-area-id]').filter({ hasNotText: '✓' }).first();
       if (!(await next.count())) { await page.keyboard.press('Escape'); return; }
       await kb(page, next);

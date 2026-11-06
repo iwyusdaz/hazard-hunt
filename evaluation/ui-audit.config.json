@@ -103,7 +103,7 @@
           "wait": 2500
         },
         {
-          "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'List the areas').click()"
+          "eval": "[...document.querySelectorAll('[data-ui=now-card] button')].find((b) => b.textContent.trim() === 'List the areas to judge').click()"
         },
         {
           "wait": 1500
