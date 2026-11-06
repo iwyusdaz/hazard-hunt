@@ -407,7 +407,8 @@ export class Bay {
     this.dockDoors = []; this.signals = []; this.restraints = []; this.levellers = [];
     this.trailers = [];
     for (const d of DOCK_DOORS) {
-      const door = await model('dock-door', { keep: ['curtain'], shadows: false });
+      // Open doors are static, their curtain rolled up inside the head box; only door 3 moves.
+      const door = await model('dock-door', d.open ? { drop: ['curtain'], shadows: false } : { keep: ['curtain'], shadows: false });
       mountOnWall(door, 'N', d.x, 0, -0.02);
       door.userData.dock = d.n;
       const curtain = door.getObjectByName('curtain');
@@ -702,12 +703,26 @@ export class Bay {
     this.group.add(es);
     this.register('conveyor-estop', es);
     // Parcels riding the conveyor (motion system "conveyor").
-    this.parcels = [];
-    for (let i = 0; i < 6; i++) {
-      const p = await model('carton-400', { shadows: false });
-      this.group.add(p);
-      this.parcels.push({ obj: p, s: i * 2.0 });
+    // Six parcels as one instanced set (one draw per material), moved every frame.
+    const proto = await model('carton-400', { shadows: false });
+    proto.updateMatrixWorld(true);
+    const pb = new THREE.Box3().setFromObject(proto);
+    this.parcelBase = new THREE.Matrix4().makeTranslation(-(pb.min.x + pb.max.x) / 2, -pb.min.y, -(pb.min.z + pb.max.z) / 2);
+    this.parcelMeshes = [];
+    const pg = new THREE.Group();
+    pg.name = 'parcels';
+    for (const m of proto.children) {
+      if (!m.isMesh) continue;
+      const im = new THREE.InstancedMesh(m.geometry, m.material, 6);
+      im.frustumCulled = false;
+      im.raycast = NO_RAY;
+      im.userData.local = m.matrix.clone();
+      pg.add(im);
+      this.parcelMeshes.push(im);
     }
+    this.group.add(pg);
+    this.parcels = Array.from({ length: 6 }, (_, i) => ({ s: i * 2.0 }));
+    this._conveyor(0);
   }
 
   async _staging() {
@@ -890,7 +905,8 @@ export class Bay {
       return c;
     };
     const rec = await add('associate-receiving', SPOTS.receivingWorker[0], SPOTS.receivingWorker[2], Math.PI * 0.9);
-    this.actors.receiving = new Idler(rec, ['scan', 'scan', 'idle']);
+    // Walks between the trailer side and the inbound pallets, scanning at each end (clear of the spill).
+    this.actors.receiving = new Walker(rec, { x0: -16.4, x1: -11.8, z: -9.9, speed: 1.0 });
     this.register('associate-receiving', rec.root);
     const stg = await add('associate-staging', -16, -3.9, Math.PI / 2);
     this.actors.staging = new Walker(stg, { x0: -16, x1: -0.8, z: -3.9, speed: 1.15 });
@@ -988,7 +1004,7 @@ export class Bay {
     M.add({ id: 'forklift-route', layer: 'agents', label: 'accurate', objects: ['forklift', 'forklift-driver', 'forklift-controls'], description: 'A counterbalance forklift drives its route at walking pace and stops at the dock lane.', update: (dt) => this.forklift?.update(dt) });
     M.add({ id: 'forklift-lights', layer: 'objects', label: 'accurate', objects: ['forklift'], holdWithCard: false, description: 'The forklift\'s amber beacon flashes and its blue spot shines on the floor ahead.', update: (dt, t) => this.forklift?.lights(t) });
     M.add({ id: 'walker', layer: 'agents', label: 'accurate', objects: ['associate-staging'], description: 'A staging associate walks the yellow-lined walkway.', update: (dt) => this.actors.staging?.update(dt) });
-    M.add({ id: 'scanner', layer: 'agents', label: 'accurate', objects: ['associate-receiving'], description: 'A receiving associate scans inbound cartons.', update: (dt) => this.actors.receiving?.update(dt) });
+    M.add({ id: 'scanner', layer: 'agents', label: 'accurate', objects: ['associate-receiving'], description: 'A receiving associate walks between the inbound pallets and scans them.', update: (dt) => this.actors.receiving?.update(dt) });
     M.add({ id: 'picker', layer: 'agents', label: 'accurate', objects: ['picker-replay'], description: 'An order picker walks the racking aisle at walking pace and scans at each end.', update: (dt) => { if (!this.replayActive) this.pickerWalk?.update(dt); } });
     M.add({ id: 'grace', layer: 'agents', label: 'accurate', objects: ['grace-supervisor'], description: 'Grace, the shift supervisor, works at her desk.', update: (dt) => this.actors.grace?.update(dt) });
     M.add({ id: 'driver', layer: 'agents', label: 'accurate', objects: ['forklift-driver'], description: 'The forklift driver steers and checks the route.', update: (dt) => this.actors.driver?.mixer.update(dt) });
@@ -1007,8 +1023,9 @@ export class Bay {
       // Parcels shrink in at the bench end and out at the far end (the loop is illustrative).
       const e = Math.min(1, p.s / 0.4, (len - 0.6 - p.s) / 0.4);
       const k = Math.max(0.02, e);
-      p.obj.scale.setScalar(k);
-      placeOnFloorFast(p.obj, x, c.z, top);
+      _pm.makeScale(k, k, k).setPosition(x, top, c.z).multiply(this.parcelBase);
+      const i = this.parcels.indexOf(p);
+      for (const im of this.parcelMeshes) { _pm2.multiplyMatrices(_pm, im.userData.local); im.setMatrixAt(i, _pm2); im.instanceMatrix.needsUpdate = true; }
     }
   }
 
@@ -1016,9 +1033,9 @@ export class Bay {
     const d = this.dockDoors?.[2];
     const cur = d?.getObjectByName('curtain');
     if (!cur?.userData.setOpen) return;
-    const T = 52, u = t % T;
-    // closed 18 s, opens over 7 s, open 20 s, closes over 7 s
-    const k = u < 18 ? 0 : u < 25 ? (u - 18) / 7 : u < 45 ? 1 : 1 - (u - 45) / 7;
+    const T = 32, u = t % T;
+    // closed 8 s, opens over 7 s, open 10 s, closes over 7 s (timing illustrative)
+    const k = u < 8 ? 0 : u < 15 ? (u - 8) / 7 : u < 25 ? 1 : 1 - (u - 25) / 7;
     cur.userData.setOpen(k * k * (3 - 2 * k));
   }
 
@@ -1040,8 +1057,9 @@ export class Bay {
    * stays drawn. Characters drop their brows and lashes beyond 10 m.
    */
   buildLod() {
+    for (const l of this.lod || []) l.obj.visible = true; // rebuilds start from what the scene shows
     const tasks = new Set(this.app.catalog.objects.filter((o) => o.role === 'task').map((o) => o.id));
-    const keep = new Set([this.forklift?.root, this.replayTruck, ...(this.replayCartons || []), ...(this.parcels || []).map((p) => p.obj), ...Object.values(this.actors).map((a) => a?.root)].filter(Boolean));
+    const keep = new Set([this.forklift?.root, this.replayTruck, ...(this.replayCartons || []), this.group.getObjectByName('parcels'), ...Object.values(this.actors).map((a) => a?.root)].filter(Boolean));
     const sphere = new THREE.Sphere();
     this.lod = [];
     for (const c of this.group.children) {
@@ -1112,6 +1130,7 @@ export function mergeMeshes(list, name) {
 }
 
 function localTop(obj) { obj.updateMatrixWorld(true); return new THREE.Box3().setFromObject(obj).max.y; }
+const _pm = new THREE.Matrix4(), _pm2 = new THREE.Matrix4();
 const _pb = new THREE.Box3();
 /** Ground a small moving object (box computed once at scale 1). */
 function placeOnFloorFast(obj, x, z, y) {

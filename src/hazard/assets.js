@@ -95,7 +95,8 @@ export function loadKTX2(file, { srgb = true, repeat = false } = {}) {
 export function loadDecal(id) {
   const a = MANIFEST[`decal:${id}`];
   if (!a) return Promise.reject(new Error(`decal ${id} not in the manifest`));
-  return loadKTX2(a.file, { srgb: !/normal/.test(id) });
+  // Decal KTX2 files are stored top row first; three's planes put v = 0 at the bottom (KTX2 cannot be flipped on upload).
+  return loadKTX2(a.file, { srgb: !/normal/.test(id) }).then((t) => { const c = t.clone(); c.repeat.set(1, -1); c.offset.set(0, 1); c.needsUpdate = true; return c; });
 }
 
 /** A Poly Haven tiling set ('tex:<id>') as { map, normalMap, armMap }. */
@@ -145,8 +146,9 @@ export async function model(key, o = {}) {
       if (flat) { bakeColour(geo, mat.color); mat = flatMaterial(mat); }
       pushMat(byMat, mat, geo);
     };
+    const drop = (o.drop || []).map((n) => src.getObjectByName(n)).filter(Boolean);
     src.traverse((m) => {
-      if (!m.isMesh || kept.some((k) => k === m || isAncestor(k, m))) return;
+      if (!m.isMesh || kept.some((k) => k === m || isAncestor(k, m)) || drop.some((d) => d === m || isAncestor(d, m))) return;
       const geo = normaliseAttrs(m.geometry).applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld));
       const mats = Array.isArray(m.material) ? m.material : [m.material];
       if (mats.length > 1) {

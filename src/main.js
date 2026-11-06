@@ -51,7 +51,7 @@ const app = await createSceneApp({
     a.lessons = lessons;
     // Props and people stream after the learner's first interaction (plan §7 download gate).
     const first = () => {
-      bay.loadProps().then(() => bay.loadPeople()).then(() => bay.ensureReplayActors()).then(() => { bay.buildLod(); a.shell.root.dataset.bayReady = 'ready'; lessons.refresh(); });
+      bay.loadProps().then(() => { bay.buildLod(); return bay.loadPeople(); }).then(() => bay.ensureReplayActors()).then(() => { bay.buildLod(); a.shell.root.dataset.bayReady = 'ready'; lessons.refresh(); });
       for (const ev of FIRST) window.removeEventListener(ev, first, true);
     };
     // click too: a screen reader's activation can send a click with no key or pointer event.

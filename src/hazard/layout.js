@@ -114,7 +114,8 @@ export const VIEWS = {
   aisleWest: look([-1.2, 2.3, 6.8], [9, 1.6, 3.4]),
   aisleEast: look([22, 2.4, 9.2], [13.5, 1.8, 3.8]),
   packing: look([13.4, 2.4, 15.2], [18.2, 0.9, 11.4]),
-  assessed: look([-0.5, 4.6, 12.2], [12, 1.2, 4.2]),
+  // Down the racking aisle from its west end (a view across the rows would sit inside the racks).
+  assessed: look([0.5, 3.2, 5.6], [12, 1.2, 4.4]),
   staging: look([-1.2, 3.2, 4.6], [-12.5, 0.8, 12]),
   safetyWall: look([-5.5, 1.9, 8.8], [-5.2, 1.2, 15.6]),
   // Grace at her desk, the working floor and the dock behind her.
