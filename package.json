@@ -9,14 +9,16 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/sync-content.mjs && node scripts/build-attribution.mjs && vite build",
-    "poster": "node scripts/render-poster.mjs dock",
-    "validate:showcase": "node scripts/validate-showcase.mjs 2.0.1",
+    "build": "node scripts/build-attribution.mjs && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:subpath": "playwright test tests/sub-path.spec.js",
-    "check:a11y": "playwright test tests/a11y.spec.js"
+    "test:subpath": "npm run build && SLUG=hazard-hunt playwright test tests/sub-path.spec.js",
+    "check:a11y": "playwright test tests/a11y.spec.js",
+    "poster": "node scripts/render-poster.mjs dock",
+    "validate:showcase": "node scripts/validate-showcase.mjs 2.0.1",
+    "make:lut": "node scripts/make-lut.mjs bay4-night",
+    "check:assets": "node scripts/check-assets.mjs"
   },
   "dependencies": {
     "n8ao": "2.0.1",
