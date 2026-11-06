@@ -229,9 +229,9 @@
       "more": "The blade on this side is behind a fixed guard. A machine that looks dangerous but is properly guarded is a controlled condition. Checking both sides of a machine is part of a good inspection.",
       "whyItMatters": "Assessed zone: controlled condition, not a hazard.",
       "realSize": [
-        0.6,
-        0.33,
-        0.705
+        0.339,
+        0.14,
+        0.008
       ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.212",
@@ -280,9 +280,9 @@
       "more": "The cart blocks the door, and the eyewash station has one bottle missing and the other nearly empty. Emergency equipment that is unreachable or unmaintained fails when it is needed. Where corrosive splashes are possible, US rules require quick-flushing facilities ready for immediate use. Clear the door and restock the station, then add both to the daily checks.",
       "whyItMatters": "Transfer zone hazard (no hints).",
       "realSize": [
-        1.5,
-        2.0,
-        1.0
+        1.709,
+        2.15,
+        2.146
       ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.151",
@@ -820,16 +820,13 @@
       "short": "Blue upright frames and orange beams, two beam levels high, with wrapped pallets stored on the beams and the floor.",
       "more": "Adjustable pallet racking holds loads at height. Its strength depends on the uprights staying straight and the beams staying locked in, so damage must be reported and the load limit kept. UK guidance asks for regular inspection by a competent person. The layout of these racks is fictional.",
       "whyItMatters": "Rack hazards are judged in the assessed zone.",
-      "realSize": [
-        16.2,
-        4.9,
-        1.233
-      ],
+      "realSize": null,
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "explore",
       "scene": "bay-4",
-      "asset": "rack-frame"
+      "asset": "rack-frame",
+      "realSizeNote": "Three racking runs (two aisle rows and the north-wall row) drawn as one set, so one box cannot be checked against one rack. Each frame is 6 m tall and 1.124 m deep, each bay 2.7 m wide; the unit test checks the frame and beam models against their real sizes."
     },
     {
       "id": "roof-lights",

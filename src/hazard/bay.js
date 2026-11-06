@@ -575,7 +575,7 @@ export class Bay {
     const rt = await model('reach-truck', { shadows: false });
     placeOnFloor(rt, SPOTS.reachTruck[0], SPOTS.reachTruck[2], Math.PI / 2);
     this.group.add(rt);
-    rt.add(contactShadow(1.9, 2.8, 0.5).translateY(0));
+    rt.add(contactShadow(1.2, 2.2, 0.5));
     this.register('neutral-parked-truck', rt);
     this.colliders.push(new THREE.Box3().setFromObject(rt));
     // Eyewash station on the wall (full, sealed).
@@ -944,7 +944,8 @@ export class Bay {
       placeOnFloor(m, 0, 0, 0);
       const tr = new THREE.Group();
       tr.name = 'replay-truck';
-      tr.add(m, contactShadow(1.6, 2.6, 0.5));
+      tr.add(m, contactShadow(1.2, 2.2, 0.5));
+      tr.userData.scaleFrame = 'local';
       tr.visible = false;
       this.group.add(tr);
       this.replayTruck = tr;

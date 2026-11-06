@@ -51,7 +51,8 @@ export class Forklift {
     this.heading = 0;
     this.spot = blueSpot();
     this.bay.group.add(this.spot);
-    this.root.add(contactShadow(1.9, 3.8, 0.55));
+    this.root.add(contactShadow(1.2, 3.2, 0.55)); // inside the truck's footprint
+    this.root.userData.scaleFrame = 'local'; // its heading turns; measure in its own axes
     // Beacon lens material (amber), animated in lights().
     this.beacon = [];
     this.model.getObjectByName('beacon')?.traverse((m) => { if (m.isMesh) { m.material = m.material.clone(); m.material.emissive = new THREE.Color(0xffa020); this.beacon.push(m.material); } });
