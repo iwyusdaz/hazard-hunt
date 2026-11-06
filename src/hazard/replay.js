@@ -97,6 +97,8 @@ export class Replay {
       this.t = next ?? this.duration;
       this.playing = false;
       this._pose();
+      const pp = this._waiting();
+      if (pp) { this.onPause?.(this.seg, pp); this.onChange?.(); return; }
       this._check();
     }
     this.onChange?.();
@@ -115,7 +117,13 @@ export class Replay {
     return null;
   }
 
-  resolve(pp) { this.done.add(`${this.seg.id}@${pp.at}`); this.playing = true; this.onChange?.(); }
+  resolve(pp) {
+    this.done.add(`${this.seg.id}@${pp.at}`);
+    // Reduced motion: Continue steps on to the next still (the end of the segment).
+    if (this.app.motionPrefs.reduced) { this.play(); return; }
+    this.playing = true;
+    this.onChange?.();
+  }
 
   update(dt) {
     if (!this.active || !this.playing) return;

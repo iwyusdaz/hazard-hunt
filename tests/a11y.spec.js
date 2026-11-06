@@ -1,47 +1,58 @@
 /**
- * Accessibility: axe on the HTML overlay (menus, HUD, dialogs, text mode, rating
- * dialog). Gate: zero critical or serious issues.
+ * axe-core checks (0 critical or serious) on the v3 states: title, practice,
+ * each module, an open info card, the objects list, the judge form, the
+ * causes chart, the controls ranking and the speak-up drawers, the menu and
+ * text mode.
  */
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-
-test('overlay UI has no critical or serious axe issues', async ({ page }) => {
-  await page.goto('/');
-  // The app opens in the shared text flow (canvas attached but hidden until the learner enters 3D).
-  await expect(page.locator('canvas, [data-webgl-fallback]').first()).toBeAttached({ timeout: 20_000 });
-  await expect(page.locator('#textmode .assessment-item').first()).toBeVisible({ timeout: 20_000 });
-
-  const scan = async (label) => {
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .exclude('canvas')
-      .analyze();
-    const bad = results.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious');
-    if (bad.length) console.log(`axe violations (${label}):`, JSON.stringify(bad, null, 2));
-    expect(bad, label).toEqual([]);
-  };
-
-  await scan('module 1 (text flow)');
-
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await scan('settings dialog');
+import { ready } from './helpers.js';
+async function scan(page, label) {
+  const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+  const bad = r.violations.filter((v) => ['critical', 'serious'].includes(v.impact));
+  expect(bad.map((v) => `${label}: ${v.id} (${v.impact}) ${v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+}
+test('axe: 0 critical/serious on every v3 state', async ({ page }) => {
+  test.setTimeout(400_000);
+  await page.addInitScript(() => localStorage.clear());
+  await ready(page);
+  await scan(page, 'title');
+  await page.getByRole('button', { name: /^start$/i }).click();
+  await scan(page, 'practice');
+  await page.getByRole('button', { name: /skip practice/i }).click();
+  await page.waitForFunction(() => window.__TEST__.shell.root.dataset.bayReady === 'ready', null, { timeout: 180_000 });
+  await page.waitForTimeout(800);
+  await scan(page, 'm1');
+  await page.evaluate(() => window.__TEST__.inspect.open('forklift'));
+  await page.waitForTimeout(800);
+  await scan(page, 'info card');
   await page.keyboard.press('Escape');
-
-  await page.getByRole('button', { name: 'Menu' }).click();
-  await scan('menu dialog');
-  await page.keyboard.press('Escape');
-
-  // Open the rating dialog from the practice hunt module
-  await page.locator('.module-nav button').nth(1).click();
-  await page.waitForTimeout(400);
-  const rateButtons = page.getByRole('button', { name: /Submit rating/i });
-  if ((await rateButtons.count()) > 0) {
-    // rating forms are inline in text mode; scan that state
-    await scan('practice hunt with rating forms');
+  for (const i of [1, 2, 3, 4]) {
+    await page.evaluate((n) => window.__TEST__.app.goModule(n), i);
+    await page.waitForTimeout(2200);
+    await scan(page, `m${i + 1}`);
   }
-
-  // My progress dialog
-  await page.getByRole('button', { name: 'Menu' }).click();
-  await page.getByRole('button', { name: 'My progress' }).click();
-  await scan('progress dialog');
+  const L = (fn) => page.evaluate(fn);
+  await L(() => { window.__TEST__.app.goModule(1); window.__TEST__.lessons.openJudge('hazard-spill'); });
+  await page.waitForTimeout(800);
+  await scan(page, 'judge drawer');
+  await L(() => window.__TEST__.lessons.openAreas(window.__TEST__.lessons.zones[0]));
+  await page.waitForTimeout(500);
+  await scan(page, 'areas drawer');
+  await L(() => window.__TEST__.lessons.openCauses());
+  await page.waitForTimeout(500);
+  await scan(page, 'causes drawer');
+  await L(() => window.__TEST__.lessons.openRanking());
+  await page.waitForTimeout(500);
+  await scan(page, 'ranking drawer');
+  await L(() => window.__TEST__.lessons.openSpeakUp());
+  await page.waitForTimeout(500);
+  await scan(page, 'speak-up drawer');
+  await page.keyboard.press('Escape');
+  await page.locator('[data-action="menu"]').click();
+  await scan(page, 'menu');
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => window.__TEST__.ui.toggleTextMode());
+  await page.waitForTimeout(1200);
+  await scan(page, 'text mode');
 });

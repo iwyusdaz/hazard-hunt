@@ -111,3 +111,18 @@ describe('racking at real size (pallet-racking realSizeNote)', () => {
     expect(man['rack-beam'].sizeM[0]).toBeCloseTo(RACK.bay, 1);
   });
 });
+
+describe('flash safety (WCAG 2.3.1: no more than three flashes in any one second)', async () => {
+  const { failingLight } = await import('../../src/hazard/bay.js');
+  const flashesPerSecond = (f) => {
+    let worst = 0;
+    for (let t0 = 0; t0 < 30; t0 += 0.05) {
+      let n = 0, prev = f(t0);
+      for (let t = t0; t < t0 + 1; t += 0.005) { const v = f(t); if (prev - v > 0.2) n++; prev = v; }
+      worst = Math.max(worst, n);
+    }
+    return worst;
+  };
+  it('the failing high-bay light dips at most twice a second', () => { expect(flashesPerSecond(failingLight)).toBeLessThanOrEqual(2); });
+  it('the forklift beacon flashes 1.5 times a second', () => { expect(flashesPerSecond((t) => ((t * 1.5) % 1 < 0.45 ? 1 : 0))).toBeLessThanOrEqual(2); });
+});
