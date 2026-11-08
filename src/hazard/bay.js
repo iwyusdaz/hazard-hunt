@@ -842,6 +842,7 @@ export class Bay {
     const fs = new THREE.Box3().setFromObject(fl).getSize(new THREE.Vector3());
     root.userData.restSize = [fs.x, fs.y, fs.z].map((v) => +v.toFixed(3));
     this.register('forklift', root, { frame: { duration: 0.6 } });
+    ctrls.userData.scaleFrame = 'local'; // it turns with the truck; measure in the truck's own axes
     this.register('forklift-controls', ctrls, { frame: { duration: 0.6 } });
   }
 

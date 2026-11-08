@@ -25,7 +25,7 @@ const err = (m) => errors.push(m);
 
 // ---------- catalog ----------
 const HONESTY = ['real', 'reconstructed', 'fictional', 'illustrative', 'time-lapse'];
-const ROLES = ['task', 'explore'];
+const ROLES = ['task', 'learn', 'decorative']; // owner decision 2026-11-07 (template T-29)
 const words = (t) => (String(t || '').match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []).length;
 const catalog = JSON.parse(read('content/objects.json'));
 const objects = catalog.objects || [];
@@ -38,9 +38,10 @@ const COMPOSED = {
   conveyor: 'four 3 m conveyor sections make the 12 m line',
   'forklift-controls': 'the steering wheel and lever bank inside the forklift model',
   't-hazard-charging-block': 'battery bay door, cage and eyewash station together',
+  'distractor-guarded-machine': 'the far guard plate, one node of the packing-cutter model',
 };
 const seen = new Set();
-const counts = { task: 0, explore: 0, honesty: {}, scenes: {}, scale: { model: 0, decal: 0, composed: 0, procedural: 0 } };
+const counts = { task: 0, learn: 0, decorative: 0, honesty: {}, scenes: {}, scale: { model: 0, decal: 0, composed: 0, procedural: 0 } };
 for (const [i, o] of objects.entries()) {
   const at = `objects.json ${o.id || `#${i}`}`;
   if (!/^[a-z0-9][a-z0-9-]*$/.test(o.id || '')) err(`${at}: id must be kebab-case`);
@@ -49,10 +50,10 @@ for (const [i, o] of objects.entries()) {
   for (const k of ['name', 'short', 'more']) if (typeof o[k] !== 'string' || !o[k].trim()) err(`${at}: ${k} missing`);
   if (words(o.short) > 25) err(`${at}: short has ${words(o.short)} words`);
   if (words(o.more) > 120) err(`${at}: more has ${words(o.more)} words`);
-  if (typeof o.whyItMatters !== 'string') err(`${at}: whyItMatters must be a string`);
-  if (o.role === 'task' && !o.whyItMatters.trim()) err(`${at}: task object without whyItMatters`);
+  if (o.role !== 'decorative' && (typeof o.whyItMatters !== 'string' || !o.whyItMatters.trim())) err(`${at}: ${o.role} object without whyItMatters`);
+  if (o.role !== 'decorative' && (typeof o.objective !== 'string' || !o.objective.trim())) err(`${at}: ${o.role} object without objective`);
   const sizeOk = (typeof o.realSize === 'number' && o.realSize > 0) || (Array.isArray(o.realSize) && o.realSize.length === 3 && o.realSize.every((x) => typeof x === 'number' && x >= 0) && o.realSize.some((x) => x > 0));
-  if (!sizeOk) err(`${at}: realSize must be metres`);
+  if (!sizeOk && !(o.realSize === null && o.realSizeNote)) err(`${at}: realSize must be metres (or null with realSizeNote)`);
   if (!HONESTY.includes(o.honesty)) err(`${at}: honesty "${o.honesty}"`);
   if (!ROLES.includes(o.role)) err(`${at}: role "${o.role}"`);
   if (typeof o.source !== 'string') err(`${at}: source missing`);
@@ -73,6 +74,7 @@ for (const [i, o] of objects.entries()) {
       if (e > 0.15) err(`${at}: realSize off decal size by ${(e * 100).toFixed(0)}%`);
     }
   } else if (!manifest[a]) err(`${at}: asset "${a}" not in public/assets/v3/manifest.json`);
+  else if (o.realSize == null) notes.push(`${o.id}: no single real size (${o.realSizeNote || 'realSizeNote missing'})`);
   else if (COMPOSED[o.id]) counts.scale.composed++, notes.push(`${o.id}: scale checked in the scene, not here (${COMPOSED[o.id]})`);
   else {
     const s = manifest[a].sizeM;
