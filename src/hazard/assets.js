@@ -180,7 +180,12 @@ export async function model(key, o = {}) {
     if (!n) continue;
     const a = new THREE.Object3D();
     a.name = name;
-    new THREE.Box3().setFromObject(n).getCenter(a.position).applyMatrix4(inv);
+    const b = new THREE.Box3().setFromObject(n);
+    // An empty node (a pedal or hip point) has no box: use its own position and turn.
+    if (b.isEmpty()) {
+      new THREE.Matrix4().multiplyMatrices(inv, n.matrixWorld).decompose(a.position, a.quaternion, a.scale);
+      a.scale.set(1, 1, 1);
+    } else b.getCenter(a.position).applyMatrix4(inv);
     root.add(a);
   }
   // Far copies (racked loads): fewer triangles, same silhouette (meshoptimizer edge collapse).

@@ -487,78 +487,148 @@ def rack_protector(root, m):
 
 
 @model("forklift", label="Counterbalance forklift (electric, 2.5 t class)", realSizeM=[1.15, 2.2, 3.35],
-       nodes=["mast", "carriage", "forks", "wheel-fl", "wheel-fr", "wheel-rl", "wheel-rr", "steering-wheel", "lever-lift", "lever-tilt", "lever-aux", "beacon", "blue-spot-front", "blue-spot-rear", "headlights", "seat"])
+       nodes=["mast", "carriage", "forks", "wheel-fl", "wheel-fr", "wheel-rl", "wheel-rr", "steering-wheel", "lever-lift", "lever-tilt", "lever-aux", "beacon", "blue-spot-front", "blue-spot-rear", "headlights", "seat",
+              "seat-hip", "pedal-accel", "pedal-brake"])
 def forklift(root, m, reach=False):
-    Y = m["yellow"]
-    # Chassis and counterweight.
-    box("chassis", (1.0, 1.85, 0.55), (0, 0.05, 0.43), Y, root, bevel=0.03)
-    prism("counterweight", [(0.75, 0.15), (1.02, 0.15), (1.16, 0.32), (1.16, 0.88), (1.05, 1.05), (0.75, 1.05)], 1.06, (0, 0, 0), m["black"], root, axis="x", bevel=0.02)
-    box("hood", (0.92, 0.85, 0.28), (0, 0.35, 0.84), Y, root, bevel=0.03)
-    box("cowl", (0.9, 0.3, 0.55), (0, -0.48, 0.97), Y, root, bevel=0.03)
-    box("floorplate", (0.86, 0.45, 0.02), (0, -0.2, 0.71), m["tread"], root, bevel=0.003, tile=0.4)
+    # G2 (2026-11-07): rebuilt from the v3 box model. Rounded counterweight with tail lamps and tow pin,
+    # chamfered chassis, curved fenders, a dash with display and key, a contoured suspension seat with
+    # hip restraints and a right armrest, a toe board with accelerator and brake pedals, the hydraulic
+    # levers on the driver's right (they were on the left), mast hoses and tilt cylinders, a grab handle
+    # and both mirrors. Seat, wheel and pedals are placed for a seated 1.8 m operator (anchors
+    # seat-hip, pedal-accel, pedal-brake; the app solves the driver's arms and legs onto them).
+    # Blender axes: -Y is the front, +X is the driver's left.
+    Y, G = m["yellow"], m["black"]
+    red = mat("lamp-red", "#C8102E", 0.25, emit=("#FF1A1A", 1.2))
+    screen = mat("screen-display", "#0B1A14", 0.2, emit=("#3FD68A", 0.6))
+    # Chassis: side profile with a chamfered nose.
+    prism("chassis", [(-0.80, 0.15), (-0.88, 0.24), (-0.88, 0.62), (-0.82, 0.70), (0.80, 0.70), (0.80, 0.17), (0.74, 0.15)], 1.0, (0, 0, 0), Y, root, axis="x", bevel=0.02)
+    # Counterweight: rounded rear casting with tail lamps, a reverse lamp and a tow pin.
+    prism("counterweight", [(0.75, 0.15), (1.03, 0.15), (1.12, 0.22), (1.17, 0.36), (1.19, 0.55), (1.17, 0.76), (1.11, 0.93), (1.02, 1.03), (0.86, 1.07), (0.75, 1.07)],
+          1.06, (0, 0, 0), G, root, axis="x", bevel=0.02)
+    box("tow-recess", (0.18, 0.05, 0.11), (0, 1.175, 0.42), m["grey"], root, bevel=0.01)
+    cyl("tow-pin", 0.018, 0.16, (0, 1.17, 0.45), m["chrome"], root, seg=12)
+    for x in (-0.40, 0.40):
+        box(f"tail-housing{x}", (0.11, 0.04, 0.08), (x, 1.14, 0.86), m["grey"], root, bevel=0.01)
+        box(f"tail-lens{x}", (0.085, 0.012, 0.055), (x, 1.163, 0.86), red, root, bevel=0.004)
+    box("reverse-lens", (0.07, 0.012, 0.04), (0.0, 1.163, 0.86), m["lamp_white"], root, bevel=0.004)
+    # Battery hood with hinge line and side vent slots.
+    box("hood", (0.92, 0.85, 0.28), (0, 0.35, 0.84), Y, root, bevel=0.045)
+    box("hood-hinge", (0.9, 0.014, 0.014), (0, -0.07, 0.985), G, root, bevel=0)
+    box("battery-vent", (0.5, 0.3, 0.01), (0, 0.55, 0.985), G, root, bevel=0.002)
+    for s in (-1, 1):
+        for k in range(6):
+            box(f"vent{s}{k}", (0.006, 0.022, 0.15), (s * 0.462, 0.12 + k * 0.06, 0.84), G, root, bevel=0)
+    # Operator floor, toe board and front panel.
+    box("floorplate", (0.86, 0.40, 0.02), (0, -0.24, 0.71), m["tread"], root, bevel=0.003, tile=0.4)
+    prism("toe-board", [(-0.44, 0.70), (-0.60, 0.95), (-0.64, 0.95), (-0.64, 0.70)], 0.86, (0, 0, 0), m["tread"], root, axis="x", tile=0.4)
+    box("front-panel", (0.92, 0.18, 0.27), (0, -0.79, 0.83), Y, root, bevel=0.03)
     box("step-l", (0.12, 0.3, 0.04), (0.5, -0.15, 0.36), m["tread"], root, tile=0.4)
-    box("battery-vent", (0.5, 0.3, 0.01), (0, 0.45, 0.985), m["black"], root, bevel=0.002)
-    # Seat with backrest and an orange lap belt.
-    seat = part(empty("seat", (0, 0.3, 0.98), root))
-    box("cushion", (0.5, 0.48, 0.1), (0, 0, 0.07), m["plastic"], seat, bevel=0.03)
-    box("backrest", (0.5, 0.1, 0.45), (0, 0.24, 0.35), m["plastic"], seat, rot=(math.radians(-10), 0, 0), bevel=0.03)
-    box("belt", (0.46, 0.012, 0.05), (0, -0.05, 0.16), mat("belt-orange", "#FF6A13", 0.7), seat, bevel=0.002)
-    # Steering column and wheel.
-    cyl("column", 0.03, 0.4, (0, -0.42, 1.28), m["black"], root, rot=(math.radians(-35), 0, 0), seg=12)
-    sw = part(empty("steering-wheel", (0, -0.31, 1.44), root))
-    sw.rotation_euler = (math.radians(-35), 0, 0)
-    bpy.ops.mesh.primitive_torus_add(major_radius=0.16, minor_radius=0.014, major_segments=32, minor_segments=8)
+    # Dash: cowl, top pad, display, key switch, capacity plate.
+    box("cowl", (0.92, 0.30, 0.30), (0, -0.55, 1.11), Y, root, bevel=0.04)
+    box("dash-pad", (0.66, 0.20, 0.03), (0, -0.52, 1.265), m["plastic"], root, rot=(math.radians(8), 0, 0), bevel=0.01)
+    box("display", (0.15, 0.012, 0.085), (0.17, -0.396, 1.17), screen, root, rot=(math.radians(-15), 0, 0), bevel=0.004)
+    cyl("key-switch", 0.016, 0.02, (-0.17, -0.392, 1.16), m["chrome"], root, rot=(math.pi / 2, 0, 0), seg=12)
+    box("capacity-plate", (0.12, 0.004, 0.08), (-0.30, -0.398, 1.07), mat("plate-alu", "#C9CCCB", 0.3, 0.8), root, bevel=0)
+    # Pedals on the toe board: accelerator (right foot) and brake (left foot).
+    pa = part(empty("pedal-accel", (-0.14, -0.37, 0.81), root))
+    pa.rotation_euler = (math.radians(-40), 0, 0)
+    box("accel-pad", (0.085, 0.20, 0.016), (0, 0, 0), m["rubber"], pa, bevel=0.004)
+    box("accel-hinge", (0.06, 0.03, 0.03), (0, 0.09, -0.02), G, pa, bevel=0.004)
+    pb = part(empty("pedal-brake", (0.10, -0.40, 0.87), root))
+    pb.rotation_euler = (math.radians(-50), 0, 0)
+    box("brake-pad", (0.13, 0.10, 0.016), (0, 0, 0), m["rubber"], pb, bevel=0.004)
+    box("brake-arm", (0.025, 0.025, 0.16), (0, -0.04, -0.08), G, pb, rot=(math.radians(20), 0, 0), bevel=0.003)
+    # Suspension seat: base, contoured cushion with side bolsters, reclined backrest,
+    # hip restraints, right armrest and an orange lap belt.
+    seat = part(empty("seat", (0, 0.30, 0.98), root))
+    box("seat-base", (0.40, 0.40, 0.06), (0, 0, 0.03), G, seat, bevel=0.01)
+    box("cushion", (0.50, 0.46, 0.10), (0, -0.01, 0.11), m["plastic"], seat, bevel=0.04)
+    for s in (-1, 1):
+        box(f"bolster{s}", (0.07, 0.40, 0.05), (s * 0.215, -0.01, 0.175), m["plastic"], seat, bevel=0.022)
+        box(f"hip-wing{s}", (0.06, 0.16, 0.18), (s * 0.255, 0.15, 0.29), m["plastic"], seat, bevel=0.02)
+    box("backrest", (0.48, 0.10, 0.50), (0, 0.23, 0.43), m["plastic"], seat, rot=(math.radians(-12), 0, 0), bevel=0.04)
+    box("armrest", (0.08, 0.30, 0.05), (-0.31, 0.02, 0.36), m["plastic"], seat, bevel=0.02)
+    box("armrest-post", (0.03, 0.03, 0.22), (-0.31, 0.12, 0.25), G, seat, bevel=0.004)
+    box("belt", (0.46, 0.012, 0.05), (0, -0.20, 0.17), mat("belt-orange", "#FF6A13", 0.7), seat, bevel=0.002)
+    part(empty("seat-hip", (0, 0.36, 1.19), root))
+    # Steering column and wheel, tilted 45 degrees toward the operator, with a spinner knob.
+    tilt = math.radians(-45)
+    hub = Vector((0, -0.10, 1.48))
+    n = Vector((0, math.sin(-tilt), math.cos(tilt)))
+    cyl("column", 0.032, 0.42, tuple(hub - n * 0.21), G, root, rot=(tilt, 0, 0), seg=16)
+    box("column-shroud", (0.11, 0.11, 0.17), tuple(hub - n * 0.30), m["plastic"], root, rot=(tilt, 0, 0), bevel=0.025)
+    sw = part(empty("steering-wheel", tuple(hub), root))
+    sw.rotation_euler = (tilt, 0, 0)
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.15, minor_radius=0.016, major_segments=48, minor_segments=10)
     t = bpy.context.active_object
     t.name = "rim"
     t.data.materials.append(m["plastic"])
     t.parent = sw
-    for a in (0, 2.1, 4.2):
-        box(f"spoke{a}", (0.15, 0.02, 0.012), (math.cos(a) * 0.075, math.sin(a) * 0.075, 0), m["plastic"], sw, rot=(0, 0, a), bevel=0)
-    cyl("knob", 0.018, 0.06, (0.16, 0, 0.03), m["plastic"], sw, seg=12)
-    # Hydraulic levers right of the wheel.
-    for i, n in enumerate(("lever-lift", "lever-tilt", "lever-aux")):
-        lv = part(empty(n, (0.24 + i * 0.06, -0.52, 1.24), root))
-        cyl(f"{n}-rod", 0.007, 0.18, (0, 0, 0.09), m["black"], lv, seg=8)
-        cyl(f"{n}-knob", 0.018, 0.04, (0, 0, 0.19), mat(f"knob{i}", ["#202225", "#202225", "#C8102E"][i], 0.4), lv, seg=12)
-    # Overhead guard: four posts and a slatted roof.
-    G = m["black"]
+    for a in (math.pi / 2, math.pi / 2 + 2.1, math.pi / 2 + 4.2):
+        box(f"spoke{a:.2f}", (0.14, 0.022, 0.012), (math.cos(a) * 0.075, math.sin(a) * 0.075, -0.01), m["plastic"], sw, rot=(0, 0, a), bevel=0.003)
+    cyl("hub-cap", 0.045, 0.035, (0, 0, -0.005), m["plastic"], sw, seg=20, bevel=0.006)
+    cyl("knob", 0.018, 0.06, (0.11, 0.11, 0.03), m["plastic"], sw, seg=12)
+    # Hydraulic levers on the operator's right (-X), on a small console.
+    box("lever-console", (0.17, 0.10, 0.10), (-0.30, -0.45, 1.22), G, root, bevel=0.015)
+    for i, nm in enumerate(("lever-lift", "lever-tilt", "lever-aux")):
+        lv = part(empty(nm, (-0.24 - i * 0.06, -0.45, 1.27), root))
+        cyl(f"{nm}-rod", 0.007, 0.18, (0, 0, 0.09), G, lv, seg=8)
+        cyl(f"{nm}-knob", 0.018, 0.04, (0, 0, 0.19), mat(f"knob{i}", ["#202225", "#202225", "#C8102E"][i], 0.4), lv, seg=12)
+    # Overhead guard: four posts, a framed slatted roof, a grab handle and two mirrors.
     for x in (-0.5, 0.5):
-        box(f"post-front{x}", (0.06, 0.08, 1.48), (x, -0.55, 1.43), G, root, rot=(math.radians(4), 0, 0), bevel=0.006)
-        box(f"post-rear{x}", (0.06, 0.08, 1.2), (x, 0.82, 1.57), G, root, rot=(math.radians(-6), 0, 0), bevel=0.006)
-    box("roof-frame-l", (0.06, 1.5, 0.06), (-0.5, 0.15, 2.17), G, root, bevel=0.006)
-    box("roof-frame-r", (0.06, 1.5, 0.06), (0.5, 0.15, 2.17), G, root, bevel=0.006)
+        box(f"post-front{x}", (0.06, 0.08, 1.48), (x, -0.55, 1.43), G, root, rot=(math.radians(4), 0, 0), bevel=0.012)
+        box(f"post-rear{x}", (0.06, 0.08, 1.2), (x, 0.82, 1.57), G, root, rot=(math.radians(-6), 0, 0), bevel=0.012)
+        box(f"gusset-front{x}", (0.05, 0.12, 0.12), (x, -0.47, 2.11), G, root, rot=(math.radians(45), 0, 0), bevel=0.006)
+        box(f"gusset-rear{x}", (0.05, 0.12, 0.12), (x, 0.76, 2.11), G, root, rot=(math.radians(45), 0, 0), bevel=0.006)
+        box(f"mirror-arm{x}", (0.1, 0.02, 0.02), (x * 1.1, 0.78, 2.0), G, root)
+        box(f"mirror{x}", (0.02, 0.14, 0.1), (x * 1.2, 0.78, 2.0), m["chrome"], root, rot=(0, 0, math.radians(15 if x > 0 else -15)), bevel=0.01)
+    box("roof-frame-l", (0.06, 1.5, 0.06), (-0.5, 0.15, 2.17), G, root, bevel=0.01)
+    box("roof-frame-r", (0.06, 1.5, 0.06), (0.5, 0.15, 2.17), G, root, bevel=0.01)
+    box("roof-frame-f", (1.06, 0.06, 0.06), (0, -0.58, 2.17), G, root, bevel=0.01)
+    box("roof-frame-b", (1.06, 0.06, 0.06), (0, 0.88, 2.17), G, root, bevel=0.01)
     for k in range(7):
-        box(f"slat{k}", (1.0, 0.04, 0.03), (0, -0.5 + k * 0.215, 2.17), G, root, bevel=0.004)
-    # Beacon, blue warning spots, headlights, mirror.
+        box(f"slat{k}", (1.0, 0.04, 0.03), (0, -0.45 + k * 0.205, 2.17), G, root, bevel=0.005)
+    cyl("grab-handle", 0.016, 0.46, (0.47, -0.47, 1.55), G, root, rot=(math.radians(4), 0, 0), seg=12)
+    for z in (1.34, 1.76):
+        box(f"grab-standoff{z}", (0.03, 0.08, 0.03), (0.49, -0.50, z), G, root, bevel=0.005)
+    # Beacon, blue warning spots, headlights, rear work light.
     bc = part(empty("beacon", (0, 0.7, 2.2), root))
-    cyl("beacon-base", 0.07, 0.03, (0, 0, 0.015), m["black"], bc, seg=20)
+    cyl("beacon-base", 0.07, 0.03, (0, 0, 0.015), G, bc, seg=20)
     cyl("beacon-dome", 0.06, 0.1, (0, 0, 0.08), m["amber"], bc, seg=20, r2=0.045)
-    for n, y, tilt in (("blue-spot-front", -0.58, 35), ("blue-spot-rear", 0.86, -35)):
-        bs = part(empty(n, (0.42, y, 2.12), root))
-        bs.rotation_euler = (math.radians(tilt), 0, 0)
-        box(f"{n}-housing", (0.08, 0.1, 0.08), (0, 0, 0), m["black"], bs, bevel=0.01)
-        cyl(f"{n}-lens", 0.03, 0.01, (0, -0.052 if tilt > 0 else 0.052, 0), m["lamp_blue"], bs, rot=(math.pi / 2, 0, 0), seg=16)
+    for nm, y, tl in (("blue-spot-front", -0.58, 35), ("blue-spot-rear", 0.86, -35)):
+        bs = part(empty(nm, (0.42, y, 2.12), root))
+        bs.rotation_euler = (math.radians(tl), 0, 0)
+        box(f"{nm}-housing", (0.08, 0.1, 0.08), (0, 0, 0), G, bs, bevel=0.01)
+        cyl(f"{nm}-lens", 0.03, 0.01, (0, -0.052 if tl > 0 else 0.052, 0), m["lamp_blue"], bs, rot=(math.pi / 2, 0, 0), seg=16)
     hl = part(empty("headlights", (0, -0.6, 1.9), root))
     for x in (-0.5, 0.5):
-        box(f"hl-housing{x}", (0.1, 0.07, 0.08), (x, 0, 0), m["black"], hl, bevel=0.01)
+        box(f"hl-housing{x}", (0.1, 0.07, 0.08), (x, 0, 0), G, hl, bevel=0.01)
         cyl(f"hl-lens{x}", 0.032, 0.01, (x, -0.037, 0), m["lamp_white"], hl, rot=(math.pi / 2, 0, 0), seg=16)
-    box("mirror-arm", (0.2, 0.02, 0.02), (0.6, 0.78, 2.0), G, root)
-    box("mirror", (0.02, 0.14, 0.1), (0.7, 0.78, 2.0), m["chrome"], root, rot=(0, 0, math.radians(15)), bevel=0.01)
-    # Wheels.
-    for n, x, y, r, w in (("wheel-fl", 0.47, -0.62, 0.28, 0.2), ("wheel-fr", -0.47, -0.62, 0.28, 0.2), ("wheel-rl", 0.4, 0.78, 0.21, 0.16), ("wheel-rr", -0.4, 0.78, 0.21, 0.16)):
-        part(wheel(n, r, w, (x, y, r), root, m["rubber"], m["light"]))
-    box("fender-l", (0.24, 0.62, 0.03), (0.47, -0.62, 0.6), Y, root, bevel=0.01)
-    box("fender-r", (0.24, 0.62, 0.03), (-0.47, -0.62, 0.6), Y, root, bevel=0.01)
-    # Mast (lowered), carriage, forks.
+    box("work-light", (0.14, 0.06, 0.07), (-0.2, 0.90, 2.12), G, root, bevel=0.01)
+    box("work-light-lens", (0.11, 0.01, 0.05), (-0.2, 0.932, 2.12), m["lamp_white"], root, bevel=0.003)
+    # Wheels and curved fenders.
+    for nm, x, y, r, w in (("wheel-fl", 0.47, -0.62, 0.28, 0.2), ("wheel-fr", -0.47, -0.62, 0.28, 0.2), ("wheel-rl", 0.4, 0.78, 0.21, 0.16), ("wheel-rr", -0.4, 0.78, 0.21, 0.16)):
+        part(wheel(nm, r, w, (x, y, r), root, m["rubber"], m["light"]))
+    for x in (-0.47, 0.47):
+        for k in range(7):
+            a = math.radians(30 + k * 20)
+            box(f"fender{x}-{k}", (0.24, 0.125, 0.014), (x, -0.62 + 0.33 * math.cos(a), 0.28 + 0.33 * math.sin(a)), Y, root, rot=(a + math.pi / 2, 0, 0), bevel=0.004)
+    # Mast (lowered) with hoses, tilt cylinders, carriage and forks.
     mast = part(empty("mast", (0, -0.98, 0.1), root))
     for x in (-0.36, 0.36):
         prism(f"outer{x}", [(-0.04, 0), (0.04, 0), (0.04, 0.012), (-0.028, 0.012), (-0.028, 0.098), (0.04, 0.098), (0.04, 0.11), (-0.04, 0.11)], 2.05,
               (x, 0, 1.025), m["grey"], mast, axis="z", rot=(0, 0, math.pi / 2 if x > 0 else -math.pi / 2), bevel=0.003)
         box(f"inner{x}", (0.07, 0.07, 2.0), (x * 0.86, -0.02, 1.05), m["grey"], mast, bevel=0.004)
-        box(f"chain{x}", (0.03, 0.015, 1.9), (x * 0.6, -0.05, 1.0), m["black"], mast, bevel=0)
+        box(f"chain{x}", (0.03, 0.015, 1.9), (x * 0.6, -0.05, 1.0), G, mast, bevel=0)
+        cyl(f"hose{x}", 0.011, 1.8, (x * 0.33, 0.05, 1.0), m["rubber"], mast, seg=8)
+        cyl(f"roller{x}", 0.035, 0.03, (x * 0.86, -0.06, 0.35), m["chrome"], mast, rot=(0, math.pi / 2, 0), seg=16)
     for z in (0.12, 1.1, 2.0):
         box(f"tie{z}", (0.78, 0.06, 0.08), (0, 0.01, z), m["grey"], mast, bevel=0.004)
     cyl("lift-cylinder", 0.05, 1.6, (0, 0.04, 0.85), m["chrome"], mast, seg=16)
+    ta = math.radians(62.6)
+    for x in (-0.40, 0.40):
+        cyl(f"tilt-barrel{x}", 0.032, 0.18, (x, -0.77, 0.66), G, root, rot=(ta, 0, 0), seg=16)
+        cyl(f"tilt-rod{x}", 0.016, 0.16, (x, -0.88, 0.72), m["chrome"], root, rot=(ta, 0, 0), seg=12)
     carriage = part(empty("carriage", (0, -1.06, 0.06), root))
     box("fork-plate", (1.0, 0.05, 0.42), (0, 0, 0.23), m["grey"], carriage, bevel=0.006)
     for x in (-0.45, -0.15, 0.15, 0.45):
@@ -566,10 +636,8 @@ def forklift(root, m, reach=False):
     box("backrest-top", (0.96, 0.04, 0.04), (0, 0, 1.24), m["grey"], carriage, bevel=0.004)
     forks = part(empty("forks", (0, -1.09, 0.0), root))
     for x in (-0.3, 0.3):
-        box(f"shank{x}", (0.1, 0.045, 0.46), (x, 0, 0.27), m["black"], forks, bevel=0.004)
-        prism(f"blade{x}", [(0.0, 0.01), (-1.0, 0.01), (-1.07, 0.02), (-1.07, 0.035), (0.0, 0.055)], 0.1, (x, 0, 0), m["black"], forks, axis="x", bevel=0.003)
-    # Capacity plate and number decals.
-    box("capacity-plate", (0.12, 0.004, 0.08), (0.3, -0.632, 1.05), mat("plate-alu", "#C9CCCB", 0.3, 0.8), root, bevel=0)
+        box(f"shank{x}", (0.1, 0.045, 0.46), (x, 0, 0.27), G, forks, bevel=0.004)
+        prism(f"blade{x}", [(0.0, 0.01), (-1.0, 0.01), (-1.07, 0.02), (-1.07, 0.035), (0.0, 0.055)], 0.1, (x, 0, 0), G, forks, axis="x", bevel=0.003)
 
 
 @model("reach-truck", label="Reach truck (parked, mast lowered)", realSizeM=[1.27, 2.3, 2.5],

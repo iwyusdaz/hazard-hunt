@@ -10,6 +10,41 @@ import * as THREE from 'three';
 import { FORKLIFT_ROUTE } from './layout.js';
 import { blueSpot, contactShadow } from './materials.js';
 
+const _q0 = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _Y = new THREE.Vector3(0, 1, 0);
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3();
+
+/** Turn a bone by a world-space rotation q (applied on top of its current pose). */
+export function rotateWorld(bone, q) {
+  const wq = bone.getWorldQuaternion(_q1);
+  const pq = bone.parent.getWorldQuaternion(_q2).invert();
+  bone.quaternion.copy(pq.multiply(q.clone().multiply(wq)));
+  bone.updateMatrixWorld(true);
+}
+/** Turn `bone` so the direction to its child `tip` points at world point `to`. */
+export function aim(bone, tip, to) {
+  bone.getWorldPosition(_a); tip.getWorldPosition(_b);
+  const from = _b.sub(_a).normalize(), want = to.clone().sub(_a).normalize();
+  rotateWorld(bone, new THREE.Quaternion().setFromUnitVectors(from, want));
+}
+/**
+ * Analytic two-bone IK: turn A (upper) and B (lower) so C (the end joint) reaches
+ * `target`, bending toward the world direction `pole`. Bone lengths come from the rig.
+ */
+export function twoBone(A, B, C, target, pole) {
+  A.getWorldPosition(_a); B.getWorldPosition(_b); C.getWorldPosition(_c);
+  const l1 = _a.distanceTo(_b), l2 = _b.distanceTo(_c);
+  const to = target.clone().sub(_a);
+  const d = THREE.MathUtils.clamp(to.length(), Math.abs(l1 - l2) + 1e-3, (l1 + l2) * 0.999);
+  const dir = to.normalize();
+  const cosA = THREE.MathUtils.clamp((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d), -1, 1);
+  const n = pole.clone().addScaledVector(dir, -pole.dot(dir)).normalize();
+  const knee = _a.clone().addScaledVector(dir, cosA * l1).addScaledVector(n, Math.sqrt(1 - cosA * cosA) * l1);
+  rotateWorld(A, new THREE.Quaternion().setFromUnitVectors(_b.clone().sub(_a).normalize(), knee.clone().sub(_a).normalize()));
+  B.getWorldPosition(_b); C.getWorldPosition(_c);
+  const end = _a.clone().addScaledVector(dir, d);
+  rotateWorld(B, new THREE.Quaternion().setFromUnitVectors(_c.clone().sub(_b).normalize(), end.sub(_b).normalize()));
+}
+
 /** Arc-length route through corner points (closed loop), with eased corners. */
 export class Route {
   constructor(points) {
@@ -58,21 +93,84 @@ export class Forklift {
     this.model.getObjectByName('beacon')?.traverse((m) => { if (m.isMesh) { m.material = m.material.clone(); m.material.emissive = new THREE.Color(0xffa020); this.beacon.push(m.material); } });
     // Headlight lenses glow (their material is shared with the parked truck, which has its lights on too).
     this.model.traverse((m) => { if (m.isMesh && m.material.name === 'lamp-white') { m.material.emissive = new THREE.Color(0xfff2d0); m.material.emissiveIntensity = 1.6; } });
+    // Steering wheel turns with the truck's turn rate; pedals are the driver's foot targets.
+    this.wheel = this.model.getObjectByName('steering-wheel');
+    this.wheelRest = this.wheel?.quaternion.clone();
+    this.steer = 0;
+    this.pedals = { accel: this.model.getObjectByName('pedal-accel'), brake: this.model.getObjectByName('pedal-brake') };
     this._place(0);
     this._stopDone = -1;
   }
 
-  /** Seat the driver (a character from assets.character) on the seat, driving clip. */
+  /**
+   * Seat the driver (a character from assets.character) in the truck: a child of
+   * the truck root, so he moves and turns with it. His pelvis goes on the seat's
+   * hip point (anchor `seat-hip`), and poseDriver() puts his feet on the pedals
+   * and his hands on the steering wheel at 9 and 3 o'clock after every clip update.
+   * (G2: the old code took the centre of an empty node's box, which is (0,0,0),
+   * so the driver sat on the floor 7 m from the truck.)
+   */
   seat(c) {
     this.driver = c;
-    const seat = this.model.getObjectByName('seat');
-    const p = new THREE.Vector3();
-    if (seat) { seat.updateWorldMatrix(true, false); new THREE.Box3().setFromObject(seat).getCenter(p); this.root.worldToLocal(p); }
-    c.root.position.set(p.x, Math.max(0, p.y - 0.62), p.z + 0.08);
-    c.root.rotation.y = 0;
+    c.root.position.set(0, 0, 0);
+    c.root.rotation.set(0, 0, 0);
     this.root.add(c.root);
     const clip = c.clips.drive || c.clips.idle;
     if (clip) c.mixer.clipAction(clip).play();
+    c.mixer.update(0);
+    const bone = (n) => c.root.getObjectByName(n);
+    this.rig = {
+      pelvis: bone('pelvis'), spine: bone('spine_02'),
+      arms: ['l', 'r'].map((s) => [bone(`upperarm_${s}`), bone(`lowerarm_${s}`), bone(`hand_${s}`), bone(`middle_01_${s}`)]),
+      legs: ['l', 'r'].map((s) => [bone(`thigh_${s}`), bone(`calf_${s}`), bone(`foot_${s}`), bone(`ball_${s}`)]),
+    };
+    // The clip may not key every bone, so each pose starts from the clip pose of the spine.
+    this.rig.spineBase = this.rig.spine?.quaternion.clone();
+    const hip = this.model.getObjectByName('seat-hip');
+    if (hip && this.rig.pelvis) {
+      this.root.updateMatrixWorld(true);
+      const want = this.root.worldToLocal(hip.getWorldPosition(new THREE.Vector3()));
+      const have = this.root.worldToLocal(this.rig.pelvis.getWorldPosition(new THREE.Vector3()));
+      c.root.position.add(want.sub(have));
+    }
+    this.poseDriver();
+  }
+
+  /** Hands on the wheel, feet on the pedals, a slight lean toward the wheel (two-bone IK on top of the clip). */
+  poseDriver() {
+    const r = this.rig;
+    if (!r?.pelvis || !this.wheel) return;
+    this.root.updateMatrixWorld(true);
+    const q = this.root.getWorldQuaternion(_q0);
+    const dir = (x, y, z) => new THREE.Vector3(x, y, z).applyQuaternion(q).normalize();
+    // Lean the upper body about 7 degrees forward, toward the wheel.
+    if (r.spine) {
+      r.spine.quaternion.copy(r.spineBase);
+      r.spine.updateMatrixWorld(true);
+      rotateWorld(r.spine, new THREE.Quaternion().setFromAxisAngle(dir(1, 0, 0), 0.12));
+    }
+    const toRoot = (b) => this.root.worldToLocal(b.getWorldPosition(new THREE.Vector3()));
+    const w = this.wheel.matrixWorld;
+    for (const [up, lo, hand, knuckle] of r.arms) {
+      if (!up || !lo || !hand) continue;
+      const s = Math.sign(toRoot(up).x) || 1;
+      const grip = new THREE.Vector3(0.15 * s, 0, 0).applyMatrix4(w);
+      const shoulder = up.getWorldPosition(new THREE.Vector3());
+      const wrist = grip.clone().addScaledVector(shoulder.clone().sub(grip).normalize(), 0.075);
+      twoBone(up, lo, hand, wrist, dir(0.6 * s, -1, -0.3));
+      if (knuckle) aim(hand, knuckle, grip);
+    }
+    for (const [th, ca, ft, ball] of r.legs) {
+      if (!th || !ca || !ft) continue;
+      const s = Math.sign(toRoot(th).x) || 1;
+      const pedal = this.pedals[s > 0 ? 'brake' : 'accel'];
+      if (!pedal) continue;
+      const m = pedal.matrixWorld;
+      const ballAt = new THREE.Vector3(0, 0.035, 0.02).applyMatrix4(m);
+      const ankle = new THREE.Vector3(0, 0.095, -0.12).applyMatrix4(m);
+      twoBone(th, ca, ft, ankle, dir(0.15 * s, 0.6, 1));
+      if (ball) aim(ft, ball, ballAt);
+    }
   }
 
   _place(dt) {
@@ -81,7 +179,14 @@ export class Forklift {
     let d = a.heading - this.heading;
     while (d > Math.PI) d -= Math.PI * 2;
     while (d < -Math.PI) d += Math.PI * 2;
-    this.heading += dt > 0 ? d * Math.min(1, dt * 4) : d;
+    const turn = dt > 0 ? d * Math.min(1, dt * 4) : d;
+    this.heading += turn;
+    if (this.wheel && dt > 0) {
+      // Small wheel movements (up to about 35 degrees) that follow the turn rate; the hands stay on the rim.
+      const want = THREE.MathUtils.clamp((turn / dt) * 0.8, -0.6, 0.6);
+      this.steer += (want - this.steer) * Math.min(1, dt * 3);
+      this.wheel.quaternion.copy(this.wheelRest).multiply(_q1.setFromAxisAngle(_Y, this.steer));
+    }
     this.root.position.set(a.x, 0, a.z);
     this.root.rotation.y = this.heading;
     // The blue spot shines on the floor 3.5 m ahead of the truck.

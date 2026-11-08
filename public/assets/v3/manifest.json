@@ -1143,17 +1143,20 @@
         "blue-spot-front",
         "blue-spot-rear",
         "headlights",
-        "seat"
+        "seat",
+        "seat-hip",
+        "pedal-accel",
+        "pedal-brake"
       ],
       "sizeM": [
-        1.315,
+        1.25,
         2.339,
-        3.32
+        3.36
       ],
       "honesty": "own model at real size; details simplified",
-      "file": "assets/v3/models/forklift-a2b99374eb.glb",
-      "bytes": 357164,
-      "triangles": 18052,
+      "file": "assets/v3/models/forklift-4a9e783848.glb",
+      "bytes": 433628,
+      "triangles": 24792,
       "textures": 5,
       "animations": [],
       "licence": "own work (CC BY 4.0, repo content licence)"

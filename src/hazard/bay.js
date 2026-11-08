@@ -820,7 +820,7 @@ export class Bay {
   }
 
   async _forklift() {
-    const fl = await model('forklift', { keep: ['beacon', 'steering-wheel', 'lever-lift', 'lever-tilt', 'lever-aux'], anchors: ['seat'], shadows: false });
+    const fl = await model('forklift', { keep: ['beacon', 'steering-wheel', 'lever-lift', 'lever-tilt', 'lever-aux'], anchors: ['seat', 'seat-hip', 'pedal-accel', 'pedal-brake'], shadows: false });
     placeOnFloor(fl, 0, 0, 0);
     const root = new THREE.Group();
     root.name = 'forklift-moving';
@@ -828,12 +828,14 @@ export class Bay {
     // Steering wheel and levers: their own card.
     const ctrls = new THREE.Group();
     ctrls.name = 'forklift-controls';
+    // Add the group first, then attach: attach() keeps world placement only when the
+    // group already sits in the truck (G2: the wheel and levers were 0.48 m too far back).
+    fl.add(ctrls);
     fl.updateMatrixWorld(true);
     for (const n of ['steering-wheel', 'lever-lift', 'lever-tilt', 'lever-aux']) {
       const o = fl.getObjectByName(n);
       if (o) { ctrls.attach(o); }
     }
-    fl.add(ctrls);
     this.group.add(root);
     this.forklift = new Forklift({ root, model: fl, bay: this });
     // The truck's size for the scale check, from its own geometry before the driver boards.
@@ -1024,7 +1026,7 @@ export class Bay {
     M.add({ id: 'scanner', layer: 'agents', label: 'accurate', objects: ['associate-receiving'], description: 'A receiving associate walks between the inbound pallets and scans them.', update: (dt) => this.actors.receiving?.update(dt) });
     M.add({ id: 'picker', layer: 'agents', label: 'accurate', objects: ['picker-replay'], description: 'An order picker walks the racking aisle at walking pace and scans at each end.', update: (dt) => { if (!this.replayActive) this.pickerWalk?.update(dt); } });
     M.add({ id: 'grace', layer: 'agents', label: 'accurate', objects: ['grace-supervisor'], description: 'Grace, the shift supervisor, works at her desk.', update: (dt) => this.actors.grace?.update(dt) });
-    M.add({ id: 'driver', layer: 'agents', label: 'accurate', objects: ['forklift-driver'], description: 'The forklift driver steers and checks the route.', update: (dt) => this.actors.driver?.mixer.update(dt) });
+    M.add({ id: 'driver', layer: 'agents', label: 'accurate', objects: ['forklift-driver'], description: 'The forklift driver steers and checks the route.', update: (dt) => { this.actors.driver?.mixer.update(dt); this.forklift?.poseDriver(); } });
     M.add({ id: 'conveyor', layer: 'objects', label: 'illustrative', objects: ['conveyor'], description: 'Parcels ride the roller conveyor from the packing bench.', update: (dt) => this._conveyor(dt) });
     M.add({ id: 'dock-door-3', layer: 'objects', label: 'illustrative', objects: ['dock-door'], description: 'Dock door 3 rolls down between pallet runs and up again.', update: (dt, t) => this._door3(t) });
     M.add({ id: 'clock', layer: 'objects', label: 'accurate', objects: ['supervisor-desk'], holdWithCard: false, description: 'The wall clock above the supervisor\'s desk keeps time.', update: (dt) => this._clock(dt) });
