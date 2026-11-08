@@ -60,7 +60,7 @@ test('labels are hidden at rest; hover shows one; click opens the card; Show all
   expect((await visibleLabels(page)).length).toBe(1);
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-ui="info-card"]')).toBeVisible();
-  await expect(page.locator('[data-ui="discovered"]')).toContainText('1 of 53');
+  await expect(page.locator('[data-ui="discovered"]')).toContainText('1 of 34');
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-ui="info-card"]')).toBeHidden();
   await T(page, () => { window.__TEST__.inspect.setShowAll(true); });
@@ -76,7 +76,7 @@ test('every object in view is in the keyboard list and opens by Enter; a task ca
   await page.locator('[data-action="menu"]').click();
   await page.locator('[data-ui="objects-list-toggle"]').click();
   const list = page.locator('[data-ui="objects-list"] [data-object-id]');
-  expect(await list.count()).toBeGreaterThanOrEqual(50);
+  expect(await list.count()).toBe(34); // every course object (19 task + 15 learn), no decorative one
   const spill = page.locator('[data-ui="objects-list"] [data-object-id="hazard-spill"]');
   await spill.focus();
   await page.keyboard.press('Enter');
