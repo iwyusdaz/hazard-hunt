@@ -116,7 +116,10 @@ export const VIEWS = {
   packing: look([13.4, 2.4, 15.2], [18.2, 0.9, 11.4]),
   // Down the racking aisle from its west end (a view across the rows would sit inside the racks).
   assessed: look([0.5, 3.2, 5.6], [12, 1.2, 4.4]),
-  staging: look([-1.2, 3.2, 4.6], [-12.5, 0.8, 12]),
+  // Aimed at the near side of the parked truck. G2: the old target (-12.5, 0.8, 12) lay
+  // behind the truck, so the rig's collision pull-in put the camera past the truck and the
+  // gate, and the transfer hunt showed an empty floor (straddle load and gate unclickable).
+  staging: look([-1.2, 3.2, 4.6], [-8.6, 0.8, 9.0]),
   safetyWall: look([-5.5, 1.9, 8.8], [-5.2, 1.2, 15.6]),
   // Grace at her desk, the working floor and the dock behind her.
   grace: look([9.4, 1.75, -10.6], [5.0, 1.2, -13.0]),
