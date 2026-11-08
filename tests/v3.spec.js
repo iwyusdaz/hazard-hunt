@@ -31,8 +31,8 @@ test.beforeEach(async ({ page }) => {
 test('title, practice on the racking, Module 1; props stream after the first interaction', async ({ page }) => {
   await ready(page);
   await expect(page.locator('[data-ui="title-screen"]')).toBeVisible();
-  // Before any input only the building, racking and lights exist (download gate).
-  expect(await T(page, () => window.__TEST__.inspect.ids().sort())).toEqual(['high-bay-light', 'pallet-racking', 'roof-lights']);
+  // Before any input only the building, racking and lights exist (download gate); the lights are decorative.
+  expect(await T(page, () => window.__TEST__.inspect.ids().sort())).toEqual(['pallet-racking']);
   await page.getByRole('button', { name: /^start$/i }).click();
   await expect(card(page)).toContainText(/Practice 1 of 4/);
   await T(page, () => { const o = window.__TEST__.app.onboarding; o.i = 2; o._show(); });
@@ -41,7 +41,7 @@ test('title, practice on the racking, Module 1; props stream after the first int
   await expect(card(page)).toContainText('Walk into Bay 4');
   await bayReady(page);
   const s = await T(page, () => ({ n: window.__TEST__.inspect.ids().length, legend: document.querySelector('[data-ui="legend"]').textContent }));
-  expect(s.n).toBe(53);
+  expect(s.n).toBe(34); // 19 task + 15 learn; decorative objects are not inspectable (owner, 2026-11-07)
   expect(s.legend).toMatch(/Blue spot on the floor/);
 });
 
@@ -190,7 +190,11 @@ test('text mode: same decisions, same record; the catalog is listed', async ({ p
   await expect(tm.locator('section.assessment-item[data-item="hazard-spill"] .feedback')).toBeVisible();
   expect(await T(page, () => window.__TEST__.lessons.hunt.flags.has('hazard-spill'))).toBe(true);
   await expect(tm).toContainText('Counterbalance forklift');
-  await expect(tm).toContainText('Reach truck in the replay');
+  // Every course object has a text-mode card; decorative ones have none (owner, 2026-11-07).
+  const want = await T(page, () => window.__TEST__.catalog.inspectable.map((o) => o.id).sort());
+  const have = await tm.locator('[data-object-id]').evaluateAll((els) => [...new Set(els.map((e) => e.dataset.objectId))].sort());
+  expect(have).toEqual(want);
+  await expect(tm.locator('[data-object-id="replay-truck"]')).toHaveCount(0);
 });
 
 test('reduced motion: ambient motion stops, no camera drift', async ({ page }) => {
@@ -230,4 +234,23 @@ test('no WebGL2: text mode opens with every objective', async ({ page }) => {
   const tm = page.locator('[data-ui="textmode"], #textmode').first();
   await expect(tm).toBeVisible();
   await expect(tm).toContainText('Pre-check');
+});
+
+test('Back returns to the previous step or screen; Back to start shows the title again; no link to all projects', async ({ page }) => {
+  await ready(page);
+  await expect(page.getByRole('link', { name: /all projects/i })).toHaveCount(0);
+  await page.getByRole('button', { name: /^start$/i }).click();
+  await expect(card(page)).toContainText(/Practice 1 of 4/);
+  await page.locator('[data-ui="back"]').click();
+  await expect(page.locator('[data-ui="title-screen"]')).toBeVisible();
+  await page.getByRole('button', { name: /^start$/i }).click();
+  await page.getByRole('button', { name: /skip practice/i }).click();
+  await expect(card(page)).toContainText('Walk into Bay 4');
+  await nowBtn(page, /^Next step$/).click();
+  await expect(card(page)).toContainText('Check what you know');
+  await page.locator('[data-ui="back"]').click();
+  await expect(card(page)).toContainText('Walk into Bay 4');
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await page.getByRole('button', { name: 'Back to start' }).click();
+  await expect(page.locator('[data-ui="title-screen"]')).toBeVisible();
 });

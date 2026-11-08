@@ -8,7 +8,7 @@
       "more": "This is a fluid spill on a walking route, a classic cause of slips and same-level falls. US rules say walking surfaces are kept free of hazards such as leaks and spills, and UK guidance says spills should be cleaned up at once. Immediate control: cordon it off and clean it up. Better: find and fix the leaking truck or container, because the hierarchy of controls ranks removing the source above warning signs.",
       "whyItMatters": "Practice zone hazard: slips on walking routes.",
       "realSize": [
-        2.0,
+        2,
         0,
         1.5
       ],
@@ -16,7 +16,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.22",
       "role": "task",
       "scene": "bay-4",
-      "asset": "procedural"
+      "asset": "procedural",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-unchocked-trailer",
@@ -33,7 +34,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "task",
       "scene": "bay-4",
-      "asset": "trailer-53ft"
+      "asset": "trailer-53ft",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-trip-hose",
@@ -50,7 +52,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.22",
       "role": "task",
       "scene": "bay-4",
-      "asset": "hose-floor"
+      "asset": "hose-floor",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-frayed-cable",
@@ -67,7 +70,8 @@
       "source": "https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.178",
       "role": "task",
       "scene": "bay-4",
-      "asset": "charger-cable-frayed"
+      "asset": "charger-cable-frayed",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "distractor-ramped-cable",
@@ -76,7 +80,7 @@
       "more": "It looks like a trip risk, but the cable runs through a proper cable ramp and sits outside the marked walkway. This is a controlled condition: the surface stays free of protruding objects. No action is needed beyond keeping it that way.",
       "whyItMatters": "Practice zone: controlled condition, not a hazard.",
       "realSize": [
-        1.0,
+        1,
         0.052,
         0.296
       ],
@@ -84,7 +88,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.22",
       "role": "task",
       "scene": "bay-4",
-      "asset": "cable-ramp"
+      "asset": "cable-ramp",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "distractor-secured-stack",
@@ -101,7 +106,8 @@
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "task",
       "scene": "bay-4",
-      "asset": "pallet-wrapped-tall"
+      "asset": "pallet-wrapped-tall",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "neutral-parked-truck",
@@ -118,7 +124,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "task",
       "scene": "bay-4",
-      "asset": "reach-truck"
+      "asset": "reach-truck",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-overhang",
@@ -135,7 +142,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "task",
       "scene": "bay-4",
-      "asset": "pallet-wrapped"
+      "asset": "pallet-wrapped",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-damaged-upright",
@@ -145,14 +153,15 @@
       "whyItMatters": "Assessed zone hazard: rack collapse.",
       "realSize": [
         0.15,
-        6.0,
+        6,
         1.124
       ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "task",
       "scene": "bay-4",
-      "asset": "rack-frame-damaged"
+      "asset": "rack-frame-damaged",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-blocked-exit",
@@ -169,7 +178,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.37",
       "role": "task",
       "scene": "bay-4",
-      "asset": "fire-exit-door"
+      "asset": "fire-exit-door",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-misaligned-mirror",
@@ -186,7 +196,8 @@
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "task",
       "scene": "bay-4",
-      "asset": "convex-mirror"
+      "asset": "convex-mirror",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-missing-guard",
@@ -203,7 +214,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.212",
       "role": "task",
       "scene": "bay-4",
-      "asset": "packing-cutter"
+      "asset": "packing-cutter",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "hazard-leaning-stack",
@@ -220,7 +232,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "task",
       "scene": "bay-4",
-      "asset": "carton-stack-leaning"
+      "asset": "carton-stack-leaning",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "distractor-guarded-machine",
@@ -237,7 +250,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.212",
       "role": "task",
       "scene": "bay-4",
-      "asset": "packing-cutter"
+      "asset": "packing-cutter",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "neutral-empty-aisle-end",
@@ -248,13 +262,14 @@
       "realSize": [
         3.5,
         0,
-        6.0
+        6
       ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "task",
       "scene": "bay-4",
-      "asset": "procedural"
+      "asset": "procedural",
+      "objective": "m2: practice hunt, objectives 1 and 2"
     },
     {
       "id": "t-hazard-straddle-load",
@@ -271,7 +286,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
       "role": "task",
       "scene": "bay-4",
-      "asset": "forklift"
+      "asset": "forklift",
+      "objective": "m4: transfer hunt, objectives 1 and 2"
     },
     {
       "id": "t-hazard-charging-block",
@@ -288,7 +304,8 @@
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.151",
       "role": "task",
       "scene": "bay-4",
-      "asset": "eyewash-station-neglected"
+      "asset": "eyewash-station-neglected",
+      "objective": "m4: transfer hunt, objectives 1 and 2"
     },
     {
       "id": "t-distractor-striped-gate",
@@ -305,7 +322,8 @@
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
       "role": "task",
       "scene": "bay-4",
-      "asset": "swing-gate"
+      "asset": "swing-gate",
+      "objective": "m4: transfer hunt, objectives 1 and 2"
     },
     {
       "id": "t-neutral-clear-line",
@@ -316,20 +334,21 @@
       "realSize": [
         1.2,
         0,
-        10.0
+        10
       ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
       "role": "task",
       "scene": "bay-4",
-      "asset": "procedural"
+      "asset": "procedural",
+      "objective": "m4: transfer hunt, objectives 1 and 2"
     },
     {
       "id": "fire-extinguisher",
       "name": "Fire extinguisher",
       "short": "A red extinguisher on a wall bracket, with a sign above it. The space in front of it must stay clear.",
       "more": "Fire equipment only helps if people can reach it fast. US rules say extinguishers are mounted, located and marked so they are easy to reach, and the rule for powered trucks says fire equipment must be kept clear. The label on this model is in Korean: it reads 'fire extinguisher'.",
-      "whyItMatters": "",
+      "whyItMatters": "Fire equipment must stay reachable: compare it with the blocked exit you judge.",
       "realSize": [
         0.28,
         0.659,
@@ -337,16 +356,17 @@
       ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.157",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "korean_fire_extinguisher_01"
+      "asset": "korean_fire_extinguisher_01",
+      "objective": "m2: objective 1 (identify hazards)"
     },
     {
       "id": "eyewash",
       "name": "Eyewash station by the charger",
       "short": "A green wall board near the battery charger holding two sealed bottles of eyewash fluid.",
       "more": "Where people can be splashed with corrosive liquids, US rules require quick-flushing facilities in the work area. Battery electrolyte is corrosive, so charging areas need eyewash close by. Both bottles here are full and sealed.",
-      "whyItMatters": "Compare it with the eyewash in the staging lane.",
+      "whyItMatters": "A working eyewash near battery charging is a control; the neglected one in the staging lane is a hazard to judge.",
       "realSize": [
         0.45,
         0.6,
@@ -354,9 +374,10 @@
       ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.151",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "eyewash-station"
+      "asset": "eyewash-station",
+      "objective": "m4: objective 1 (identify hazards)"
     },
     {
       "id": "first-aid-kit",
@@ -371,7 +392,7 @@
       ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.151",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "medical_box"
     },
@@ -380,7 +401,7 @@
       "name": "Exit sign",
       "short": "A lit EXIT sign with an arrow, over the push-bar fire door on the east wall.",
       "more": "US rules say every exit must be clearly visible and marked by a sign reading 'Exit'. The door opens from the inside with a push bar, without keys or special knowledge. The route to it must stay clear at all times.",
-      "whyItMatters": "",
+      "whyItMatters": "The exit it marks is the one you find blocked and then report to Grace.",
       "realSize": [
         0.38,
         0.2,
@@ -388,33 +409,35 @@
       ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.37",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "exit-sign-box"
+      "asset": "exit-sign-box",
+      "objective": "m2 and m5: objectives 1 and 5"
     },
     {
       "id": "ppe-station",
       "name": "PPE station",
       "short": "A board at the bay entrance with hi-vis vests, hard hats, gloves, safety glasses and ear defenders.",
       "more": "Personal protective equipment must be provided, used and kept in good condition wherever hazards make it necessary. In the hierarchy of controls it is the last line of defence: useful, but only after hazards have been removed or engineered out.",
-      "whyItMatters": "Hierarchy of controls, lowest level.",
+      "whyItMatters": "PPE is the last line in the hierarchy of controls: rank it below removing the hazard.",
       "realSize": [
         1.34,
-        2.0,
+        2,
         0.406
       ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.132",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "ppe-station"
+      "asset": "ppe-station",
+      "objective": "m4: objective 4 (hierarchy of controls)"
     },
     {
       "id": "rack-load-sign",
       "name": "Rack load-rating sign",
       "short": "A white sign at the end of each rack row giving the maximum load per level and per bay.",
       "more": "Racking is designed for a set load, and UK guidance says each installation should carry a clear notice of its maximum load. Overloading a level can bend beams and uprights. The figures on this sign are fictional.",
-      "whyItMatters": "",
+      "whyItMatters": "The load sign gives the safe rack load; overloading and overhangs are hazards to judge.",
       "realSize": [
         0.4,
         0.3,
@@ -422,33 +445,35 @@
       ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "decal:sign-rack-load"
+      "asset": "decal:sign-rack-load",
+      "objective": "m2: objective 1 (identify hazards)"
     },
     {
       "id": "floor-markings",
       "name": "Floor markings",
       "short": "Yellow lines mark the pedestrian walkway; white arrows mark the truck route; hatched areas must stay clear.",
       "more": "Painted lines show people and drivers where each belongs. US rules say permanent aisles are marked, and UK guidance says pedestrians and vehicles should be kept apart. Paint alone is an administrative control; barriers and gates make it an engineering one. The layout here is fictional.",
-      "whyItMatters": "Walkway hazards are judged against these lines.",
+      "whyItMatters": "Marked walkways separate people from trucks; a clear, marked line is a controlled condition.",
       "realSize": [
         1.2,
         0,
-        30.0
+        30
       ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.176",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "procedural"
+      "asset": "procedural",
+      "objective": "m2: objective 2 (hazard or controlled)"
     },
     {
       "id": "forklift",
       "name": "Counterbalance forklift",
       "short": "A yellow forklift driving its route with an amber beacon and a blue spot projected on the floor ahead.",
       "more": "The blue spot warns people around a corner that a truck is coming, even when they cannot hear it; EU-OSHA lists it as good practice in noisy places. Operators must examine their truck before each shift. The route and timing here are fictional, and the beacon and spot are the only warnings: this course has no sound.",
-      "whyItMatters": "Truck movement matters in the incident replay.",
+      "whyItMatters": "Its amber beacon, blue floor spot and fixed route are the warnings a pedestrian relies on; the replay near-miss turns on them.",
       "realSize": [
         1.315,
         2.339,
@@ -456,9 +481,10 @@
       ],
       "honesty": "fictional",
       "source": "https://eguides.osha.europa.eu/vehicle-safety/good-practices/blue-safety-spotlight",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "forklift"
+      "asset": "forklift",
+      "objective": "m2–m3: objective 1 (forklift–pedestrian hazards)"
     },
     {
       "id": "forklift-controls",
@@ -473,7 +499,7 @@
       ],
       "honesty": "reconstructed",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "forklift"
     },
@@ -486,11 +512,11 @@
       "realSize": [
         0.96,
         0.96,
-        12.0
+        12
       ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "conveyor-section"
     },
@@ -499,7 +525,7 @@
       "name": "Conveyor emergency stop",
       "short": "A red mushroom-head button on a yellow box on the conveyor frame. Press it to stop the line at once.",
       "more": "Emergency stops are big, red and easy to hit without looking. After a stop, the switch must be reset before the conveyor can start again, so nobody restarts it by accident. (That reset rule comes from a US construction standard, quoted here as background.)",
-      "whyItMatters": "",
+      "whyItMatters": "An emergency stop is an engineering control: compare it with the missing guard you judge.",
       "realSize": [
         0.12,
         0.165,
@@ -507,9 +533,10 @@
       ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1926.555",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "conveyor-estop"
+      "asset": "conveyor-estop",
+      "objective": "m4: objective 4 (hierarchy of controls)"
     },
     {
       "id": "dock-door",
@@ -524,7 +551,7 @@
       ],
       "honesty": "fictional",
       "source": "",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "dock-door"
     },
@@ -533,7 +560,7 @@
       "name": "Dock signal light",
       "short": "A red and green light beside each dock door, facing into the bay.",
       "more": "The light tells drivers inside whether the trailer is held to the dock: green means it is safe to drive on, red means stop. UK guidance lists vehicle restraints, interlocks, key custody and traffic lights as ways to stop trailers moving during loading. This signal system is fictional.",
-      "whyItMatters": "Links to the trailer at dock door 2.",
+      "whyItMatters": "The dock light shows whether a trailer is safe to enter; it is how you judge the unchocked trailer.",
       "realSize": [
         0.16,
         0.34,
@@ -541,16 +568,17 @@
       ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "dock-signal-light"
+      "asset": "dock-signal-light",
+      "objective": "m2: objective 2 (hazard or controlled)"
     },
     {
       "id": "vehicle-restraint",
       "name": "Trailer restraint",
       "short": "A yellow box low on the dock wall with a red hook that rises to catch the trailer's rear bar.",
       "more": "A vehicle restraint holds the trailer against the dock so it cannot creep away during loading. Linked to the signal light, it is an engineering control, stronger than relying on drivers to remember chocks.",
-      "whyItMatters": "Links to the trailer at dock door 2.",
+      "whyItMatters": "A restraint holds the trailer to the dock: one of the controls missing at the unchocked trailer.",
       "realSize": [
         0.5,
         0.45,
@@ -558,16 +586,17 @@
       ],
       "honesty": "real",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "vehicle-restraint"
+      "asset": "vehicle-restraint",
+      "objective": "m2: objective 2 (hazard or controlled)"
     },
     {
       "id": "wheel-chock",
       "name": "Wheel chocks",
       "short": "Yellow wedge-shaped chocks hanging on the wall by the dock doors.",
       "more": "Chocks go under a trailer's rear wheels so it cannot roll while forklifts drive in and out. US rules require the brakes set and chocks placed before a powered truck boards a highway trailer.",
-      "whyItMatters": "Links to the trailer at dock door 2.",
+      "whyItMatters": "A chock stops a trailer creeping away from the dock: compare a chocked door with the unchocked one.",
       "realSize": [
         0.22,
         0.215,
@@ -575,9 +604,10 @@
       ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "wheel-chock"
+      "asset": "wheel-chock",
+      "objective": "m2: objective 2 (hazard or controlled)"
     },
     {
       "id": "dock-leveller",
@@ -592,7 +622,7 @@
       ],
       "honesty": "real",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.26",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "dock-leveller"
     },
@@ -609,7 +639,7 @@
       ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "high-bay-light"
     },
@@ -622,7 +652,7 @@
       "realSize": 1.71,
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "associate-receiving"
     },
@@ -635,7 +665,7 @@
       "realSize": 1.7,
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "associate-staging"
     },
@@ -644,13 +674,14 @@
       "name": "Grace, shift supervisor",
       "short": "The night-shift supervisor in a white hard hat, at her desk by the dock with a clipboard.",
       "more": "Grace is the person you report hazards to in the speak-up scene. She is a fictional character, built from open human models, with restrained, lifelike movement.",
-      "whyItMatters": "Module 5: speaking up.",
+      "whyItMatters": "Grace is the busy supervisor you report the blocked exit to.",
       "realSize": 1.7,
       "honesty": "fictional",
       "source": "",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "grace-supervisor"
+      "asset": "grace-supervisor",
+      "objective": "m5: objective 5 (report a hazard)"
     },
     {
       "id": "forklift-driver",
@@ -661,7 +692,7 @@
       "realSize": 1.81,
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "forklift-driver"
     },
@@ -674,7 +705,7 @@
       "realSize": 1.78,
       "honesty": "fictional",
       "source": "",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "picker-replay"
     },
@@ -691,7 +722,7 @@
       ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "pallet-wrapped"
     },
@@ -708,7 +739,7 @@
       ],
       "honesty": "fictional",
       "source": "",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "carton-600"
     },
@@ -725,7 +756,7 @@
       ],
       "honesty": "fictional",
       "source": "https://www.law.cornell.edu/cfr/text/29/1910.178",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "battery-charger"
     },
@@ -742,7 +773,7 @@
       ],
       "honesty": "real",
       "source": "https://en.wikipedia.org/wiki/Pallet",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "pallet"
     },
@@ -759,7 +790,7 @@
       ],
       "honesty": "real",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "pallet-jack"
     },
@@ -768,7 +799,7 @@
       "name": "Steel bollard",
       "short": "A yellow steel post with black bands, set in the floor where the walkway meets the truck route.",
       "more": "Bollards and barriers keep trucks out of places meant for people, such as walkway ends and doorways. UK guidance recommends physical barriers where people and vehicles share space.",
-      "whyItMatters": "",
+      "whyItMatters": "Bollards keep trucks out of walkways: a physical barrier ranks above signs and training.",
       "realSize": [
         0.2,
         1.198,
@@ -776,16 +807,17 @@
       ],
       "honesty": "real",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "bollard"
+      "asset": "bollard",
+      "objective": "m4: objective 4 (hierarchy of controls)"
     },
     {
       "id": "upright-protector",
       "name": "Upright protector",
       "short": "A yellow steel guard bolted to the floor around the foot of a rack upright.",
       "more": "Most rack damage happens at the lower levels, where trucks turn. UK guidance says to protect uprights likely to be struck, with guards in a conspicuous colour at the ends of runs.",
-      "whyItMatters": "Compare it with the bent upright in the south row.",
+      "whyItMatters": "A guard on a rack upright is an engineering control against truck strikes like the bent upright.",
       "realSize": [
         0.22,
         0.4,
@@ -793,9 +825,10 @@
       ],
       "honesty": "real",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
-      "asset": "rack-upright-protector"
+      "asset": "rack-upright-protector",
+      "objective": "m4: objective 4 (hierarchy of controls)"
     },
     {
       "id": "supervisor-desk",
@@ -804,13 +837,13 @@
       "more": "This is where Grace plans the night shift and takes reports. Her desk, her shift and the paperwork are fictional.",
       "whyItMatters": "",
       "realSize": [
-        2.0,
+        2,
         0.787,
         0.947
       ],
       "honesty": "fictional",
       "source": "",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "metal_office_desk"
     },
@@ -819,14 +852,15 @@
       "name": "Pallet racking",
       "short": "Blue upright frames and orange beams, two beam levels high, with wrapped pallets stored on the beams and the floor.",
       "more": "Adjustable pallet racking holds loads at height. Its strength depends on the uprights staying straight and the beams staying locked in, so damage must be reported and the load limit kept. UK guidance asks for regular inspection by a competent person. The layout of these racks is fictional.",
-      "whyItMatters": "Rack hazards are judged in the assessed zone.",
+      "whyItMatters": "Rack hazards hide here: the overhang, the bent upright and the leaning stack. Read beams, uprights and the load sign first.",
       "realSize": null,
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "learn",
       "scene": "bay-4",
       "asset": "rack-frame",
-      "realSizeNote": "Three racking runs (two aisle rows and the north-wall row) drawn as one set, so one box cannot be checked against one rack. Each frame is 6 m tall and 1.124 m deep, each bay 2.7 m wide; the unit test checks the frame and beam models against their real sizes."
+      "realSizeNote": "Three racking runs (two aisle rows and the north-wall row) drawn as one set, so one box cannot be checked against one rack. Each frame is 6 m tall and 1.124 m deep, each bay 2.7 m wide; the unit test checks the frame and beam models against their real sizes.",
+      "objective": "m2: objective 1 (identify hazards)"
     },
     {
       "id": "roof-lights",
@@ -835,13 +869,13 @@
       "more": "Roof lights let daylight into a deep building and save energy by day. The cloud you see moving here is illustrative: a simple drifting pattern, not a weather model.",
       "whyItMatters": "",
       "realSize": [
-        3.0,
+        3,
         0,
-        14.0
+        14
       ],
       "honesty": "fictional",
       "source": "",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "procedural"
     },
@@ -858,7 +892,7 @@
       ],
       "honesty": "fictional",
       "source": "https://www.hse.gov.uk/pubns/priced/hsg76.pdf",
-      "role": "explore",
+      "role": "decorative",
       "scene": "bay-4",
       "asset": "fire-exit-door"
     },
@@ -875,7 +909,7 @@
       ],
       "honesty": "fictional",
       "source": "",
-      "role": "explore",
+      "role": "decorative",
       "scene": "replay",
       "asset": "reach-truck"
     }

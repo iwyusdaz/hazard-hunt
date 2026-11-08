@@ -108,7 +108,7 @@ export class Lessons {
 
   // ---------------------------------------------------------------- module list
   modules() {
-    const m = (id, label, view, text, extra = {}) => ({ id, label, view, text, now: () => this.nowFor(this._index(id)), enter: () => this._enter(this._index(id)), ...extra });
+    const m = (id, label, view, text, extra = {}) => ({ id, label, view, text, now: () => this.nowFor(this._index(id)), enter: () => this._enter(this._index(id)), back: () => this.backStep(this._index(id)), ...extra });
     this._ids = ['why', 'hunt', 'replay', 'fix', 'speak'];
     return [
       m('why', 'Why hazards hide', VIEWS.overview, (el2) => this._text1(el2)),
@@ -147,6 +147,14 @@ export class Lessons {
     app.motion.setCalm(quiz);
     const view = { 'm2-assessed': VIEWS.assessed, 'm5-transfer': VIEWS.staging, 'm4-rank': VIEWS.assessed }[id];
     if (fly && view) app.rig.flyTo(view, 1.1);
+  }
+
+  /** Back (template T-28): one step back inside the module; false on its first step. */
+  backStep(i) {
+    if (!(this.step[i] > 0)) return false;
+    if (this.steps[i][this.step[i]] === 'm3-replay') this.replay?.close();
+    this.goStep(i, this.step[i] - 1);
+    return true;
   }
 
   goStep(i, k) {
