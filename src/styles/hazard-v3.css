@@ -47,3 +47,10 @@
 /* Text mode keeps the grid (it scrolls sideways when narrow); drawer tables stack (template shell.css). */
 .v3-tm table { border-collapse: collapse; width: 100%; margin: 8px 0; display: block; overflow-x: auto; }
 .v3-tm th, .v3-tm td { border-bottom: 1px solid var(--v3-border); padding: 6px 8px; text-align: left; vertical-align: top; }
+
+/* G2 verify-all: Back now sits in the bar, so on a portrait phone the five module
+   steps, the count and Menu are packed tighter (each target stays 44 px) and
+   step 5 no longer scrolls out of view (same rule as lunar 1724c2a). */
+[data-layout="phone-portrait"] .v3-topbar { gap: 4px; padding: 0 4px; }
+[data-layout="phone-portrait"] .v3-stepper ol { gap: 0; }
+[data-layout="phone-portrait"] .v3-menu-btn { padding-left: 8px; padding-right: 8px; }
