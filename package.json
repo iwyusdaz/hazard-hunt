@@ -1,7 +1,7 @@
 {
   "name": "hazard-hunt",
   "private": true,
-  "version": "2.0.1",
+  "version": "3.0.0",
   "type": "module",
   "description": "A three.js workplace safety mini course: spot warehouse hazards in realistic 3D, replay a near-miss, and practice speaking up",
   "engines": {
@@ -16,7 +16,7 @@
     "test:subpath": "npm run build && SLUG=hazard-hunt playwright test tests/sub-path.spec.js",
     "check:a11y": "playwright test tests/a11y.spec.js",
     "poster": "node scripts/render-poster.mjs dock",
-    "validate:showcase": "node scripts/validate-showcase.mjs 2.0.1",
+    "validate:showcase": "node scripts/validate-showcase.mjs 3.0.0",
     "make:lut": "node scripts/make-lut.mjs bay4-night",
     "check:assets": "node scripts/check-assets.mjs"
   },

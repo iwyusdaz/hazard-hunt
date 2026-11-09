@@ -1,5 +1,12 @@
 # Changelog — hazard-hunt
 
+## 3.0.0 (2026-11-09) — scene-first revamp (plan 10 §6.4)
+- Scene-first v3 shell with one top bar. Bay 4 rebuilt with own Blender models, decals and signs; five lifelike adults (MPFB from MakeHuman CC0 assets, own clips); forklift routes without audio.
+- The forklift driver sits in the truck (seat, wheel and pedal IK) and moves with it; forklift model rebuilt.
+- Object roles: 19 task, 15 learn, 19 decorative.
+- Owner visual approval (G2), 2026-11-09, with the known open issues in STATUS.md accepted. Not user testing.
+- Navigation: Back and Back to start; no "All projects" link on project pages. Only course objects open cards; decorative objects open nothing.
+- Posters re-taken from the v3 scene (`poster-3.0.0.webp/.jpg`, headed-GPU screenshots); the v2 posters are removed.
 ## 2.0.1 (2026-10-29) — patch
 
 - **Regression fix:** the V2-5 HUD palette (slate drawer, POI panel, look pad, replay bar; review revision R37) had been lost when the shared v2 core was re-synced into `src/v2/hud-shell.css`. Restored and moved to the repo-owned `src/styles/case-hud.css`, so future core syncs can't overwrite it. The sync tool now refuses to overwrite a file that has repo-only lines.

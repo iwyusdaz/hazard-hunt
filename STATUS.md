@@ -1,5 +1,18 @@
 # Status — hazard-hunt
 
+## v3.0.0 release (2026-11-09)
+Released as v3.0.0 (plan 10 "scene-first revamp"). The code is the verified head `0edfbb2` plus docs: the owner visual approval record (`23b4ce8`, DECISIONS.md) and the release commit (version 3.0.0, v3 posters, these notes). The owner approved the v3 scene on 2026-11-09 ("approve all for now") with the issues below accepted as known limitations. That is owner visual approval, not user testing; no learners have used v3.
+
+Checks on the verified head (Apple M1, headed Chromium 143 on the GPU for ui-audit 1.2.1, headless for the test suites): vitest 166/166; e2e 11/11 (on `6f47c65`). Full results: `.agents/tasks/immersive-v3/g2/fix-round-report.md` in the portfolio workspace and `evaluation/results/ui-audit-g2-verify*.json` here.
+
+### Known open issues at v3.0.0
+- **Driver:** seated correctly (pelvis on the seat, hands on the wheel, feet on the pedals), but the fingers keep the clip's curl and the pedals don't move.
+- **Forklift materials:** the truck is still bevelled primitives with flat paint, with no decals or wear.
+- **Trailer** (`docs/trailer.webm`) still shows v2.
+- **Touch reach at 390×844:** 7 course objects are missed: `distractor-ramped-cable`, `neutral-parked-truck`, `hazard-missing-guard`, `distractor-guarded-machine`, `eyewash`, `conveyor-estop`, `upright-protector`. Mouse, the keyboard "Objects in view" list and text mode reach every course object.
+- **Portrait zoom (template T-31 camera part)** is only in lunar-field-expedition. Syncing it here might improve phone framing and touch reach, but every phone view would need re-checking.
+
+
 Last updated: 2026-10-28
 
 ## v2.0.0 visual and interaction revamp (plan 09 §4.4)

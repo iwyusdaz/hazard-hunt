@@ -1,4 +1,4 @@
-> **Evaluation status:** Automated functional, accessibility and performance testing plus agent-based design reviews are complete for v1.0.0 and for the v2 visual revamp (four v2 agent reviews, revisions R32–R39; 31 unit tests, 9 functional + accessibility browser tests, sub-path test). No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). See `evaluation/METHODS.md`.
+> **Evaluation status (v3.0.0, 2026-11-09):** Automated functional, accessibility and performance testing is complete (headed GPU audit on an Apple M1, unit and browser tests). v3 had no agent design reviews (the owner chose a lean process); earlier versions' agent reviews are in `evaluation/reviews/`. The owner reviewed the v3 scene and approved it on 2026-11-09; that is owner visual approval, not user testing. No real learners have tested this yet. No physical phone testing has been done (mobile was checked with device emulation). Known open issues at v3.0.0 are listed in [STATUS.md](STATUS.md). See `evaluation/METHODS.md`.
 
 # Hazard Hunt + Incident Replay
 
@@ -6,9 +6,16 @@ A 45-minute workplace safety mini course for new warehouse staff: spot hazards i
 
 **[Play now](https://immersive-learning-showcase.vercel.app/play/hazard-hunt/)** · **[Design documents](design/)** · Role: Sole designer
 
-![A receiving dock in a night-shift warehouse: a dark spill sheen on the concrete floor in the foreground, blue pallet racking loaded with stock on both sides, an orange pallet jack, red steel drums and a dock door with its red-green traffic signal beyond](public/poster-2.0.1.webp)
+![A warehouse floor with yellow walkway lines, a forklift with its driver, pallets of boxes and tall racking under ceiling lights.](public/poster-3.0.0.webp)
 
 The company in this course, Northwind Logistics, is **fictional**, and so are its staff and the incident. All of them were constructed for teaching purposes. **This course does not replace training required by law or by your employer.**
+
+## v3.0.0: scene-first Bay 4
+- **Navigation:** one top bar with the module steps, **Back** (the previous screen), **Back to start** (the intro) and the menu. Project pages don't link to other projects.
+- **People:** five lifelike adults built with MPFB from MakeHuman CC0 bodies, skins, hair and clothes; vests, hard hats, hand props and animation clips are own work. The forklift driver sits in the truck (hip on the seat, hands on the wheel, feet on the pedals) and moves with it.
+- **Scene:** own Blender models (forklift, reach truck, pallet jack, racking, pallets, cartons), decals and signs; forklift routes without audio. Every hazard cites [research/sources.md](research/sources.md).
+- **Purposeful interaction:** only course objects (19 task, 15 learn) open cards; the 19 decorative objects (roof lights and other scenery) open nothing.
+- **Performance (headed Chromium on an Apple M1 GPU, Medium, every module state at four viewports):** at most 10.43 ms GPU p95 (budget 12 ms), at least 59.5 fps, at most 295 draw calls and 0.86 M triangles, 5.16 MB before the first interaction.
 
 ## The problem
 
@@ -27,7 +34,7 @@ Analysis → design → build → evaluate.
 
 1. **Analysis:** a hazard catalog with visual cues and risk ratings, and an "is it training?" check. The misaligned mirror, for example, is a maintenance-system problem more than a training one.
 2. **Design:** five measurable objectives mapped to activity, feedback and assessment ([alignment matrix](design/alignment-matrix.md)), a realism matrix, a shot list and a text-mode design for parity.
-3. **Build:** three.js — a procedural warehouse kit with CC0 PBR materials and image-based lighting, upgraded in v2.0.0 to a full-bleed, living scene: stylized animated workers, ambient life (dust, light shafts, a patrolling utility cart, a moving conveyor) with a Calm Mode during tasks, Poly Haven CC0 dressing models, camera glide between viewpoints and WASD walking — plus content in JSON so a designer can edit it without touching code.
+3. **Build:** three.js — a procedural warehouse kit with CC0 PBR materials and image-based lighting, upgraded in v2.0.0 to a full-bleed, living scene (and in v3.0.0 to own Blender models and lifelike MPFB workers): ambient life (dust, light shafts, a patrolling utility cart, a moving conveyor) with a Calm Mode during tasks, Poly Haven CC0 dressing models, camera glide between viewpoints and WASD walking — plus content in JSON so a designer can edit it without touching code.
 4. **Evaluate:** unit tests on the rating, ranking and dialogue logic, scripted playthroughs, axe accessibility scans, a sub-path deployment test and agent-based reviews. See [Evidence and evaluation](#evidence-and-evaluation).
 
 ## The five modules
@@ -50,23 +57,23 @@ The 3D hunt spans 12 hazards and 4 "safe but looks risky" distractors across a p
 | Distractors ("looks risky, is controlled") | Hazards only | Trains discrimination and cuts over-reporting |
 | Learner-paced replay with pause points and a scrubber | Passive video | The causal chain is the content, so learners need to stop and inspect it |
 | Hierarchy of controls plus "is it training?" | Behavior-only fixes | Mirrors real safety practice and shows performance-consulting judgment |
-| Workers as stylized animated-movie characters (hardhats, hi-vis, breathing/blink/gaze idle life) | Photoreal people | Expressive but not uncanny; position and posture carry the learning cue, faces don't (see DECISIONS.md 19; v1 used deliberately faceless silhouettes) |
+| Workers as lifelike adults (v3, MPFB from MakeHuman CC0 assets, own clips) | Stylized figures (v2), faceless silhouettes (v1) | Owner decision 7 for v3; position and posture carry the learning cue (DECISIONS.md 19 and 25) |
 | Every decision lives in the shared text flow; 3D adds the visual hunt and replay on top | Separate 3D and text versions | Text mode has the same objectives and assessment decisions by construction |
 
 All decisions, with dates: [DECISIONS.md](DECISIONS.md).
 
 ## Realism and cinematics: design rationale
 
-Realism is used where noticing the detail *is* the skill: spill sheen against a matte floor, a bent upright, an overhanging pallet, a missing guard. Everything else is simplified. Workers are stylized animated-movie figures, not photoreal people. Since v2.0.0 the bay lives between decisions — dust in the light, light shafts, a patrolling utility cart, a moving conveyor — and during a rating or replay decision everything calms down (slower and dimmer) so the evidence stays the most salient thing on screen; reduced motion stops the ambient life entirely. The HDRI lights the scene but isn't shown as a backdrop. That follows research showing realistic detail helps when it is task-relevant and harms when it competes for attention ([PMC study](https://pmc.ncbi.nlm.nih.gov/articles/PMC11269326/)), and the finding that seductive details tend to hurt learning ([2025 meta-analysis](https://link.springer.com/content/pdf/10.1007/s10648-025-10099-z.pdf)).
+Realism is used where noticing the detail *is* the skill: spill sheen against a matte floor, a bent upright, an overhanging pallet, a missing guard. Everything else is simplified. Workers are lifelike adults (since v3.0.0). Since v2.0.0 the bay lives between decisions — dust in the light, light shafts, a patrolling utility cart, a moving conveyor — and during a rating or replay decision everything calms down (slower and dimmer) so the evidence stays the most salient thing on screen; reduced motion stops the ambient life entirely. The HDRI lights the scene but isn't shown as a backdrop. That follows research showing realistic detail helps when it is task-relevant and harms when it competes for attention ([PMC study](https://pmc.ncbi.nlm.nih.gov/articles/PMC11269326/)), and the finding that seductive details tend to hurt learning ([2025 meta-analysis](https://link.springer.com/content/pdf/10.1007/s10648-025-10099-z.pdf)).
 
 Cinematic budget: one 14-second intro (S1) plus four replay segments of 14–18 seconds each, 77 seconds in total, inside the 90-second budget. Every shot is captioned, skippable from the first frame (Skip button or Esc) and has a reduced-motion version. The intro plays only when the learner asks for it, and nothing plays during an assessment. See [design/realism-matrix.md](design/realism-matrix.md) and [design/shot-list.md](design/shot-list.md).
 
 ## Evidence and evaluation
 
 **What was measured** (details in [evaluation/METHODS.md](evaluation/METHODS.md)):
-- 31 unit tests: risk-rating bands, including the rule that a rare but fatal hazard is High; the answer key matches the content; controls-ranking scoring; speak-up graph validity (no dead ends, every node and all three outcomes reachable); content counts (12 hazards, 4 distractors, 2 deliberately subtle hazards); every hunt item exists as a selectable 3D object; every zone item is framed by one of its zone's viewpoints at 16:10 and 4:3; v2 living-world integration (ambient systems, patrol motion, calm mode, viewpoint rings).
-- 9 browser tests: module navigation by keyboard, pre-check feedback, practice-zone rating, a hinted practice zone plus an assessed zone without hints, every speak-up outcome reached, replay decisions and causes chart, intro captioned and skippable, an axe scan of every overlay state (zero critical or serious issues), plus the sub-path test at `/play/hazard-hunt/` (no failed requests, no console errors).
-- Headed performance on an Apple M1 (v2 scene, 2026-10-28): 60 fps on Medium, 199 draw calls (budget 300), menu interactive in 0.21 s, 8.5 MB downloaded before the first interaction (budget 15 MB). See `evaluation/results/perf-2026-10-28.json`.
+- 166 unit tests (v3.0.0) pass, including: risk-rating bands, including the rule that a rare but fatal hazard is High; the answer key matches the content; controls-ranking scoring; speak-up graph validity (no dead ends, every node and all three outcomes reachable); content counts (12 hazards, 4 distractors, 2 deliberately subtle hazards); every hunt item exists as a selectable 3D object; every zone item is framed by one of its zone's viewpoints at 16:10 and 4:3; v2 living-world integration (ambient systems, patrol motion, calm mode, viewpoint rings).
+- 11 browser tests (v3.0.0) pass: keyboard-only completion of all five modules, text mode, touch tap, reduced motion, no-WebGL fallback, Back, axe and the sub-path test. Earlier versions also tested module navigation by keyboard, pre-check feedback, practice-zone rating, a hinted practice zone plus an assessed zone without hints, every speak-up outcome reached, replay decisions and causes chart, intro captioned and skippable, an axe scan of every overlay state (zero critical or serious issues), plus the sub-path test at `/play/hazard-hunt/` (no failed requests, no console errors).
+- Headed performance on an Apple M1 (v3.0.0, ui-audit in every module state at 1440×900, 1280×720, 390×844 and 844×390): see the v3.0.0 section above; report `evaluation/results/ui-audit-g2-verify.json`.
 - v2 agent reviews (visual realism, interaction, motion load, honesty and accessibility) by a reviewer that didn't build the revamp, labeled "Agent review" in [evaluation/reviews/](evaluation/reviews/); revisions R32–R39 are in DECISIONS.md.
 
 **What it can show:** the course works end to end by keyboard and in text mode, every branch and outcome is reachable, the overlay passes automated WCAG 2.1 AA checks, and the build works under the shared showcase path.
@@ -91,7 +98,7 @@ Tested with axe-core (WCAG 2.1 A/AA rules) on every overlay state, keyboard-only
 
 - A current Chrome, Edge, Firefox or Safari with WebGL2. Without WebGL2, the course runs fully in text mode.
 - Best on a desktop or laptop. Phones use the Low preset; mobile was checked with device emulation only.
-- Workers are stylized animated-movie characters, not realistic people (deliberate, documented).
+- The forklift is bevelled primitives with flat paint, and the driver's fingers and the pedals don't move (STATUS.md).
 - The risk ratings, incident and company are constructed for teaching and are not drawn from real incident data.
 
 ## Related portfolio work
@@ -109,4 +116,4 @@ Code: MIT ([LICENSE](LICENSE)). Learning content: CC BY 4.0 ([LICENSE-CONTENT](L
 
 ## Trailer
 
-**Trailer:** [docs/trailer.webm](docs/trailer.webm) (54 s, captioned; WebVTT sidecar at [docs/trailer.vtt](docs/trailer.vtt)). Recorded from the real app on the Mac GPU; the caption text is also in the sidecar file.
+**Trailer:** [docs/trailer.webm](docs/trailer.webm) (54 s, recorded from v2, so it doesn't show the v3 scene; captioned; WebVTT sidecar at [docs/trailer.vtt](docs/trailer.vtt)). Recorded from the real app on the Mac GPU; the caption text is also in the sidecar file.

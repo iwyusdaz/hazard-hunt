@@ -1,0 +1,695 @@
+{
+  "tool": "ui-audit",
+  "toolVersion": "1.2.1",
+  "plan": "implementation-plans/immersive/10-visual-richness.md §7",
+  "label": "G2 verify-all subset phonebar",
+  "repo": "hazard-hunt",
+  "version": "2.0.1",
+  "git": {
+    "branch": "v3",
+    "commit": "6f47c65",
+    "dirty": true
+  },
+  "measuredAt": "2026-11-09T08:10:35.593Z",
+  "mode": "headed Chromium on the local GPU",
+  "machine": {
+    "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1, Unspecified Version)",
+    "browser": "Chromium 143.0.7499.4 (Playwright 1.57.0)"
+  },
+  "method": "VITE_TEST_HOOKS=1 build served on 127.0.0.1:5204 (gzip for text types, no cache). Fresh browser context per viewport (desktop DSF 2; phone DSF 3, isMobile, hasTouch). Download = bytes the server sent from navigation until 2 s of network silence. States: first load, then each module tab (and its cinematic sub-state while a shot plays). Medium preset forced after the download measurement. Alive: two canvas-only screenshots 5 s apart, 3x3 grid, a region counts when >= 0.25% of its pixels change by > 12/255. Performance: 4 s sample per state; GPU time from EXT_disjoint_timer_query_webgl2 around each requestAnimationFrame dispatch; draw calls and triangles counted at the WebGL call level (all passes), max over the sample.",
+  "thresholds": {
+    "panelMaxPctDesktop": 25,
+    "panelMaxPctPhone": 40,
+    "topBarMaxPx": 56,
+    "chromeRowsMax": 1,
+    "targetMinTouchPx": 44,
+    "targetMinMousePx": 32,
+    "textMinPx": 14,
+    "bodyMinPx": 16,
+    "maxTextSizes": 3,
+    "nowCardMaxWords": 60,
+    "fkMaxGrade": 8,
+    "scaleTolerance": 0.15,
+    "aliveMinRegions": 3,
+    "aliveGapMs": 5000,
+    "alivePixelDelta": 12,
+    "aliveRegionFraction": 0.0025,
+    "gpuMsP95Max": 12,
+    "fpsMin": 55,
+    "drawCallsMax": 300,
+    "trianglesMax": 1500000,
+    "downloadDesktopMaxMB": 15,
+    "downloadPhoneMaxMB": 8,
+    "fileMaxMB": 20,
+    "primitiveMinScreenFraction": 0.001,
+    "markerMaxScreenFraction": 0.02
+  },
+  "config": {
+    "readability": {
+      "mode": "fk",
+      "maxGrade": 8
+    },
+    "states": "auto (module tabs)",
+    "configFile": "evaluation/ui-audit.config.json"
+  },
+  "pass": false,
+  "summary": {
+    "sceneCoverage": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 1,
+      "skipped": 0,
+      "where": []
+    },
+    "topChrome": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "blockedControls": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "overlappingControls": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "targetSize": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "textSize": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "typeface": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "instructionLength": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 1,
+      "skipped": 0,
+      "where": []
+    },
+    "readability": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 1,
+      "skipped": 0,
+      "where": []
+    },
+    "inspectableObjects": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 1,
+      "skipped": 0,
+      "where": []
+    },
+    "barePrimitives": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "abstractMarkers": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "alive": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "performance": {
+      "status": "pass",
+      "failing": 0,
+      "judged": 2,
+      "skipped": 0,
+      "where": []
+    },
+    "download": {
+      "status": "pass",
+      "byViewport": {
+        "390x844": {
+          "status": "pass",
+          "mb": 5.16,
+          "limitMB": 8
+        }
+      }
+    },
+    "inspectableObjectsReach": {
+      "status": "fail"
+    },
+    "scale": {
+      "status": "pass"
+    }
+  },
+  "repoGates": {
+    "inspectableObjectsReach": {
+      "status": "fail",
+      "catalogEntries": 53,
+      "courseRelevant": 34,
+      "decorative": 19,
+      "unclassified": [],
+      "notReachedByMouse": [
+        "hazard-spill",
+        "hazard-trip-hose",
+        "hazard-frayed-cable",
+        "distractor-ramped-cable",
+        "distractor-secured-stack",
+        "neutral-parked-truck",
+        "hazard-overhang",
+        "hazard-damaged-upright",
+        "hazard-blocked-exit",
+        "hazard-misaligned-mirror",
+        "hazard-missing-guard",
+        "hazard-leaning-stack",
+        "distractor-guarded-machine",
+        "neutral-empty-aisle-end",
+        "t-hazard-straddle-load",
+        "t-hazard-charging-block",
+        "t-distractor-striped-gate",
+        "t-neutral-clear-line",
+        "fire-extinguisher",
+        "eyewash",
+        "exit-sign",
+        "ppe-station",
+        "rack-load-sign",
+        "floor-markings",
+        "forklift",
+        "conveyor-estop",
+        "vehicle-restraint",
+        "bollard",
+        "upright-protector",
+        "pallet-racking"
+      ],
+      "notReachedByTouch": [
+        "hazard-spill",
+        "hazard-trip-hose",
+        "hazard-frayed-cable",
+        "distractor-ramped-cable",
+        "distractor-secured-stack",
+        "neutral-parked-truck",
+        "hazard-overhang",
+        "hazard-damaged-upright",
+        "hazard-blocked-exit",
+        "hazard-misaligned-mirror",
+        "hazard-missing-guard",
+        "hazard-leaning-stack",
+        "distractor-guarded-machine",
+        "neutral-empty-aisle-end",
+        "t-hazard-straddle-load",
+        "t-hazard-charging-block",
+        "t-distractor-striped-gate",
+        "t-neutral-clear-line",
+        "fire-extinguisher",
+        "eyewash",
+        "exit-sign",
+        "ppe-station",
+        "rack-load-sign",
+        "floor-markings",
+        "forklift",
+        "conveyor-estop",
+        "vehicle-restraint",
+        "bollard",
+        "upright-protector",
+        "pallet-racking"
+      ],
+      "notInKeyboardList": [],
+      "notInTextMode": [],
+      "decorativeOpenedCard": [],
+      "decorativeInKeyboardList": [],
+      "decorativeInTextMode": [],
+      "note": "Mouse, keyboard list and text mode checked at 390x844, touch at 390x844, in every exploration state"
+    },
+    "scale": {
+      "status": "pass",
+      "checked": 53,
+      "failing": 0,
+      "items": [],
+      "exempt": [
+        {
+          "id": "pallet-racking",
+          "status": "exempt",
+          "reason": "Three racking runs (two aisle rows and the north-wall row) drawn as one set, so one box cannot be checked against one rack. Each frame is 6 m tall and 1.124 m deep, each bay 2.7 m wide; the unit test checks the frame and beam models against their real sizes."
+        }
+      ],
+      "angular": [],
+      "notWorldFrame": [
+        {
+          "id": "hazard-trip-hose",
+          "frame": "local"
+        },
+        {
+          "id": "hazard-frayed-cable",
+          "frame": "local"
+        },
+        {
+          "id": "hazard-overhang",
+          "frame": "local"
+        },
+        {
+          "id": "hazard-misaligned-mirror",
+          "frame": "local"
+        },
+        {
+          "id": "fire-extinguisher",
+          "frame": "rest pose"
+        },
+        {
+          "id": "rack-load-sign",
+          "frame": "rest pose"
+        },
+        {
+          "id": "forklift",
+          "frame": "rest pose"
+        },
+        {
+          "id": "forklift-controls",
+          "frame": "local"
+        },
+        {
+          "id": "dock-door",
+          "frame": "rest pose"
+        },
+        {
+          "id": "dock-signal",
+          "frame": "rest pose"
+        },
+        {
+          "id": "vehicle-restraint",
+          "frame": "rest pose"
+        },
+        {
+          "id": "wheel-chock",
+          "frame": "rest pose"
+        },
+        {
+          "id": "dock-leveller",
+          "frame": "rest pose"
+        },
+        {
+          "id": "high-bay-light",
+          "frame": "rest pose"
+        },
+        {
+          "id": "associate-receiving",
+          "frame": "rest pose"
+        },
+        {
+          "id": "associate-staging",
+          "frame": "rest pose"
+        },
+        {
+          "id": "grace-supervisor",
+          "frame": "rest pose"
+        },
+        {
+          "id": "forklift-driver",
+          "frame": "rest pose"
+        },
+        {
+          "id": "picker-replay",
+          "frame": "rest pose"
+        },
+        {
+          "id": "shrink-wrapped-pallets",
+          "frame": "rest pose"
+        },
+        {
+          "id": "labelled-cartons",
+          "frame": "rest pose"
+        },
+        {
+          "id": "bollard",
+          "frame": "rest pose"
+        },
+        {
+          "id": "replay-truck",
+          "frame": "local"
+        }
+      ]
+    }
+  },
+  "textBeforeFirstAction": {
+    "390x844": {}
+  },
+  "statesRun": 2,
+  "errorStates": [],
+  "systemSuspended": [],
+  "runs": [
+    {
+      "viewport": "390x844",
+      "class": "phone",
+      "dsf": 3,
+      "states": [
+        {
+          "name": "start",
+          "label": "First load, no input",
+          "phase": "title",
+          "gates": {
+            "sceneCoverage": {
+              "status": "n/a",
+              "reason": "phase title"
+            },
+            "topChrome": {
+              "status": "pass",
+              "position": "top",
+              "value": {
+                "rows": 0,
+                "topHeightPx": 0
+              },
+              "limit": {
+                "rows": 1,
+                "topHeightPx": 56
+              },
+              "bars": []
+            },
+            "blockedControls": {
+              "status": "pass",
+              "value": 0,
+              "of": 2,
+              "items": [],
+              "blockers": {},
+              "inertUnderOverlay": 0
+            },
+            "overlappingControls": {
+              "status": "pass",
+              "value": 0,
+              "items": []
+            },
+            "targetSize": {
+              "status": "pass",
+              "value": 0,
+              "minPx": 44,
+              "items": []
+            },
+            "textSize": {
+              "status": "pass",
+              "value": {
+                "minPx": 14.88,
+                "bodyPx": 17,
+                "distinctSizes": 3
+              },
+              "minSample": "Northwind Logistics, Bay 4 · night shift",
+              "sizes": [
+                {
+                  "px": 15,
+                  "chars": 52
+                },
+                {
+                  "px": 17,
+                  "chars": 127
+                },
+                {
+                  "px": 42.5,
+                  "chars": 11
+                }
+              ]
+            },
+            "typeface": {
+              "status": "pass",
+              "value": [],
+              "headings": {
+                "Barlow Condensed": 1
+              },
+              "offListChars": {}
+            },
+            "instructionLength": {
+              "status": "n/a",
+              "reason": "phase title"
+            },
+            "readability": {
+              "status": "n/a",
+              "reason": "phase title"
+            },
+            "inspectableObjects": {
+              "status": "n/a",
+              "reason": "phase title"
+            },
+            "barePrimitives": {
+              "status": "pass",
+              "value": 0,
+              "instances": 0,
+              "items": []
+            },
+            "abstractMarkers": {
+              "status": "pass",
+              "value": 0,
+              "groups": 0,
+              "items": []
+            },
+            "alive": {
+              "status": "pass",
+              "value": 9,
+              "limit": 3,
+              "fractions": [
+                0.6657,
+                0.6637,
+                0.961,
+                0.5537,
+                0.6601,
+                0.8993,
+                0.2195,
+                0.9618,
+                0.9583
+              ]
+            },
+            "performance": {
+              "status": "pass",
+              "value": {
+                "preset": "medium",
+                "resolutionScale": 1,
+                "canvas": "585x1266",
+                "frames": 240,
+                "fps": 60,
+                "frameMsP95": 18.2,
+                "gpuMsP95": 2.21,
+                "gpuSamples": 240,
+                "gpuTimer": true,
+                "drawCallsMax": 40,
+                "trianglesMax": 273273,
+                "threeInfoLastFrame": {
+                  "calls": 38,
+                  "triangles": 273269
+                }
+              },
+              "failures": []
+            }
+          }
+        },
+        {
+          "name": "m5",
+          "label": "5Module 5 of 5: Speak up",
+          "phase": "explore",
+          "gates": {
+            "sceneCoverage": {
+              "status": "pass",
+              "value": 20.1,
+              "limit": 40,
+              "unionPct": 31.2,
+              "sceneVisiblePct": 63.1,
+              "panels": [
+                {
+                  "el": "section#v3-now.v3-now",
+                  "pct": 20.1,
+                  "chars": 137
+                },
+                {
+                  "el": "div.v3-cluster",
+                  "pct": 7.2,
+                  "chars": 17
+                },
+                {
+                  "el": "div.v3-joystick",
+                  "pct": 3.8,
+                  "chars": 0
+                }
+              ]
+            },
+            "topChrome": {
+              "status": "pass",
+              "position": "top",
+              "value": {
+                "rows": 1,
+                "topHeightPx": 56
+              },
+              "limit": {
+                "rows": 1,
+                "topHeightPx": 56
+              },
+              "bars": [
+                {
+                  "el": "header.v3-topbar",
+                  "edge": "top",
+                  "heightPx": 56,
+                  "rows": 1,
+                  "controls": 7
+                }
+              ]
+            },
+            "blockedControls": {
+              "status": "pass",
+              "value": 0,
+              "of": 16,
+              "items": [],
+              "blockers": {},
+              "inertUnderOverlay": 0
+            },
+            "overlappingControls": {
+              "status": "pass",
+              "value": 0,
+              "items": []
+            },
+            "targetSize": {
+              "status": "pass",
+              "value": 0,
+              "minPx": 44,
+              "items": []
+            },
+            "textSize": {
+              "status": "pass",
+              "value": {
+                "minPx": 14.88,
+                "bodyPx": 17,
+                "distinctSizes": 2
+              },
+              "minSample": "1",
+              "sizes": [
+                {
+                  "px": 15,
+                  "chars": 25
+                },
+                {
+                  "px": 17,
+                  "chars": 131
+                }
+              ]
+            },
+            "typeface": {
+              "status": "pass",
+              "value": [],
+              "headings": {},
+              "offListChars": {}
+            },
+            "instructionLength": {
+              "status": "pass",
+              "value": 28,
+              "limit": 60,
+              "source": "now-card",
+              "renderedTextChars": 171,
+              "uiTextChars": 329
+            },
+            "readability": {
+              "status": "pass",
+              "mode": "fk",
+              "value": 1,
+              "limit": 8
+            },
+            "inspectableObjects": {
+              "status": "pass",
+              "value": {
+                "inspectable": 33,
+                "decorativeShown": 14
+              },
+              "decorativeInspectable": [],
+              "courseNotInspectable": [],
+              "notInCatalog": [],
+              "catalogEntries": 53
+            },
+            "barePrimitives": {
+              "status": "pass",
+              "value": 0,
+              "instances": 0,
+              "items": []
+            },
+            "abstractMarkers": {
+              "status": "pass",
+              "value": 0,
+              "groups": 0,
+              "items": []
+            },
+            "alive": {
+              "status": "pass",
+              "value": 9,
+              "limit": 3,
+              "fractions": [
+                0.2728,
+                0.3129,
+                0.3763,
+                0.211,
+                0.2307,
+                0.1221,
+                0.0148,
+                0.0106,
+                0.0079
+              ]
+            },
+            "performance": {
+              "status": "pass",
+              "value": {
+                "preset": "medium",
+                "resolutionScale": 1,
+                "canvas": "585x1266",
+                "frames": 240,
+                "fps": 60,
+                "frameMsP95": 17.5,
+                "gpuMsP95": 2.63,
+                "gpuSamples": 240,
+                "gpuTimer": true,
+                "drawCallsMax": 110,
+                "trianglesMax": 423723,
+                "threeInfoLastFrame": {
+                  "calls": 110,
+                  "triangles": 423723
+                }
+              },
+              "failures": []
+            }
+          }
+        }
+      ],
+      "errors": [],
+      "download": {
+        "status": "pass",
+        "mb": 5.16,
+        "limitMB": 8,
+        "requests": 35,
+        "networkIdle": true,
+        "largestFile": {
+          "file": "assets/empty_warehouse_01_1k-9b3d611cad.hdr",
+          "bytes": 1672140,
+          "mb": 1.59
+        },
+        "filesOver20MB": [],
+        "streamedAfterFirstInteractionMB": 20.65
+      },
+      "preset": "medium"
+    }
+  ]
+}
