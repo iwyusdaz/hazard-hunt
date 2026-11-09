@@ -73,7 +73,9 @@ test('sub-path /play/<slug>/ loads with no failed requests or console errors', a
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', (e) => errors.push(String(e)));
 
-  await page.goto(`http://127.0.0.1:${port}/play/${SLUG}/`, { waitUntil: 'networkidle', timeout: 30_000 });
+  // 90 s: on shared CI runners the first load can take longer than 30 s to reach
+  // network idle (3.0.0 push to main; field-ecologist saw the same in its v2.0.1 run).
+  await page.goto(`http://127.0.0.1:${port}/play/${SLUG}/`, { waitUntil: 'networkidle', timeout: 90_000 });
 
   expect(failed, `failed requests: ${failed.join('\n')}`).toEqual([]);
   expect(errors, `console errors: ${errors.join('\n')}`).toEqual([]);
@@ -96,7 +98,7 @@ test('sub-path /play/<slug>/ loads with no failed requests or console errors', a
   // v3: the props, people and decals (KTX2 textures, meshopt models, the
   // self-hosted Basis transcoder) stream after Start, also from the sub-path.
   await page.evaluate(() => localStorage.clear());
-  await page.goto(`http://127.0.0.1:${port}/play/${SLUG}/`, { waitUntil: 'networkidle', timeout: 30_000 });
+  await page.goto(`http://127.0.0.1:${port}/play/${SLUG}/`, { waitUntil: 'networkidle', timeout: 90_000 });
   await page.getByRole('button', { name: /^start$/i }).click();
   await page.getByRole('button', { name: /skip practice/i }).click();
   await page.waitForTimeout(8000);
