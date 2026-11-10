@@ -1,5 +1,8 @@
 # Changelog — hazard-hunt
 
+## 3.0.1 (2026-11-10) — patch: usable without a GPU
+- On computers without a GPU (software WebGL, as on CI runners), the page no longer freezes behind slow frames: the scene updates without drawing while the title screen or text mode fills the screen, and a frame slower than 500 ms is followed by an equal pause, so clicks such as "Use text mode" respond (0.58 s instead of 20–26 s, measured on object-detective with the CPU throttled 4× and 8×). No change on a GPU.
+- Posters unchanged (same images, renamed `poster-3.0.1.*`).
 ## 3.0.0 (2026-11-09) — scene-first revamp (plan 10 §6.4)
 - Scene-first v3 shell with one top bar. Bay 4 rebuilt with own Blender models, decals and signs; five lifelike adults (MPFB from MakeHuman CC0 assets, own clips); forklift routes without audio.
 - The forklift driver sits in the truck (seat, wheel and pedal IK) and moves with it; forklift model rebuilt.

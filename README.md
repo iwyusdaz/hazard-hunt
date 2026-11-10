@@ -6,7 +6,7 @@ A 45-minute workplace safety mini course for new warehouse staff: spot hazards i
 
 **[Play now](https://immersive-learning-showcase.vercel.app/play/hazard-hunt/)** · **[Design documents](design/)** · Role: Sole designer
 
-![A warehouse floor with yellow walkway lines, a forklift with its driver, pallets of boxes and tall racking under ceiling lights.](public/poster-3.0.0.webp)
+![A warehouse floor with yellow walkway lines, a forklift with its driver, pallets of boxes and tall racking under ceiling lights.](public/poster-3.0.1.webp)
 
 The company in this course, Northwind Logistics, is **fictional**, and so are its staff and the incident. All of them were constructed for teaching purposes. **This course does not replace training required by law or by your employer.**
 

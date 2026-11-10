@@ -1,7 +1,7 @@
 {
   "name": "hazard-hunt",
   "private": true,
-  "version": "3.0.0",
+  "version": "3.0.1",
   "type": "module",
   "description": "A three.js workplace safety mini course: spot warehouse hazards in realistic 3D, replay a near-miss, and practice speaking up",
   "engines": {

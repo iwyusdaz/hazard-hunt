@@ -1,6 +1,6 @@
 {
   "slug": "hazard-hunt",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "title": "Hazard Hunt",
   "format": "Mini course",
   "niche": "Workplace safety",
@@ -11,8 +11,8 @@
   "contentNotes": ["Includes a replay of a fictional warehouse near-miss. Nobody is hurt and no injuries are shown."],
   "permissions": [],
   "poster": {
-    "webp": "poster-3.0.0.webp",
-    "jpg": "poster-3.0.0.jpg",
+    "webp": "poster-3.0.1.webp",
+    "jpg": "poster-3.0.1.jpg",
     "alt": "A warehouse floor with yellow walkway lines, a forklift with its driver, pallets of boxes and tall racking under ceiling lights."
   },
   "repoUrl": "https://github.com/iwyusdaz/hazard-hunt",
